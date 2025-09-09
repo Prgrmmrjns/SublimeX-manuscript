@@ -1,0 +1,30 @@
+\begin{table}[ht]
+\centering
+\caption{Performance comparison across biomedical datasets with processing details.}
+\label{tab:results}
+\begin{tabular}{|l|l|c|c|c|}
+\hline
+\textbf{Dataset} & \textbf{Method} & \textbf{Performance} & \textbf{\# Features} & \textbf{Time (s)} \\
+\hline
+AZT1D & PATX & $28.736 \pm 0.000$ & 4 & 115.2 \\
+ & TSFRESH & $31.712 \pm 0.000$ & 10 & 1.9 \\
+ & CNN & $34.048 \pm 0.000$ & 24 & 199.0 \\
+\hline
+MITBIH & PATX & $0.891 \pm 0.000$ & 11 & 242.9 \\
+ & TSFRESH & $0.808 \pm 0.000$ & 10 & 1.7 \\
+ & CNN & $0.928 \pm 0.000$ & 100 & 803.5 \\
+\hline
+Bonn EEG & PATX & $0.737 \pm 0.000$ & 3 & 74.3 \\
+ & TSFRESH & $0.593 \pm 0.000$ & 10 & 0.5 \\
+ & CNN & $0.593 \pm 0.000$ & 4101 & 1074.9 \\
+\hline
+REMC & PATX & $0.929 \pm 0.000$ & 8 & 219.0 \\
+ & TSFRESH & $0.876 \pm 0.000$ & 10 & 2.8 \\
+ & CNN & $0.862 \pm 0.000$ & 200 & 377.2 \\
+\hline
+MIMIC-IV & PATX & $0.758 \pm 0.000$ & 6 & 35.1 \\
+ & TSFRESH & $0.796 \pm 0.000$ & 290 & 15.7 \\
+ & CNN & $0.743 \pm 0.000$ & 697 & 163.5 \\
+\hline
+\end{tabular}
+\end{table}
