@@ -1,0 +1,10 @@
+---
+description: "PatX manuscript formatting rules"
+globs:
+  - "manuscript/main.tex"
+alwaysApply: true
+---
+
+- Agents must not write long single lines in manuscript/main.tex.
+- Hard-wrap lines at a maximum of 90 characters.
+- Break long sentences across lines; prefer adding newlines over inline spacing.

@@ -10,9 +10,10 @@
 \usepackage[linesnumbered,ruled]{algorithm2e}
 \usepackage{subcaption}
 \usepackage{xcolor}
+\usepackage{float}
 
 
-\title{PatX: Interpretable Pattern Extraction for Biomedical Time Series and Spatial Data}
+\title{PatX: Interpretable Pattern Extraction for Time Series and Spatial Data}
 \author{First Author$^{1}$, Second Author$^{2}$, Third Author$^{1}$\\
 $^{1}$Institution One\\
 $^{2}$Institution Two}
@@ -194,8 +195,7 @@ baselines.
 
 The package is available at \url{https://github.com/Prgrmmrjns/patX}. patX includes visualization 
 utilities to make datasets more interpretable: discovered motifs can be overlaid on signals with their 
-active regions and accompanied by per--target error distributions to inspect separability and outliers 
-(see \texttt{visualizations.py}).
+active regions and accompanied by per--target error distributions to inspect separability and outliers.
 
 \noindent\textbf{Aims.} We: 
 \begin{enumerate}
@@ -391,7 +391,53 @@ in network architecture and convergence rates. However, this compactness transla
 inference speed: computing 6 polynomial similarity features requires microseconds compared 
 to milliseconds for hundreds of statistical features or deep network forward passes.
 
+\subsection{Pattern Discovery Characteristics}
+We summarize the distributions of pattern start positions, widths, polynomial degrees,
+and channel assignments across all datasets. Table~\ref{tab:pattern_stats} reports:
+AZT1D median width 7 [3,14] and start 8.5 [1,17]; MITBIH width 8 [4.2,12] and start 47
+[33,60.2]; Bonn EEG width 867 [699.5,1501.5] and start 292 [247,407]; REMC width 68
+[32.5,100.5] and start 38 [7,80.5] with 5 channels; MIMIC width 10 [7,13] and start 7
+[3.5,10.5] with 3 channels. Degree mode is 3 for all datasets.
+
+Compact windows in MITBIH reflect millisecond QRS/T dynamics;
+broader windows in REMC match chromatin domains and promoter/enhancer footprints; early
+starts in AZT1D/MIMIC align with short-horizon physiology where recent glucose and vital
+sign changes dominate prediction; Bonn's long trends capture slow-wave/baseline shifts
+relevant to seizure state.
+
+\begin{table}[H]
+  \centering
+  \input{tables/pattern_stats.tex}
+  \caption{Pattern statistics aggregated across all JSON exports. Width and Start are
+  reported as median [IQR]. Degree is the mode per dataset. Channels used counts unique
+  series indices when applicable.}
+  \label{tab:pattern_stats}
+\end{table}
+
 \subsection{Interpretability Case Studies}
+
+Figure~\ref{fig:first_patterns} visualizes the first discovered pattern for each dataset.
+For each task we show (left) the pattern template with its start and width (and series
+identifier where applicable), and (right) a distribution of template values as a compact
+summary of morphology.
+
+AZT1D: the first motif (start 0, width 24) is a smooth, monotonic decline across the
+24--lag window, consistent with inter--meal decay and hypoglycemia risk when insulin on
+board exceeds hepatic output. MITBIH: a sharp transient that decays below baseline fits
+localized QRS/T morphology deviations in arrhythmias. Bonn EEG: a long gradual trend
+captures slow--wave/baseline shifts distinguishing seizure vs. non--seizure. REMC: a
+valley--to--peak over \(~50\) positions reflects promoter/enhancer structure and
+nucleosome positioning. MIMIC--IV: a brief dip (series 27) matches short--term
+instability in SpO$_2$/HR/RR preceding ARDS.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,height=0.8\textheight,keepaspectratio]
+  {images/patx_first_patterns_grid.png}
+  \caption{First discovered pattern per dataset (left: template shape; right: value
+  distribution). For REMC and AZT1D, we use the first pattern of the first sample.}
+  \label{fig:first_patterns}
+\end{figure}
 
 \subsection{Ablation Study}
 

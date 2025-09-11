@@ -10,3 +10,4 @@ seaborn
 tsfresh
 torch
 PyWavelets
+patx

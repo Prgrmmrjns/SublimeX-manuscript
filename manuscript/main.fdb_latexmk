@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main"] 1757329956.36959 "main.aux" "main.bbl" "main" 1757329985.12652 0
+["bibtex main"] 1757425865.11063 "main.aux" "main.bbl" "main" 1757425904.19636 2
   "./bibliography.bib" 1757329612.32692 6991 c5bbe151f2564ae04ae93ecb6151b4d0 ""
   "/usr/local/texlive/2024/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1757329984.76197 5604 df3fb641649f24510afa8abcaa354281 "pdflatex"
+  "main.aux" 1757425903.81697 6216 fdfef58e83bb1bf10581e24ede2f1ba4 "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1757329984.04879 "/Users/jwolber/Documents/patx/manuscript/main.tex" "main.pdf" "main" 1757329985.12675 0
-  "/Users/jwolber/Documents/patx/manuscript/main.tex" 1757329983.48054 27589 5273c0ef8fbeba8bda84a053732f0c59 ""
+["pdflatex"] 1757425902.16631 "/Users/jwolber/Documents/patternExtraction-manuscript/manuscript/main.tex" "main.pdf" "main" 1757425904.19657 2
+  "/Users/jwolber/Documents/patternExtraction-manuscript/manuscript/main.tex" 1757425899.846 30055 62619e7975579bb0724caaa3b8644876 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1136768653 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -96,6 +96,7 @@
   "/usr/local/texlive/2024/texmf-dist/tex/latex/caption/subcaption.sty" 1690576852 12494 0c0cdb824278a4d51cefeb2e79901315 ""
   "/usr/local/texlive/2024/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1579991033 13886 d1306dcf79a944f6988e688c1785f9ce ""
   "/usr/local/texlive/2024/texmf-dist/tex/latex/etoolbox/etoolbox.sty" 1601931149 46845 3b58f70c6e861a13d927bff09d35ecbc ""
+  "/usr/local/texlive/2024/texmf-dist/tex/latex/float/float.sty" 1137110151 6749 16d2656a1984957e674b149555f1ea1d ""
   "/usr/local/texlive/2024/texmf-dist/tex/latex/geometry/geometry.sty" 1578002852 41601 9cf6c5257b1bc7af01a58859749dd37a ""
   "/usr/local/texlive/2024/texmf-dist/tex/latex/graphics-cfg/color.cfg" 1459978653 1213 620bba36b25224fa9b7e1ccb4ecb76fd ""
   "/usr/local/texlive/2024/texmf-dist/tex/latex/graphics-cfg/graphics.cfg" 1465944070 1224 978390e9c2234eab29404bc21b268d1e ""
@@ -127,10 +128,12 @@
   "/usr/local/texlive/2024/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1726666916.18357 5467645 128b85b7cde5f5edc5cb7f1dd7ff8736 ""
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1726666844 8221429 383b26a9af32fc3d743cdd4c2bdcadfe ""
   "/usr/local/texlive/2024/texmf.cnf" 1710266656 577 e590dabc9e28c5b61546e15f63eebcdf ""
-  "main.aux" 1757329984.76197 5604 df3fb641649f24510afa8abcaa354281 "pdflatex"
-  "main.bbl" 1757329956.50418 5325 446dc2c9a9000120f5925bf3c88c600e "bibtex main"
-  "main.out" 1757329984.76293 5410 9768ae50ab4a0d97535a656100640652 "pdflatex"
-  "main.tex" 1757329983.48054 27589 5273c0ef8fbeba8bda84a053732f0c59 ""
+  "images/patx_first_patterns_grid.png" 1757424407.08936 489147 fd9691cb161d8e068c1de342862b10b1 ""
+  "main.aux" 1757425903.81697 6216 fdfef58e83bb1bf10581e24ede2f1ba4 "pdflatex"
+  "main.bbl" 1757425865.2413 0 d41d8cd98f00b204e9800998ecf8427e "bibtex main"
+  "main.out" 1757425903.81811 5639 3a7bcafd2539b5389aac1c267e386c42 "pdflatex"
+  "main.tex" 1757425899.846 30055 62619e7975579bb0724caaa3b8644876 ""
+  "tables/pattern_stats.tex" 1757424887.23199 469 abd26653fd184811ffb0d39345e396e3 ""
   "tables/results_table.tex" 1757329612.31968 1037 b04b5fb55d63ab0e5ebd00f43797d9fc ""
   (generated)
   "main.aux"
