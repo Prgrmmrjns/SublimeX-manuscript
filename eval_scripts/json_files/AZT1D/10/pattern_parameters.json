@@ -1,0 +1,33 @@
+{
+  "dataset": "AZT1D",
+  "metric": "rmse",
+  "polynomial_degree": 3,
+  "n_patterns": 2,
+  "patterns": [
+    {
+      "pattern_id": 0,
+      "pattern_start": 0,
+      "pattern_width": 9,
+      "pattern_values": [
+        -1.3017578125,
+        -0.55224609375,
+        -0.0450439453125,
+        0.29052734375,
+        0.52490234375,
+        0.72900390625,
+        0.9736328125,
+        1.3291015625,
+        1.8662109375
+      ]
+    },
+    {
+      "pattern_id": 1,
+      "pattern_start": 22,
+      "pattern_width": 2,
+      "pattern_values": [
+        2.03125,
+        0.36865234375
+      ]
+    }
+  ]
+}

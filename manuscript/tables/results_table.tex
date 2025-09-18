@@ -1,30 +1,30 @@
-\begin{table}[ht]
+\begin{table}[h]
 \centering
-\caption{Performance comparison across biomedical datasets with processing details.}
+\caption{Performance comparison across biomedical datasets showing mean $\pm$ standard deviation across folds/subjects.}
 \label{tab:results}
 \begin{tabular}{|l|l|c|c|c|}
 \hline
 \textbf{Dataset} & \textbf{Method} & \textbf{Performance} & \textbf{\# Features} & \textbf{Time (s)} \\
 \hline
-AZT1D & PATX & $28.736 \pm 0.000$ & 4 & 115.2 \\
- & TSFRESH & $31.712 \pm 0.000$ & 10 & 1.9 \\
- & CNN & $34.048 \pm 0.000$ & 24 & 199.0 \\
+AZT1D & PATX & \textbf{18.877 $\pm$ 0.531} & \textbf{4.3 $\pm$ 0.6} & \textbf{29.7 $\pm$ 2.0} \\
+ & TSFRESH & 20.010 $\pm$ 0.812 & 10.0 $\pm$ 0.0 & 1.8 $\pm$ 0.2 \\
+ & CNN & 21.931 $\pm$ 1.116 & 24.0 $\pm$ 0.0 & 33.0 $\pm$ 3.7 \\
 \hline
-MITBIH & PATX & $0.891 \pm 0.000$ & 11 & 242.9 \\
- & TSFRESH & $0.808 \pm 0.000$ & 10 & 1.7 \\
- & CNN & $0.928 \pm 0.000$ & 100 & 803.5 \\
+MITBIH & PATX & \textbf{0.879 $\pm$ 0.007} & \textbf{11.2 $\pm$ 2.6} & \textbf{30.6 $\pm$ 7.1} \\
+ & TSFRESH & 0.817 $\pm$ 0.003 & 10.0 $\pm$ 0.0 & 1.9 $\pm$ 0.0 \\
+ & CNN & 0.678 $\pm$ 0.033 & 100.0 $\pm$ 0.0 & 77.3 $\pm$ 1.2 \\
 \hline
-Bonn EEG & PATX & $0.737 \pm 0.000$ & 3 & 74.3 \\
- & TSFRESH & $0.593 \pm 0.000$ & 10 & 0.5 \\
- & CNN & $0.593 \pm 0.000$ & 4101 & 1074.9 \\
+Bonn EEG & PATX & \textbf{0.744 $\pm$ 0.015} & \textbf{4.0 $\pm$ 1.2} & \textbf{38.5 $\pm$ 10.5} \\
+ & TSFRESH & 0.584 $\pm$ 0.036 & 10.0 $\pm$ 0.0 & 0.7 $\pm$ 0.1 \\
+ & CNN & 0.422 $\pm$ 0.126 & 4101.0 $\pm$ 0.0 & 153.2 $\pm$ 73.3 \\
 \hline
-REMC & PATX & $0.929 \pm 0.000$ & 8 & 219.0 \\
- & TSFRESH & $0.876 \pm 0.000$ & 10 & 2.8 \\
- & CNN & $0.862 \pm 0.000$ & 200 & 377.2 \\
+REMC & PATX & \textbf{0.925 $\pm$ 0.010} & \textbf{8.6 $\pm$ 2.3} & \textbf{170.0 $\pm$ 166.4} \\
+ & TSFRESH & 0.876 $\pm$ 0.009 & 10.0 $\pm$ 0.0 & 15.9 $\pm$ 43.8 \\
+ & CNN & 0.871 $\pm$ 0.009 & 1000.0 $\pm$ 0.0 & 3927.3 $\pm$ 4543.6 \\
 \hline
-MIMIC-IV & PATX & $0.758 \pm 0.000$ & 6 & 35.1 \\
- & TSFRESH & $0.796 \pm 0.000$ & 290 & 15.7 \\
- & CNN & $0.743 \pm 0.000$ & 697 & 163.5 \\
+MIMIC-IV & PATX & \textbf{0.777 $\pm$ 0.006} & \textbf{6.2 $\pm$ 2.3} & \textbf{57.2 $\pm$ 48.0} \\
+ & TSFRESH & 0.769 $\pm$ 0.004 & 10.0 $\pm$ 0.0 & 1.2 $\pm$ 0.1 \\
+ & CNN & 0.747 $\pm$ 0.005 & 697.0 $\pm$ 0.0 & 287.1 $\pm$ 3.6 \\
 \hline
 \end{tabular}
 \end{table}

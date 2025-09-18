@@ -10,6 +10,11 @@
 
 ### catch22
 
+### hctsa
+
+
+### rocket
+
 
 ## Deep Learning Approaches
 

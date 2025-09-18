@@ -1,0 +1,99 @@
+{
+  "dataset": "MIMIC",
+  "metric": "accuracy",
+  "polynomial_degree": 3,
+  "n_patterns": 7,
+  "patterns": [
+    {
+      "pattern_id": 0,
+      "pattern_start": 18,
+      "pattern_width": 4,
+      "pattern_values": [
+        -0.7861328125,
+        0.09954833984375,
+        0.51220703125,
+        2.0390625
+      ],
+      "series_index": 27
+    },
+    {
+      "pattern_id": 1,
+      "pattern_start": 22,
+      "pattern_width": 1,
+      "pattern_values": [
+        1.2001953125
+      ],
+      "series_index": 23
+    },
+    {
+      "pattern_id": 2,
+      "pattern_start": 6,
+      "pattern_width": 7,
+      "pattern_values": [
+        -0.206298828125,
+        -0.36279296875,
+        -0.5654296875,
+        -0.83837890625,
+        -1.20703125,
+        -1.6962890625,
+        -2.33203125
+      ],
+      "series_index": 11
+    },
+    {
+      "pattern_id": 3,
+      "pattern_start": 1,
+      "pattern_width": 4,
+      "pattern_values": [
+        -1.224609375,
+        0.09234619140625,
+        0.5283203125,
+        1.4248046875
+      ],
+      "series_index": 4
+    },
+    {
+      "pattern_id": 4,
+      "pattern_start": 20,
+      "pattern_width": 2,
+      "pattern_values": [
+        1.212890625,
+        0.33935546875
+      ],
+      "series_index": 15
+    },
+    {
+      "pattern_id": 5,
+      "pattern_start": 6,
+      "pattern_width": 14,
+      "pattern_values": [
+        1.2099609375,
+        0.84423828125,
+        0.5224609375,
+        0.2412109375,
+        -0.00321197509765625,
+        -0.213623046875,
+        -0.3935546875,
+        -0.5458984375,
+        -0.67431640625,
+        -0.78173828125,
+        -0.87158203125,
+        -0.947265625,
+        -1.01171875,
+        -1.0673828125
+      ],
+      "series_index": 22
+    },
+    {
+      "pattern_id": 6,
+      "pattern_start": 16,
+      "pattern_width": 3,
+      "pattern_values": [
+        0.343505859375,
+        0.6005859375,
+        0.8564453125
+      ],
+      "series_index": 28
+    }
+  ]
+}

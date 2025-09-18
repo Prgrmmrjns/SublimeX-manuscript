@@ -1,14 +1,6 @@
 # Fdb version 4
-["bibtex main"] 1757425865.11063 "main.aux" "main.bbl" "main" 1757425904.19636 2
-  "./bibliography.bib" 1757329612.32692 6991 c5bbe151f2564ae04ae93ecb6151b4d0 ""
-  "/usr/local/texlive/2024/texmf-dist/bibtex/bst/base/plain.bst" 1292289607 20613 bd3fbfa9f64872b81ac57a0dd2ed855f ""
-  "main.aux" 1757425903.81697 6216 fdfef58e83bb1bf10581e24ede2f1ba4 "pdflatex"
-  (generated)
-  "main.bbl"
-  "main.blg"
-  (rewritten before read)
-["pdflatex"] 1757425902.16631 "/Users/jwolber/Documents/patternExtraction-manuscript/manuscript/main.tex" "main.pdf" "main" 1757425904.19657 2
-  "/Users/jwolber/Documents/patternExtraction-manuscript/manuscript/main.tex" 1757425899.846 30055 62619e7975579bb0724caaa3b8644876 ""
+["pdflatex"] 1758195262.55399 "/Users/jwolber/Documents/patternExtraction-manuscript/manuscript/main.tex" "main.pdf" "main" 1758195264.28588 0
+  "/Users/jwolber/Documents/patternExtraction-manuscript/manuscript/main.tex" 1758195262.19676 14640 86e84c6918938553164d3d722bf31957 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/jknappen/ec/tcrm1095.tfm" 1136768653 1536 02c06700a42be0f5a28664c7273f82e7 ""
@@ -19,8 +11,10 @@
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmmib6.tfm" 1246382020 1516 a3bf6a5e7ec4401b1f52092dfaaed242 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmmib8.tfm" 1246382020 1528 dab402b9d3774ca98baa037071cee7ae ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam10.tfm" 1246382020 916 f87d7c45f9c908e672703b83b72241a3 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam5.tfm" 1246382020 924 9904cf1d39e9767e7a3622f2a125a565 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/symbols/msam7.tfm" 1246382020 928 2dc8d444221b7a635bb58038579b861a ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm10.tfm" 1246382020 908 2921f8a10601f252058503cc6570e581 ""
+  "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm5.tfm" 1246382020 940 75ac932a52f80982a9f8ea75d03a34cf ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/amsfonts/symbols/msbm7.tfm" 1246382020 940 228d6584342e91276bf566bcf9716b83 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmbsy10.tfm" 1136768653 1116 4e6ba9d7914baa6482fd69f67d126380 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm" 1136768653 1328 c834bbb027764024c09d3d2bf908b5f0 ""
@@ -45,7 +39,6 @@
   "/usr/local/texlive/2024/texmf-dist/fonts/tfm/public/cm/cmtt10.tfm" 1136768653 768 1321e9409b4137d6fb428ac9dc956269 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb" 1248133631 34811 78b52f49e893bcba91bd7581cdc144c0 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1248133631 32080 340ef9bf63678554ee606688e7b5339d ""
-  "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx8.pfb" 1248133631 32166 b0c356b15f19587482a9217ce1d8fa67 ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb" 1248133631 35469 70d41d2b9ea31d5d813066df7c99281c ""
   "/usr/local/texlive/2024/texmf-dist/fonts/type1/public/amsfonts/cm/cmmib10.pfb" 1248133631 36912 b448ef9ad9d7228ec3c6e71005136d55 ""
@@ -129,12 +122,10 @@
   "/usr/local/texlive/2024/texmf-var/web2c/pdftex/pdflatex.fmt" 1726666844 8221429 383b26a9af32fc3d743cdd4c2bdcadfe ""
   "/usr/local/texlive/2024/texmf.cnf" 1710266656 577 e590dabc9e28c5b61546e15f63eebcdf ""
   "images/patx_first_patterns_grid.png" 1757424407.08936 489147 fd9691cb161d8e068c1de342862b10b1 ""
-  "main.aux" 1757425903.81697 6216 fdfef58e83bb1bf10581e24ede2f1ba4 "pdflatex"
-  "main.bbl" 1757425865.2413 0 d41d8cd98f00b204e9800998ecf8427e "bibtex main"
-  "main.out" 1757425903.81811 5639 3a7bcafd2539b5389aac1c267e386c42 "pdflatex"
-  "main.tex" 1757425899.846 30055 62619e7975579bb0724caaa3b8644876 ""
-  "tables/pattern_stats.tex" 1757424887.23199 469 abd26653fd184811ffb0d39345e396e3 ""
-  "tables/results_table.tex" 1757329612.31968 1037 b04b5fb55d63ab0e5ebd00f43797d9fc ""
+  "main.aux" 1758195264.20304 3713 3b6400d9e66b018dfaf9675a3c20022a "pdflatex"
+  "main.out" 1758195264.2039 2921 cada023b90546f5848646bb82546e564 "pdflatex"
+  "main.tex" 1758195262.19676 14640 86e84c6918938553164d3d722bf31957 ""
+  "tables/results_table.tex" 1758111252.12174 1542 0bd05c09cb085f4bb5ff54e9ac692af3 ""
   (generated)
   "main.aux"
   "main.log"

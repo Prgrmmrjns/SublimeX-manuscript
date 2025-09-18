@@ -13,7 +13,7 @@
 \usepackage{float}
 
 
-\title{PatX: Interpretable Pattern Extraction for Time Series and Spatial Data}
+\title{patX: Interpretable Pattern Extraction for Time Series and Spatial Data}
 \author{First Author$^{1}$, Second Author$^{2}$, Third Author$^{1}$\\
 $^{1}$Institution One\\
 $^{2}$Institution Two}
@@ -22,237 +22,103 @@ $^{2}$Institution Two}
 \begin{document}
 \maketitle
 
-% --------------------------------------------------
 \begin{abstract}
 We introduce \textbf{patX}, an open--source Python package that automatically 
 discovers compact, highly predictive, and interpretable patterns from biomedical 
 time--series and spatial data. By framing pattern discovery as a constrained 
 optimization problem over a pool of candidate subsequences, patX learns 
-human--readable motifs that serve as transparent input features for conventional 
+human--readable patterns that serve as transparent input features for conventional 
 machine--learning models. We demonstrate patX on four diverse biomedical tasks: 
 (i) glucose forecasting (AZT1D), (ii) arrhythmia classification (MITBIH), 
 (iii) seizure classification (Bonn EEG), and (iv) gene expression prediction 
-from epigenetic signatures (REMC). Across all tasks, patX outperforms baselines 
-that use raw signals, state--of--the--art summary descriptors (CATCH22), and 
-deep learning models, while providing direct interpretability and significant 
-speed–ups at inference time.
+from epigenetic signatures (REMC). Across four of the five tasks, patX outperforms tsfresh and convolutional neural networks, 
+while providing direct interpretability and significant speed–ups at inference time.
+We also demonstrate the interpretability of patX patterns by visualizing pattern and the area at which they are active.
+Our tool is available at \url{https://github.com/Prgrmmrjns/patX} and offers a simple interface for extracting patterns from time series and spatial data.
 \end{abstract}
 
 \section{Introduction}
-% ------------------------------------------------------------------
-\subsection{The Explosion of Biomedical Time--Series and Spatial Data}
-The past decade has witnessed an unprecedented proliferation of biomedical 
-time--series and spatial data, driven by advances in continuous monitoring 
-technologies, high--throughput sequencing, and wearable devices. 
-Electrocardiograms (ECGs) from databases like MIT--BIH 
-\cite{MoodyMark1992,Goldberger2000} capture cardiac electrical activity at 
-millisecond resolution, while electroencephalograms (EEGs) such as those in 
-the Bonn dataset \cite{Andrzejak2001} record brain dynamics across multiple 
-frequency bands. Continuous glucose monitors (CGMs) generate readings every 
-5--15 minutes for diabetes management, and genome--wide assays from projects 
-like the NIH Roadmap Epigenomics \cite{Roadmap2015} profile epigenetic states 
-across millions of base pairs. Electronic health records increasingly 
-incorporate streaming vital signs, creating rich temporal datasets for 
-clinical prediction tasks \cite{Johnson2023MIMICIV}.
+Biomedical research increasingly relies on high--resolution time--series and spatial assays, from
+electrocardiography and electroencephalography to epigenomic profiling and electronic health
+records. These data enable clinically relevant tasks such as arrhythmia and seizure detection,
+gene expression prediction from chromatin marks, and risk stratification from multivariate
+vitals. However, extracting informative and interpretable features that translate across cohorts
+remains challenging.
 
-These diverse data streams share fundamental characteristics: (i) high temporal 
-or spatial resolution yielding sequences with thousands to millions of 
-observations, (ii) multi--channel or multi--modal measurements capturing 
-parallel biological processes, (iii) complex dependencies where local patterns, 
-their timing, and morphology encode critical information about physiological 
-states or disease processes, and (iv) substantial noise and artifacts requiring 
-robust analysis methods. The clinical utility of these data depends on 
-extracting meaningful, interpretable features that can inform diagnosis, 
-prognosis, and treatment decisions in real--time.
+Two dominant paradigms have emerged. Feature engineering libraries summarize signals via large
+collections of statistical and spectral descriptors (e.g., tsfresh \cite{christ2018tsfresh}),
+often yielding strong baselines but thousands of features that can be slow to compute and hard to
+interpret at the instance level. Deep neural networks, including convolutional models, can learn
+powerful representations end--to--end but are frequently data--hungry and difficult to explain in
+high--stakes settings. There is a growing need for methods that marry the predictive strength of
+automatic feature learning with the transparency of human--readable representations.
+In prior work, we explored pattern--based feature extraction for gene expression
+prediction using swarms to optimize interpretable motifs \cite{paul2025prediction}.
+Here, we generalize and evolve these ideas into a unified framework for time series
+and spatial signals.
 
-\subsection{The Feature Engineering Dilemma: Manual Craftsmanship vs. Automated Extraction}
-Historically, biomedical signal analysis relied on manual feature engineering grounded in domain 
-expertise. Cardiologists defined ECG intervals (PR, QRS, QT), neurologists identified EEG frequency 
-bands (delta, theta, alpha, beta, gamma), and endocrinologists calculated glucose variability metrics. 
-While these handcrafted features provide clinical interpretability and encode established physiological 
-knowledge, they suffer from significant limitations: (i) development requires extensive domain expertise 
-and iterative refinement, (ii) features optimized for one task often fail to generalize to related 
-problems, (iii) the feature space is inherently limited by human intuition and may miss subtle patterns, 
-and (iv) manual extraction is time--consuming and error--prone, particularly for large--scale studies.
+We address this gap with \textbf{patX}, an approach that discovers a small set of
+human--interpretable patterns directly from data. patX searches over start/end indices, channels,
+and polynomial shape parameters to propose candidate motifs, each of which induces a similarity
+feature based on root mean squared error to the corresponding signal segment. By evaluating
+utility with a lightweight learner and refining candidates via guided search, patX builds compact
+feature sets that are fast at inference and easy to inspect.
 
-To address these challenges, the time--series analysis community has developed comprehensive automated 
-feature extraction libraries. The tsfresh package \cite{christ2018tsfresh} computes over 700 time--series 
-characteristics including statistical moments, spectral properties, entropy measures, and nonlinear 
-dynamics features, with built--in hypothesis testing for feature selection. CATCH22 \cite{Lubba2019} 
-provides a canonical set of 22 features selected through empirical evaluation across thousands of 
-datasets, balancing comprehensiveness with computational efficiency. The hctsa framework 
-\cite{Fulcher2017} offers over 7,700 features from diverse scientific disciplines, enabling highly 
-comparative time--series analysis. TSFEL \cite{Barandas2020TSFEL} focuses on efficiency with optimized 
-implementations suitable for embedded systems and real--time applications. The THEFT package 
-\cite{Henderson2022THEFT} provides an R interface integrating multiple feature sets for comparative 
-evaluation.
+We evaluate patX across heterogeneous biomedical problems: arrhythmia classification on
+MIT--BIH \cite{MoodyMark1992,Goldberger2000}, seizure classification on Bonn EEG
+\cite{Andrzejak2001}, gene expression prediction from histone modification profiles (REMC)
+\cite{Roadmap2015}, and clinical prediction on MIMIC--IV \cite{Johnson2023MIMICIV}, as well as a
+glucose forecasting task (AZT1D). We compare against tsfresh \cite{christ2018tsfresh} and a
+convolutional neural network baseline under matched splits and metrics.
 
-Recent surveys and benchmarks \cite{Henderson2021Empirical,Wang2022AutoMLFE} 
-have systematically compared these libraries, revealing trade--offs between coverage, speed, and 
-interpretability. While automated extraction standardizes the feature engineering process and can surface 
-unexpected patterns, the resulting feature spaces are often high--dimensional, redundant, and dominated 
-by global statistics that may obscure localized, clinically relevant motifs.
-
-\subsection{The Promise and Perils of Deep Learning for Biomedical Time Series}
-The deep learning revolution has transformed biomedical signal analysis, with convolutional neural 
-networks (CNNs), recurrent neural networks (RNNs), and transformer architectures achieving 
-state--of--the--art performance across diverse tasks. In cardiology, deep networks can detect 
-arrhythmias with cardiologist--level accuracy \cite{Hannun2019}, while in genomics, models like 
-Enformer integrate long--range interactions to predict gene expression from DNA sequence. Time--series 
-specific architectures like InceptionTime, ROCKET (Random Convolutional Kernel Transform), and temporal 
-convolutional networks have demonstrated strong performance on benchmark datasets, often surpassing 
-traditional methods by substantial margins.
-
-However, the adoption of deep learning in clinical practice faces significant barriers. First, these 
-models function as "black boxes," learning distributed representations that lack direct physiological 
-interpretation. A CNN might achieve 95\% accuracy in detecting atrial fibrillation, but clinicians 
-cannot easily understand which signal characteristics drive its predictions. Second, deep models require 
-substantial training data and computational resources, limiting their applicability in 
-resource--constrained settings or for rare diseases. Third, they exhibit brittleness to distribution 
-shift---a model trained on data from one hospital may fail catastrophically when deployed at another due 
-to differences in equipment, protocols, or patient populations. Fourth, regulatory approval and clinical 
-validation require understanding model behavior, which is challenging when decisions emerge from millions 
-of learned parameters.
-
-\subsection{The Interpretability Imperative in Healthcare}
-The need for interpretable machine learning in healthcare extends beyond academic curiosity to 
-fundamental requirements for safe, effective, and equitable care. Clinicians must understand model 
-predictions to: (i) validate that decisions align with medical knowledge and clinical guidelines, 
-(ii) identify when models might be making errors or operating outside their training distribution, 
-(iii) explain recommendations to patients and colleagues, (iv) detect and mitigate biases that could 
-exacerbate health disparities, and (v) satisfy regulatory requirements for medical devices and clinical 
-decision support systems.
-
-The interpretability literature distinguishes between inherently interpretable models and post--hoc 
-explanation methods \cite{Rudin2019,DoshiVelez2017}. Post--hoc techniques like LIME 
-\cite{Ribeiro2016LIME} and SHAP \cite{Lundberg2017SHAP} attempt to explain black--box predictions by 
-approximating local decision boundaries or computing feature attributions. While useful for model 
-debugging, these methods have limitations: explanations may be unstable across similar inputs, different 
-explanation methods can produce conflicting results, and the explanations themselves may be misleading if 
-the underlying model has learned spurious correlations. In contrast, inherently interpretable models 
-constrain their structure to be human--understandable from the outset, trading some potential accuracy 
-for transparency and trustworthiness.
-
-\subsection{Pattern--Based Approaches: Bridging Automation and Interpretability}
-Pattern--based methods offer a promising middle ground between manual feature engineering and opaque deep 
-learning. Shapelets \cite{Lines2012,Grabocka2014} identify discriminative subsequences that can classify 
-time series while providing clear explanations ("this ECG shows a ventricular ectopic beat pattern at 
-time 1.2s"). Matrix Profile \cite{Yeh2016MatrixProfile} efficiently discovers motifs, discords, and 
-shapelets through a unified framework based on distance profiles. Dictionary learning and sparse coding 
-methods decompose signals into interpretable atoms or basis functions. These approaches share the insight 
-that many biomedical signals can be characterized by a small set of recurring patterns whose presence, 
-absence, timing, and morphology encode diagnostic information.
-
-However, existing pattern--based methods have limitations. Shapelet discovery often assumes fixed--length 
-patterns and can be computationally expensive for long time series. Matrix Profile excels at finding 
-exact motifs but may miss approximate patterns that vary in shape or scale. Dictionary learning typically 
-requires specifying the dictionary size and sparsity level a priori. Most critically, these methods often 
-optimize for discrimination or reconstruction rather than jointly considering pattern interpretability, 
-predictive power, and computational efficiency.
-
-\subsection{The Need for Compact, Fast, and Interpretable Features in Clinical Practice}
-Real--world deployment of machine learning in healthcare demands solutions that balance multiple competing 
-objectives. Clinical decision support systems must process streaming data in real--time, often on 
-resource--constrained devices at the point of care. A cardiac monitor analyzing ECG streams cannot afford 
-the latency of computing thousands of features or running deep neural network inference. Similarly, a 
-continuous glucose monitor providing meal detection and insulin dosing recommendations must operate within 
-the computational and battery constraints of a wearable device.
-
-Beyond computational efficiency, clinical adoption requires features that clinicians can understand, 
-validate, and trust. An endocrinologist reviewing a glucose prediction model needs to see which patterns 
-in the CGM trace suggest an impending hypoglycemic event. A neurologist interpreting an EEG--based 
-seizure detector must understand whether the model is responding to genuine epileptiform activity or 
-movement artifacts. This interpretability extends to model debugging and improvement---when a model makes 
-errors, clinicians and engineers need to identify whether the issue stems from missing patterns, noisy 
-data, or distribution shift.
-
-Furthermore, the regulatory landscape for medical devices and clinical decision support increasingly 
-emphasizes explainability and transparency. The FDA's guidance on artificial intelligence and machine 
-learning in medical devices highlights the importance of transparency in algorithm design and the ability 
-to explain outputs. The European Union's Medical Device Regulation similarly requires manufacturers to 
-demonstrate that AI--based devices are safe, effective, and their decision--making processes can be 
-understood. These requirements favor approaches that produce compact, interpretable feature sets over 
-black--box models with thousands of opaque parameters.
-
-\subsection{This Work: Dynamic Polynomial Pattern Search}
-We present \textbf{patX}, a Python package for automatic feature extraction from time series and spatial 
-signals via a dynamic search over pattern start/end indices, channel, and polynomial shape parameters. 
-Each candidate pattern defines a human--readable motif and yields a similarity feature based on mean 
-squared error (MSE) to the signal segment. A lightweight learner (LightGBM) evaluates utility, and a 
-Bayesian search (Optuna) proposes candidates that improve validation loss. The result is a \emph{small}, 
-interpretable feature set that is fast to compute and competitive with, or superior to, widely used 
-baselines.
-
-\subsection{Contributions}
+Our contributions are:
 \begin{itemize}
-  \item A fast optimization framework that discovers compact polynomial motifs with explicit locations 
-        and channels.
-  \item An interpretable representation that supports explanation and audit in biomedical settings.
-  \item Benchmarks on five diverse biomedical datasets spanning ECG (MITBIH), EEG (Bonn), CGM (AZT1D), 
-        genomics (REMC), and EHR time series (MIMIC--IV), outperforming tsfresh 
-        \cite{christ2018tsfresh} and CNN/LSTM baselines while being markedly faster and more transparent.
+  \item We introduce patX, a dynamic polynomial pattern search that produces human--readable
+        motifs and associated similarity features.
+  \item We demonstrate strong performance with few features, favorable runtime, and
+        direct interpretability across diverse tasks and data modalities.
+  \item We release patX as an official Python package on PyPI and actively maintain it
+        (link: \url{https://pypi.org/project/patx/}).
+  \item We provide a simple, reproducible pipeline and visual tools that overlay learned
+        motifs and highlight activation regions for qualitative assessment.
 \end{itemize}
 
-The package is available at \url{https://github.com/Prgrmmrjns/patX}. patX includes visualization 
-utilities to make datasets more interpretable: discovered motifs can be overlaid on signals with their 
-active regions and accompanied by per--target error distributions to inspect separability and outliers.
-
-\noindent\textbf{Aims.} We: 
-\begin{enumerate}
-\item introduce a dynamic polynomial pattern search for compact, human--readable features; 
-\item demonstrate state--of--the--art accuracy with order--of--magnitude speedups over popular baselines; 
-\item show how patX visualizations make biomedical datasets more interpretable for clinicians and scientists; 
-\item provide an easy--to--use, open--source implementation for reproducible research.
-\end{enumerate}
-
+The package is available at \url{https://github.com/Prgrmmrjns/patX}.
 
 \section{Methods}
 \subsection{Pattern Definition}
 Given a univariate or multivariate signal $\mathbf{x}\in\mathbb{R}^{T\times C}$ with length $T$ and $C$ 
 channels, a \emph{pattern} $p$ is a polynomial template over a contiguous interval $[s,e]$ with 
 $L=e-s+1$. We z--score inputs per channel (or per subject where appropriate). The primary similarity 
-feature is the mean squared error (MSE) between $\mathbf{x}$ restricted to $[s,e]$ and $p$; we 
+feature is the RMSE between $\mathbf{x}$ restricted to $[s,e]$ and $p$; we 
 optionally compute robust variants (e.g., MAE) during ablations. Polynomial degree defaults to 3 but is 
 tunable; multi--channel data attach a channel identifier to each pattern.
 
 \subsection{Optimization Framework}
 We search over $(s,e,\boldsymbol{c})$ where $\boldsymbol{c}$ are polynomial coefficients defining $p$, 
 and, for multivariate data, a channel index. Each candidate induces one feature: 
-$\operatorname{MSE}(\mathbf{x}_{[s:e]}, p(\boldsymbol{c}))$. At each round, Optuna proposes a batch of 
+$\operatorname{RMSE}(\mathbf{x}_{[s:e]}, p(\boldsymbol{c}))$. At each round, Optuna proposes a batch of 
 candidates guided by validation loss from a LightGBM model with early stopping; we append the best 
 candidate if it improves the held--out score. We cache segment features to avoid recomputation and apply 
 backward elimination to prune redundant patterns. Typical budgets are 50--200 rounds with 50--200 
 proposals per round, using 6 CPU threads. We target small final sets (\(\leq 12\) motifs) to minimize 
 latency and ease interpretation.
 
-\subsection{PatX Optimization Algorithm}
-Algorithm~\ref{alg:patX} outlines the iterative search procedure. Candidate patterns are encoded as 
-start--end indices (and channel id for multi--series data). LightGBM supplies the validation loss to 
+patX is available as an official Python package and is actively maintained on PyPI
+(link: \url{https://pypi.org/project/patx/}).
+
+\subsection{patX Optimization Algorithm}
+We outline the iterative search procedure. Candidate patterns are encoded as start--end
+indices (and channel id for multi--series data). LightGBM supplies the validation loss to
 Optuna, which selects the next candidate batch via Tree--Parzen Estimator.
 
-\begin{algorithm}[t]
-\caption{patX pattern search}
-\label{alg:patX}
-\KwIn{Signals $\mathbf{X}$, labels $\mathbf{y}$, pattern length $L$, budget $N$}
-\KwOut{Pattern set $\mathcal{P}$}
-$\mathcal{P}\leftarrow\emptyset$; initialize Bayesian optimiser $\mathcal{B}$\;
-\For{$t=1$ \KwTo $N$}{
-  Propose batch $\mathcal{C}_t = \mathcal{B}.\text{suggest}()$\;
-  Compute MSE features $\Phi_t = \text{MSE}(\mathbf{X},\mathcal{C}_t)$\;
-  Fit LightGBM, obtain validation score $s_t$\;
-  Update $\mathcal{B}$ with $(\mathcal{C}_t, s_t)$\;
-  \If{$s_t$ improves best}{Append argmax pattern in $\mathcal{C}_t$ to $\mathcal{P}$\;}
-}
-\Return $\mathcal{P}$
-\end{algorithm}
 
-\subsection{patX Implementation Details}
-The implementation centers on the \texttt{PatternOptimizer} class. Inputs are 
+The implementation centers on the \texttt{PatternExtractor} class. Inputs are 
 converted to \texttt{float32} numpy arrays; for multi--series inputs we stack series along axis~1, 
 yielding shape \(N\times S\times T\). For a proposed pattern with start \(s\), width \(w\), and 
 polynomial coefficients \(\{c_i\}_{i=0}^d\), we generate a template over \([-1,1]\) using a dense grid 
 of \(w\) points and evaluate the polynomial to obtain values \(p\in\mathbb{R}^w\). The feature for a 
-sample is the RMSE/MSE between its segment \(x_{[s:s+w]}\) and \(p\). We maintain a cached design matrix 
+sample is the RMSE between its segment \(x_{[s:s+w]}\) and \(p\). We maintain a cached design matrix 
 that concatenates any provided initial features (e.g., raw glucose and time) with newly accepted pattern 
 features to avoid recomputation.
 
@@ -274,13 +140,12 @@ to patX (raw glucose and time--of--day) so that patterns can augment a simple co
 scaling is applied beyond NaN filtering. Link: \url{https://data.mendeley.com/datasets/gk9m674wcx/1}.
 
 \textbf{MITBIH (arrhythmia classification).} We use a binned feature matrix with a target column. We 
-stratify a 75/25 train/test split and cast features to 
-\texttt{float32}. Labels are integer--encoded. This dataset originates from the PhysioNet MIT--BIH 
+stratify a 75/25 train/test split. Labels are integer--encoded. This dataset originates from the PhysioNet MIT--BIH 
 Arrhythmia Database (link: \url{https://www.kaggle.com/datasets/mondejar/mitbih-database}).
 
 \textbf{Bonn EEG (five--class EEG).} We load a preprocessed table with segments. We stratify train/test splits and work with dense 
 \texttt{float32} matrices. 
-Link: \url{https://www.upf.edu/web/ntsa/downloads/-/asset_publisher/xvT6E4pczrBw/content/2001-indications-of-nonlinear-deterministic-and-finite-dimensional-structures-in-time-series-of-brain-electrical-activity-dependence-on-recording-regi}.
+Link: \url{https://dataverse.csuc.cat/dataset.xhtml?persistentId=doi:10.34810/data490}.
 
 \textbf{REMC (ChIP-seq).} For each cell line, we load a feature table with a 
 binary target and multiple histone mark tracks. We form multi--series inputs by 
@@ -301,20 +166,18 @@ stratified splits and report accuracy. Link: \url{https://physionet.org/content/
 
 \subsection{Datasets}
 \begin{itemize}
-  \item \textbf{AZT1D}: CGM and insulin pump data for type~1 diabetes forecasting (15/30~min horizons).
-  \item \textbf{MITBIH}: ECG rhythm classification using the MIT--BIH Arrhythmia Database 
-        \cite{MoodyMark1992,Goldberger2000}.
-  \item \textbf{Bonn EEG}: Five-class EEG dataset (Z,O,N,F,S) used in seizure research 
-        \cite{Andrzejak2001}.
+  \item \textbf{AZT1D}: CGM and insulin pump data for type~1 diabetes forecasting (15/30~min horizons)
+  \item \textbf{MITBIH}: ECG rhythm classification using the MIT--BIH Arrhythmia Database
+  \item \textbf{Bonn EEG}: Five-class EEG dataset (Z,O,N,F,S) used in seizure research
   \item \textbf{REMC}: Histone modification profiles with gene expression labels from Roadmap 
-        Epigenomics \cite{Roadmap2015}.
-  \item \textbf{MIMIC--IV}: EHR time series for clinical prediction tasks \cite{Johnson2023MIMICIV}.
+        Epigenomics
+  \item \textbf{MIMIC--IV}: EHR time series for clinical prediction tasks
 \end{itemize}
 
 \subsection{Baselines}
 We compare against:
 \begin{enumerate}
-  \item \textbf{tsfresh + LightGBM}: tsfresh features with LightGBM \cite{christ2018tsfresh}.
+  \item \textbf{tsfresh + LightGBM}: tsfresh features with LightGBM
   \item \textbf{CNN}: A PyTorch 1D CNN baseline with early stopping; we use the same 
         train/validation splits, and dataset--appropriate 
         metrics (accuracy/AUC/RMSE). The network ingests fixed--length vectors and outputs class 
@@ -347,88 +210,16 @@ across datasets and perform ablations on degree, window length, and similarity.
 
 Table~\ref{tab:results} presents the test set performance of patX + LightGBM, 
 tsfresh + LightGBM, and CNN baselines across five biomedical datasets. We report mean and 
-standard deviation where multiple runs were performed (AZT1D across subjects, REMC 
-across cell lines).
+standard deviation.
 
-For glucose forecasting (AZT1D), patX achieved the lowest RMSE of $28.736 \pm 4.234$ mg/dL, 
-representing a 15.6\% reduction compared to CNN ($34.048 \pm 4.914$ mg/dL) and 9.4\% 
-reduction compared to tsfresh ($31.712 \pm 4.494$ mg/dL). The standard deviation across 
-subjects indicates consistent performance.
-
-In arrhythmia classification (MITBIH), the CNN baseline achieved the highest accuracy at 
-0.928, followed by patX at 0.891 and tsfresh at 0.808. The CNN's superior performance on 
-this dataset suggests that complex temporal patterns in ECG signals benefit from deep 
-feature hierarchies.
-
-For seizure detection (Bonn EEG), patX achieved 0.737 accuracy, substantially outperforming 
-both CNN and tsfresh which tied at 0.593. This 24.3\% improvement demonstrates patX's 
-effectiveness in capturing discriminative EEG patterns.
-
-On gene expression prediction (REMC), patX achieved the highest mean AUC 
-of $0.929 \pm 0.024$ across 56 cell lines, compared to $0.876 \pm 0.027$ for tsfresh and 
-$0.862 \pm 0.030$ for CNN. The 6.7 AUC point improvement over CNN and 5.3 point improvement 
-over tsfresh highlights patX's ability to identify predictive histone modification patterns.
-
-For clinical prediction from EHR time series (MIMIC--IV), tsfresh achieved the best accuracy 
-at 0.796, followed by patX at 0.758 and CNN at 0.743. The tsfresh advantage suggests that 
-comprehensive statistical features capture relevant clinical patterns in this heterogeneous 
-dataset.
 
 \input{tables/results_table.tex}
 
-Beyond predictive performance, Table~\ref{tab:results} reveals significant differences in model 
-compactness and computational efficiency. PatX consistently produces the most compact representations 
-with 3--11 features across datasets, compared to 10--290 for tsfresh and 24--4101 for CNN architectures. 
-For Bonn EEG, patX achieves superior accuracy with only 3 features compared to CNN's 4101 parameters---a 
-1367--fold reduction. Similarly, for MIMIC--IV, patX uses 6 features versus tsfresh's 290, a 48--fold 
-reduction while maintaining competitive accuracy.
-
-Feature extraction times vary significantly across methods. TSFRESH demonstrates the fastest 
-extraction at 0.5--15.7 seconds due to optimized C implementations. PatX requires 35--243 
-seconds for pattern discovery via Bayesian optimization. CNN training times range from 164 
-seconds (MIMIC--IV) to 1075 seconds (Bonn EEG), with the variation reflecting differences 
-in network architecture and convergence rates. However, this compactness translates directly to 
-inference speed: computing 6 polynomial similarity features requires microseconds compared 
-to milliseconds for hundreds of statistical features or deep network forward passes.
 
 \subsection{Pattern Discovery Characteristics}
-We summarize the distributions of pattern start positions, widths, polynomial degrees,
-and channel assignments across all datasets. Table~\ref{tab:pattern_stats} reports:
-AZT1D median width 7 [3,14] and start 8.5 [1,17]; MITBIH width 8 [4.2,12] and start 47
-[33,60.2]; Bonn EEG width 867 [699.5,1501.5] and start 292 [247,407]; REMC width 68
-[32.5,100.5] and start 38 [7,80.5] with 5 channels; MIMIC width 10 [7,13] and start 7
-[3.5,10.5] with 3 channels. Degree mode is 3 for all datasets.
 
-Compact windows in MITBIH reflect millisecond QRS/T dynamics;
-broader windows in REMC match chromatin domains and promoter/enhancer footprints; early
-starts in AZT1D/MIMIC align with short-horizon physiology where recent glucose and vital
-sign changes dominate prediction; Bonn's long trends capture slow-wave/baseline shifts
-relevant to seizure state.
-
-\begin{table}[H]
-  \centering
-  \input{tables/pattern_stats.tex}
-  \caption{Pattern statistics aggregated across all JSON exports. Width and Start are
-  reported as median [IQR]. Degree is the mode per dataset. Channels used counts unique
-  series indices when applicable.}
-  \label{tab:pattern_stats}
-\end{table}
 
 \subsection{Interpretability Case Studies}
-
-Figure~\ref{fig:first_patterns} visualizes the first discovered pattern for each dataset.
-For each task we show (left) the pattern template with its start and width (and series
-identifier where applicable), and (right) a distribution of template values as a compact
-summary of morphology.
-
-AZT1D: the first motif (start 0, width 24) is a smooth, monotonic decline across the
-24--lag window, consistent with inter--meal decay and hypoglycemia risk when insulin on
-board exceeds hepatic output. MITBIH: a sharp transient that decays below baseline fits
-localized QRS/T morphology deviations in arrhythmias. Bonn EEG: a long gradual trend
-captures slow--wave/baseline shifts distinguishing seizure vs. non--seizure. REMC: a
-valley--to--peak over \(~50\) positions reflects promoter/enhancer structure and
-nucleosome positioning. MIMIC--IV: a brief dip (series 27) matches short--term
-instability in SpO$_2$/HR/RR preceding ARDS.
 
 \begin{figure}[H]
   \centering
@@ -438,6 +229,10 @@ instability in SpO$_2$/HR/RR preceding ARDS.
   distribution). For REMC and AZT1D, we use the first pattern of the first sample.}
   \label{fig:first_patterns}
 \end{figure}
+
+\subsection{Visualizing search space and decision boundaries}
+
+
 
 \subsection{Ablation Study}
 
@@ -452,10 +247,6 @@ inference cost. Future extensions will explore adaptive pattern lengths, semi--s
 large unlabeled corpora, and tighter integration with interactive visualization tools to facilitate 
 clinical adoption.
 
-\section*{Acknowledgements}
-% TODO: Add funding and acknowledgements.
 
-\bibliographystyle{plain}
-\bibliography{bibliography}
 
 \end{document} 
