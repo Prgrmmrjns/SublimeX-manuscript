@@ -1,3 +1,10 @@
 /.DS_Store
 __pycache__
 datasets
+manuscript/main.out
+manuscript/main.aux
+manuscript/main.fls
+manuscript/main.log
+manuscript/main.fdb_latexmk
+manuscript/main.synctex.gz
+.vscode/settings.json
