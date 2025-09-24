@@ -38,120 +38,229 @@ Our tool is available at \url{https://github.com/Prgrmmrjns/patX} and offers a s
 \end{abstract}
 
 \section{Introduction}
-Biomedical research increasingly relies on high--resolution time--series and spatial assays, from
-electrocardiography and electroencephalography to epigenomic profiling and electronic health
-records. These data enable clinically relevant tasks such as arrhythmia and seizure detection,
-gene expression prediction from chromatin marks, and risk stratification from multivariate
-vitals. However, extracting informative and interpretable features that translate across cohorts
-remains challenging.
+% Abundance and importance of time series and spatial data in medicine
+Biomedical research has witnessed an unprecedented expansion in the generation and utilization of high-resolution 
+time series and spatial data across multiple domains. From continuous physiological monitoring through electrocardiography (ECG) 
+and electroencephalography (EEG) to advanced spatially-resolved omics technologies, these data modalities have become fundamental 
+to modern healthcare and biomedical discovery \cite{morid2023time, rood2022impact}.
 
-Two dominant paradigms have emerged. Feature engineering libraries summarize signals via large
-collections of statistical and spectral descriptors (e.g., tsfresh \cite{christ2018tsfresh}),
-often yielding strong baselines but thousands of features that can be slow to compute and hard to
-interpret at the instance level. Deep neural networks, including convolutional models, can learn
-powerful representations end--to--end but are frequently data--hungry and difficult to explain in
-high--stakes settings. There is a growing need for methods that marry the predictive strength of
-automatic feature learning with the transparency of human--readable representations.
-In prior work, we explored pattern--based feature extraction for gene expression
-prediction using swarms to optimize interpretable motifs \cite{paul2025prediction}.
-Here, we generalize and evolve these ideas into a unified framework for time series
-and spatial signals.
+Time series data in healthcare captures the temporal evolution of patient health, offering crucial insights into disease progression, 
+treatment effectiveness, and physiological dynamics that static measurements cannot provide \cite{patharkar2024predictive}. 
+Continuous monitoring systems such as smart watches or electroencephalography devices generate vast streams of physiological signals—from heart rate variability 
+and blood pressure fluctuations to brain activity patterns—that contain rich information about both normal physiology and pathological states \cite{chaddad2023electroencephalography}.
 
-We address this gap with \textbf{patX}, an approach that discovers a small set of
-human--interpretable patterns directly from data. patX searches over start/end indices, channels,
-and polynomial shape parameters to propose candidate motifs, each of which induces a similarity
-feature based on root mean squared error to the corresponding signal segment. By evaluating
-utility with a lightweight learner and refining candidates via guided search, patX builds compact
-feature sets that are fast at inference and easy to inspect.
+% Applications of time series and spatial data in medicine
+The clinical applications of these data types are extensive and growing. Electrocardiography (ECG) analysis supports arrhythmia detection and cardiovascular risk stratification, 
+with modern systems processing thousands of heartbeats to identify subtle patterns indicative of cardiac pathology \cite{anbalagan2023analysis}. 
+EEG monitoring enables real-time seizure detection, sleep stage classification, and assessment of neurological function across various conditions \cite{chaddad2023electroencephalography}. 
+In genomics and epigenomics, spatial profiling of chromatin modifications and gene expression patterns provides 
+insights into regulatory mechanisms underlying development and disease \cite{yadav2022systems}.
 
-We evaluate patX across heterogeneous biomedical problems: arrhythmia classification on
-MIT--BIH \cite{MoodyMark1992,Goldberger2000}, seizure classification on Bonn EEG
-\cite{Andrzejak2001}, gene expression prediction from histone modification profiles (REMC)
-\cite{Roadmap2015}, and clinical prediction on MIMIC--IV \cite{Johnson2023MIMICIV}, as well as a
-glucose forecasting task (AZT1D). We compare against tsfresh \cite{christ2018tsfresh} and a
-convolutional neural network baseline under matched splits and metrics.
+% Manual Feature Engineering
+The analysis of biomedical time series and spatial data has evolved through three different paradigms that represent fundamentally different philosophies 
+toward feature representation and model development. 
+Traditional approaches to biomedical signal analysis rely heavily on domain expertise to manually craft features that capture relevant temporal and spatial characteristics. 
+This paradigm involves extracting carefully designed statistical measures, temporal properties, spectral features, and morphological characteristics 
+based on established understanding of physiological processes \cite{fulcher2018feature}. 
+For ECG analysis, clinicians and engineers have developed features capturing heart rate variability, QRS complex morphology, and ST-segment deviations \cite{gelen2025novel, ansari2023deep}. 
+Similarly, EEG analysis traditionally focuses on frequency band power, coherence measures, and event-related potentials derived from decades of neurophysiology research \cite{moutonnet2025augmentation}.
+
+This approach benefits significantly from the incorporation of clinical domain knowledge and provides features with clear physiological interpretations that align with medical understanding. 
+Manual feature engineering allows for precise targeting of known pathological markers and enables clinicians to understand exactly which signal characteristics drive model predictions \cite{gelen2025novel}. 
+
+However, manual feature engineering suffers from several critical limitations that constrain its scalability and generalizability. 
+The feature engineering process is labor-intensive, requiring expertise in both signal processing techniques and the specific clinical domain 
+as well as requiring a preceding detailed exploratory data analysis \cite{roe2020feature}. 
+This expertise requirement creates bottlenecks in model development and limits the ability to rapidly adapt to new clinical problems or signal types. 
+Moreover, manually crafted features may miss subtle patterns that could be crucial for accurate classification or prediction, 
+particularly in complex, high-dimensional biomedical datasets where relevant patterns may not be immediately apparent to human experts \cite{miotto2018deep,ansari2023deep}.
+
+% Automated Feature Engineering Packages
+Comprehensive automated feature extraction libraries address the scalability limitations of manual approaches by systematically computing large sets of time series characteristics. 
+tsfresh extracts up to 1,558 features spanning statistical, spectral, and nonlinear dynamics properties, implementing extensive collections of feature calculators
+followed by statistical hypothesis testing for feature selection \cite{christ2018tsfresh}. 
+TSFEL offers a more streamlined approach with over 65 features across statistical, temporal, spectral, 
+and fractal domains, emphasizing computational efficiency and user-friendly deployment \cite{barandas2020tsfel}. 
+catch22 represents a fundamentally different philosophy, providing exactly 22 carefully selected features derived from a massive reduction of over 7,000 features in the hctsa toolbox, 
+optimized for both performance and computational efficiency \cite{lubba2019catch22}. hctsa itself computes over 7,000 features from an interdisciplinary survey of time series analysis methods, 
+serving as a comprehensive research tool though with significant computational requirements \cite{fulcher2017hctsa}.
+
+These libraries effectively address the scalability challenges of manual feature engineering and can uncover patterns that might be missed by domain experts. 
+However, they introduce new challenges related to feature interpretability, computational complexity, and feature selection from high-dimensional feature spaces \cite{henderson2021empirical}. 
+While individual features may have clear mathematical definitions, understanding which specific aspects of complex biomedical signals drive clinical predictions 
+becomes difficult when models rely on hundreds or thousands of automatically extracted features \cite{petelin2023towards}.
+
+Deep learning methods represent yet another paradigmatic shift toward end-to-end learning, where neural networks learn hierarchical feature representations directly 
+from raw data without requiring explicit feature extraction steps. This approach fundamentally differs from both manual feature engineering and automated feature extraction libraries 
+by learning data representations as an integral part of the prediction task \cite{miotto2018deep}.
+
+Convolutional Neural Networks (CNNs) have demonstrated particular success in biomedical time series analysis, automatically learning relevant temporal patterns through 
+convolutional filters that detect local structures across different time scales \cite{wang2022systematic, morid2020learning}. 
+Recurrent Neural Networks (RNNs) and their variants, including Long Short-Term Memory (LSTMs) and Gated Recurrent Units (GRUs), 
+excel at modeling sequential dependencies and temporal memory in physiological signals, 
+making them well-suited for applications requiring understanding of disease progression or long-term monitoring patterns \cite{lee2021modeling, liu2022arrhythmia}.
+
+However, deep learning approaches face significant challenges in biomedical applications, particularly regarding interpretability and the “black box” nature of learned representations \cite{ennab2024enhancing}. 
+While these methods can achieve excellent predictive performance, understanding how they arrive at their decisions remains difficult, 
+creating barriers to clinical adoption where explainability is crucial for patient safety and regulatory approval \cite{rudin2019stop, ennab2024enhancing}. 
+The evolution from manual feature engineering through automated extraction libraries to end-to-end deep learning reflects a fundamental trade-off between interpretability and 
+automated pattern discovery. While manual approaches offer maximum clinical interpretability, they suffer from scalability limitations and potential blind spots in pattern recognition. 
+Automated feature extraction libraries provide computational scalability but may generate features that lack clinical meaning. 
+Deep learning methods offer powerful automatic feature discovery and superior performance but at the cost of interpretability.
+
+We address this trade-off with \textbf{patX}, a method that unifies the strengths of all three approaches: automatic feature extraction without manual engineering, end--to--end
+representation learning that discovers task--relevant patterns from raw signals, and transparent interpretability through human--readable polynomial motifs rather than
+black--box architectures. patX searches over start/end indices, channels, and polynomial shape parameters to automatically learn discriminative patterns. 
+Each discovered pattern induces a similarity feature based on root mean squared error to the corresponding signal segment. 
+By combining guided search with a lightweight learner for pattern evaluation, patX achieves three key objectives simultaneously: it automates feature discovery like
+deep networks, learns compact representations optimized for the target task, and maintains full interpretability by producing inspectable patterns that clinicians can directly
+visualize and validate against domain knowledge.
+
+We evaluate patX across heterogeneous biomedical problems: arrhythmia classification on MIT--BIH \cite{MoodyMark1992,Goldberger2000}, seizure classification on Bonn EEG
+\cite{Andrzejak2001}, gene expression prediction from histone modification profiles (REMC) \cite{Roadmap2015}, and clinical prediction on MIMIC--IV \cite{Johnson2023MIMICIV}, 
+as well as a glucose forecasting task (AZT1D). We compare against tsfresh \cite{christ2018tsfresh} and a convolutional neural network baseline under matched splits and metrics.
 
 Our contributions are:
 \begin{itemize}
-  \item We introduce patX, a dynamic polynomial pattern search that produces human--readable
-        motifs and associated similarity features.
-  \item We demonstrate strong performance with few features, favorable runtime, and
-        direct interpretability across diverse tasks and data modalities.
-  \item We release patX as an official Python package on PyPI and actively maintain it
-        (link: \url{https://pypi.org/project/patx/}).
-  \item We provide a simple, reproducible pipeline and visual tools that overlay learned
-        motifs and highlight activation regions for qualitative assessment.
+  \item We introduce patX, a dynamic polynomial pattern search that produces human--readable motifs and associated similarity features 
+  showcasing its strong performance on selected tasks against established baselines.
+  \item We demonstrate the favorable interpretability of \texttt{patX} patterns by visualizing them and the areas at which they are active.
+  \item We release patX as an official Python package on PyPI and actively maintain it (link: \url{https://pypi.org/project/patx/}).
 \end{itemize}
 
-The package is available at \url{https://github.com/Prgrmmrjns/patX}.
-
 \section{Methods}
-\subsection{Pattern Definition}
-Given a univariate or multivariate signal $\mathbf{x}\in\mathbb{R}^{T\times C}$ with length $T$ and $C$ 
-channels, a \emph{pattern} $p$ is a polynomial template over a contiguous interval $[s,e]$ with 
-$L=e-s+1$. We z--score inputs per channel (or per subject where appropriate). The primary similarity 
-feature is the RMSE between $\mathbf{x}$ restricted to $[s,e]$ and $p$; we 
-optionally compute robust variants (e.g., MAE) during ablations. Polynomial degree defaults to 3 but is 
-tunable; multi--channel data attach a channel identifier to each pattern.
 
-\subsection{Optimization Framework}
-We search over $(s,e,\boldsymbol{c})$ where $\boldsymbol{c}$ are polynomial coefficients defining $p$, 
-and, for multivariate data, a channel index. Each candidate induces one feature: 
-$\operatorname{RMSE}(\mathbf{x}_{[s:e]}, p(\boldsymbol{c}))$. At each round, Optuna proposes a batch of 
-candidates guided by validation loss from a LightGBM model with early stopping; we append the best 
-candidate if it improves the held--out score. We cache segment features to avoid recomputation and apply 
-backward elimination to prune redundant patterns. Typical budgets are 50--200 rounds with 50--200 
-proposals per round, using 6 CPU threads. We target small final sets (\(\leq 12\) motifs) to minimize 
-latency and ease interpretation.
+\subsection{Overview}
+patX discovers interpretable patterns from time series and spatial data through an iterative optimization process. 
+Given input signals, patX searches for polynomial templates that, when compared to signal segments via root mean 
+squared error (RMSE), produce discriminative features for downstream prediction tasks. The method combines 
+Bayesian optimization for efficient search with gradient boosting for pattern evaluation, ultimately producing 
+a small set of human--interpretable patterns.
 
-patX is available as an official Python package and is actively maintained on PyPI
-(link: \url{https://pypi.org/project/patx/}).
+\subsection{Pattern Representation}
+Consider a signal $\mathbf{x} \in \mathbb{R}^{T \times C}$ with $T$ time points and $C$ channels 
+(for univariate signals, $C=1$). A pattern $p$ in patX is defined as a polynomial function over a 
+contiguous interval:
 
-\subsection{patX Optimization Algorithm}
-We outline the iterative search procedure. Candidate patterns are encoded as start--end
-indices (and channel id for multi--series data). LightGBM supplies the validation loss to
-Optuna, which selects the next candidate batch via Tree--Parzen Estimator.
+\begin{equation}
+p(t) = \sum_{i=0}^{d} c_i \cdot t^i, \quad t \in [-1, 1]
+\end{equation}
 
+where $d$ is the polynomial degree (default 3) and $\mathbf{c} = \{c_0, c_1, ..., c_d\}$ are the 
+coefficients. Each pattern is characterized by:
+\begin{itemize}
+  \item Start position $s$ and width $w$ defining the interval $[s, s+w)$ in the signal
+  \item Polynomial coefficients $\mathbf{c}$ defining the pattern shape
+  \item Channel index $k$ (for multivariate signals) specifying which channel to extract from
+\end{itemize}
 
-The implementation centers on the \texttt{PatternExtractor} class. Inputs are 
-converted to \texttt{float32} numpy arrays; for multi--series inputs we stack series along axis~1, 
-yielding shape \(N\times S\times T\). For a proposed pattern with start \(s\), width \(w\), and 
-polynomial coefficients \(\{c_i\}_{i=0}^d\), we generate a template over \([-1,1]\) using a dense grid 
-of \(w\) points and evaluate the polynomial to obtain values \(p\in\mathbb{R}^w\). The feature for a 
-sample is the RMSE between its segment \(x_{[s:s+w]}\) and \(p\). We maintain a cached design matrix 
-that concatenates any provided initial features (e.g., raw glucose and time) with newly accepted pattern 
-features to avoid recomputation.
+\subsection{Feature Extraction}
+For each pattern $p_j$, we compute a similarity feature by measuring the RMSE between the pattern 
+template and the corresponding signal segment:
 
-At each round, Optuna optimizes over \(s\), \(w\), coefficients, and (optionally) channel index to 
-maximize validation performance (or minimize RMSE). A candidate is accepted if it improves the best 
-held--out score; otherwise the search halts after no improvement. We retrain the downstream model on the 
-final feature matrix, and we construct a test matrix by combining test initial features (if provided) 
-and per--pattern features computed on test segments. For multi--series inputs, per--pattern features are 
-computed from the selected channel. The optimizer exports learned patterns (start, width, coefficients, 
-and channel id) to JSON for reproducibility and downstream use.
+\begin{equation}
+f_j(\mathbf{x}) = \sqrt{\frac{1}{w_j} \sum_{i=0}^{w_j-1} \left( x_{s_j+i,k_j} - p_j\left(\frac{2i}{w_j-1} - 1\right) \right)^2}
+\end{equation}
+
+where $x_{s_j+i,k_j}$ is the signal value at position $s_j+i$ in channel $k_j$. Before computing 
+RMSE, we apply z--score normalization to both the signal segment and pattern template to ensure 
+scale invariance.
+
+\subsection{Optimization Process}
+patX employs an iterative optimization strategy to discover patterns:
+
+\begin{enumerate}
+  \item \textbf{Initialization}: Start with an empty pattern set $\mathcal{P} = \emptyset$ and 
+        optionally include domain--specific initial features (e.g., raw signal values)
+  
+  \item \textbf{Pattern Proposal}: At iteration $t$, use Bayesian optimization (Optuna with 
+        Tree--Parzen Estimator) to propose $B$ candidate patterns by sampling from the search space:
+        \begin{equation}
+        \theta = (s, w, \mathbf{c}, k) \in [0,T) \times [w_{min}, w_{max}] \times \mathbb{R}^{d+1} \times [0,C)
+        \end{equation}
+  
+  \item \textbf{Feature Matrix Construction}: For each candidate pattern, compute features 
+        $\mathbf{F} = [f_1(\mathbf{x}), ..., f_j(\mathbf{x})]$ across all training samples
+  
+  \item \textbf{Pattern Evaluation}: Train a LightGBM classifier/regressor using current features 
+        plus the candidate pattern feature. Evaluate on validation set to obtain performance metric 
+        $\mathcal{L}_{val}$
+  
+  \item \textbf{Pattern Selection}: Accept the candidate with best validation performance if it 
+        improves upon the current best score:
+        \begin{equation}
+        \mathcal{P}_{t+1} = \begin{cases}
+        \mathcal{P}_t \cup \{p^*\} & \text{if } \mathcal{L}_{val}(p^*) > \mathcal{L}_{best} \\
+        \mathcal{P}_t & \text{otherwise}
+        \end{cases}
+        \end{equation}
+  
+  \item \textbf{Termination}: Stop when no improvement for $N_{patience}$ iterations or maximum 
+        iterations reached
+\end{enumerate}
+
+\subsection{Implementation Details}
+The core implementation uses the \texttt{PatternExtractor} class which:
+\begin{itemize}
+  \item Converts inputs to float32 NumPy arrays with shape $(N, C, T)$ for $N$ samples
+  \item Caches computed features to avoid redundant calculations
+  \item Supports parallel pattern evaluation across multiple CPU threads
+  \item Exports discovered patterns to JSON for reproducibility
+  \item Integrates with scikit--learn API for seamless pipeline integration
+\end{itemize}
+
+Typical hyperparameters include 50--200 optimization rounds with 50--200 candidate patterns per 
+round, targeting final pattern sets of $\leq 12$ patterns to maintain interpretability.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.7\textwidth,keepaspectratio]{images/patx_methodology.pdf}
+  \caption{patX methodology overview: The iterative optimization process begins with time series 
+  or spatial data and an optional initial feature set. Optuna's Tree--Parzen Estimator (TPE) 
+  optimizer proposes polynomial function parameters, pattern start positions, and widths. For each 
+  candidate pattern, similarity features (normalized RMSE) are computed across training and validation 
+  sets. These features augment the existing feature set, and a machine learning model evaluates 
+  performance on the validation set. If the validation score improves, the pattern is added to the 
+  feature set; otherwise, optimization continues. The process terminates when no improvement is 
+  observed, yielding a final feature set with stored pattern characteristics for test prediction 
+  and visualization.}
+  \label{fig:patx_methodology}
+\end{figure}
+
+patX is available as an official Python package on PyPI (\url{https://pypi.org/project/patx/}) 
+and is actively maintained with comprehensive documentation and examples.
 
 \subsection{Data Pre--processing}
 \textbf{AZT1D (glucose forecasting).} We parse CGM records per subject and create supervised learning 
 examples using lagged glucose features. Specifically, we construct 24 lag variables 
 \(\{g_{t-\ell}\}_{\ell=0}^{23}\) and define the regression target as the \(h\)--step change 
 \(g_{t+h}-g_t\) (where \(h\) is the prediction horizon). We drop rows with missing values induced by 
-shifts, then split into train/test with a fixed random seed. In addition, we pass two initial features 
+shifts. In addition, we pass two initial features 
 to patX (raw glucose and time--of--day) so that patterns can augment a simple contextual baseline. No 
 scaling is applied beyond NaN filtering. Link: \url{https://data.mendeley.com/datasets/gk9m674wcx/1}.
 
-\textbf{MITBIH (arrhythmia classification).} We use a binned feature matrix with a target column. We 
-stratify a 75/25 train/test split. Labels are integer--encoded. This dataset originates from the PhysioNet MIT--BIH 
-Arrhythmia Database (link: \url{https://www.kaggle.com/datasets/mondejar/mitbih-database}).
+\textbf{MITBIH (arrhythmia classification).} We extract ECG beats from raw MIT--BIH 
+recordings by centering 100--sample windows around annotated R--peak positions. Each beat 
+corresponds to one of five arrhythmia classes: normal (N), left bundle branch block (L), 
+right bundle branch block (R), atrial premature (A), or ventricular premature (V). We 
+apply random undersampling to balance class distributions. This dataset originates from the PhysioNet MIT--BIH Arrhythmia Database 
+(link: \url{https://www.kaggle.com/datasets/mondejar/mitbih-database}).
 
-\textbf{Bonn EEG (five--class EEG).} We load a preprocessed table with segments. We stratify train/test splits and work with dense 
-\texttt{float32} matrices. 
+\textbf{Bonn EEG (five--class EEG).} We preprocess raw EEG recordings using wavelet decomposition 
+with PyWavelets (pywt). Each signal undergoes 4--level wavelet decomposition using Daubechies--4 
+wavelets with periodization mode, yielding concatenated wavelet coefficients as features. The 
+dataset contains five classes: seizure activity (S), focal area (F), healthy brain (N), 
+eyes closed (O), and eyes open (Z). 
 Link: \url{https://dataverse.csuc.cat/dataset.xhtml?persistentId=doi:10.34810/data490}.
 
-\textbf{REMC (ChIP-seq).} For each cell line, we load a feature table with a 
-binary target and multiple histone mark tracks. We form multi--series inputs by 
-grouping columns by mark prefix (e.g., promoter/enhancer--associated marks), then stratify train/test splits. patX 
-searches over start/width/degree per mark (channel) to learn a small set of interpretable patterns. 
-Performance is measured via AUC. Roadmap Epigenomics portal: \url{https://egg2.wustl.edu/roadmap/web_portal/processed_data.html}.
+\textbf{REMC (ChIP-seq).} We follow the same preprocessing approach as our prior work 
+on PatternChrome \cite{paul2025prediction}. For each cell line, we extract histone 
+modification profiles from promoter regions and create binary gene expression targets 
+(high/low expression). We form multi--series inputs by grouping histone marks 
+(H3K4me1, H3K4me3, H3K27me3, etc.) as separate channels. patX searches over 
+start/width/polynomial coefficients per histone mark to discover predictive modification 
+patterns within promoter regions. Performance is measured via AUC. Data from Roadmap 
+Epigenomics Consortium: \url{https://egg2.wustl.edu/roadmap/web_portal/processed_data.html}.
 Link of processed data: \url{https://gitlab.gwdg.de/MedBioinf/generegulation/patternchrome}
 
 \textbf{MIMIC--IV (EHR classification).} We preprocess MIMIC--IV to derive one row per subject with 24 
@@ -161,8 +270,7 @@ sorting by subject and hour, replacing infinities, capping extremes at the 0.1/9
 forward/backward filling within subjects, and padding/truncating to 24 hours per series. We rename series 
 to clean identifiers (e.g., hourly heart rate 0..23). We then group columns by series name to create a 
 multi--series input list, standardize each series on the train 
-split, and provide age as an initial feature (standardized) to patX. We use 
-stratified splits and report accuracy. Link: \url{https://physionet.org/content/mimiciv/3.1/}.
+split, and provide age as an initial feature (standardized) to patX. Link: \url{https://physionet.org/content/mimiciv/3.1/}.
 
 \subsection{Datasets}
 \begin{itemize}
@@ -175,16 +283,9 @@ stratified splits and report accuracy. Link: \url{https://physionet.org/content/
 \end{itemize}
 
 \subsection{Baselines}
-We compare against:
-\begin{enumerate}
-  \item \textbf{tsfresh + LightGBM}: tsfresh features with LightGBM
-  \item \textbf{CNN}: A PyTorch 1D CNN baseline with early stopping; we use the same 
-        train/validation splits, and dataset--appropriate 
-        metrics (accuracy/AUC/RMSE). The network ingests fixed--length vectors and outputs class 
-        probabilities or regression predictions.
-\end{enumerate}
-
-All baselines share the same data splits and evaluation protocol for a fair comparison.
+We compare patX against two established approaches for time series analysis. The first 
+baseline uses tsfresh for automated feature extraction combined with LightGBM, while the 
+second employs a 1D convolutional neural network for end--to--end learning.
 
 \subsubsection{TSFRESH Baseline Implementation}
 For the tsfresh baseline, we use \texttt{MinimalFCParameters} to extract a compact descriptor set 
@@ -193,16 +294,26 @@ required by tsfresh with sample ids and time indices, and we skip feature select
 multiprocessing issues, training LightGBM on all extracted features. Hyperparameters and evaluation are 
 kept identical to patX and other baselines.
 
-\subsection{Evaluation Metrics}
+\subsubsection{CNN Baseline Implementation}
+For the CNN baseline, we implement a 1D convolutional neural network using PyTorch with 
+architecture tailored to each dataset's input dimensions. The network consists of three 
+convolutional layers with ReLU activations and max pooling, followed by dropout layers 
+for regularization and fully connected layers for classification or regression. We use 
+early stopping based on validation loss to prevent overfitting, with a patience of 10 
+epochs. The network is trained using Adam optimizer with learning rate 0.001 and batch 
+size 32. For multi--class problems, we use cross--entropy loss; for regression, we use 
+mean squared error loss. Hyperparameters and evaluation protocols are kept identical 
+to patX and tsfresh baselines.
+
+\subsection{Evaluation}
+We split all datasets 75\%/25\% train/test with fixed seeds and preserve class balance. 
 Classification uses area under the ROC curve (AUC) or accuracy; regression uses root mean squared error 
 (RMSE). We also report the number of extracted patterns and wall--clock extraction time. Where 
-applicable, we compute 95\% CIs across seeds.
-
-\subsection{Experimental Protocol}
-We split data 75\%/25\% train/test with fixed seeds and preserve class balance. Pattern search uses only 
-training data. LightGBM is tuned via 5--fold CV on training features and retrained on the full train 
-split. Results are averaged across 3 seeds. We fix the total pattern budget to ensure comparable runtime 
-across datasets and perform ablations on degree, window length, and similarity.
+applicable, we compute 95\% CIs across seeds. Pattern search uses only training data. LightGBM is tuned 
+via 5--fold CV on training features and retrained on the full train split. Results are averaged across 
+3 seeds. We fix the total pattern budget to ensure comparable runtime across datasets and perform 
+ablations on degree, window length, and similarity.
+All baselines share the same data splits and evaluation protocol for a fair comparison.
 
 \section{Results}
 
@@ -212,12 +323,33 @@ Table~\ref{tab:results} presents the test set performance of patX + LightGBM,
 tsfresh + LightGBM, and CNN baselines across five biomedical datasets. We report mean and 
 standard deviation.
 
-
 \input{tables/results_table.tex}
 
 
-\subsection{Pattern Discovery Characteristics}
+On AZT1D (regression), CNN yields the lowest RMSE, while patX uses far fewer features and
+achieves lower inference time than CNN. On MITBIH and Bonn EEG, CNN leads in accuracy/AUC,
+but it requires orders of magnitude more features than patX (hundreds to thousands versus
+single digits), underscoring patX's compactness.
 
+On REMC and MIMIC--IV, patX achieves the best performance while using a small number of
+patterns. In REMC, patX outperforms both tsfresh and CNN with roughly single--digit
+patterns and competitive runtime. In MIMIC--IV, patX attains the highest accuracy/AUC
+with a handful of features, whereas CNN uses considerably more learned filters.
+
+Overall, the results show a consistent trade--off: CNN can be strong on some tasks when
+large learned representations are allowed, but patX reaches competitive or superior
+performance with drastically fewer features and favorable wall--clock times, while
+providing human--readable patterns for interpretation.
+
+\subsection{Pattern Discovery Characteristics}
+We summarize global properties of the discovered motifs across datasets: the number of
+patterns per run, their start indices and widths, and aggregate counts. For each
+dataset, we aggregate all extracted patterns from the exported JSON artifacts and report
+summary statistics in Table~\ref{tab:pattern_stats}. The table lists, per dataset, the
+number of runs processed, total pattern count, per--run mean $\pm$ std of pattern
+counts, the median start index with range, and the median $\pm$ std of window width.
+
+\input{tables/pattern_stats_table.tex}
 
 \subsection{Interpretability Case Studies}
 
@@ -230,9 +362,60 @@ standard deviation.
   \label{fig:first_patterns}
 \end{figure}
 
-\subsection{Visualizing search space and decision boundaries}
+To demonstrate patX's interpretability advantage, we examine how discovered patterns
+behave across different signal types. Figure~\ref{fig:mitbih_overlay} shows the first
+pattern discovered on MITBIH overlaid in a \emph{single} plot on a normal ECG and an
+arrhythmic ECG (both z--scored for comparability). The pattern spans the highlighted
+indices and captures a characteristic morphology that separates beat types. On the
+normal beat, the template aligns with a smooth recovery segment; on the arrhythmic
+beat, the same region exhibits irregular dynamics, evidencing the pattern's
+discriminative behavior.
 
+This visualization illustrates a key benefit of patX: unlike black--box methods, the
+discovered patterns can be directly inspected and related to domain knowledge. Clinicians
+can examine where patterns activate, understand their morphological characteristics,
+and validate their clinical relevance. The polynomial representation provides smooth,
+interpretable templates that capture essential signal features while remaining
+human--readable.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]
+  {images/mitbih_pattern_overlay.png}
+  \caption{First discovered MITBIH pattern overlaid on a normal ECG and an arrhythmic
+  ECG in a single plot (signals and template z--scored). The red line is the pattern
+  template; the shaded region marks the active indices. The pattern exhibits distinct
+  alignment across beat types, supporting interpretability.}
+  \label{fig:mitbih_overlay}
+\end{figure}
+
+\subsection{Decision Boundary Visualization}
+We study a two--pattern decision boundary for REMC E003: we compute the RMSE
+feature for the first two extracted patterns for each sample and fit a small gradient
+boosting classifier (LightGBM) on this 2D feature space. Using 18,421 samples with a
+75/25 train/test split, we achieve 76.4\% training accuracy and 74.6\% test accuracy
+on the balanced binary classification task (2,304 vs 2,302 samples per class).
+
+Figure~\ref{fig:remc_two_pattern_scatter} visualizes the decision boundary in the
+two--dimensional feature space of RMSE values. Pattern 1 (start=44, width=55) yields
+RMSE values ranging from 0.797 to 2.761, while Pattern 2 (start=12, width=94) produces
+a tighter range from 0.383 to 2.074. The background regions show the predicted class
+probabilities, with semi--transparent data points (X markers) overlaid to reveal the
+actual class labels. This visualization demonstrates how just two interpretable pattern
+features can effectively separate gene expression classes while remaining directly
+inspectable and clinically meaningful.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]
+  {images/remc_E003_two_pattern_scatter.png}
+  \caption{REMC E003: Decision boundary visualization in 2D feature space using RMSE
+  values from the first two extracted patterns. Background colors indicate predicted
+  class regions with 60\% opacity, while X markers show actual test samples colored
+  by true class labels. The classifier achieves 74.6\% test accuracy using only these
+  two interpretable pattern features.}
+  \label{fig:remc_two_pattern_scatter}
+\end{figure}
 
 \subsection{Ablation Study}
 
@@ -247,6 +430,7 @@ inference cost. Future extensions will explore adaptive pattern lengths, semi--s
 large unlabeled corpora, and tighter integration with interactive visualization tools to facilitate 
 clinical adoption.
 
-
+\bibliographystyle{plain}
+\bibliography{bibliography}
 
 \end{document} 

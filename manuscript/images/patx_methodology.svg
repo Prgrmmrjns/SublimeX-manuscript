@@ -1,0 +1,600 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="188.98579mm"
+   height="102.43363mm"
+   viewBox="0 0 188.9858 102.43363"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4 (e7c3feb1, 2024-10-09)"
+   sodipodi:docname="patx_methodology.svg"
+   inkscape:export-filename="patx_methodology.pdf"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.5136902"
+     inkscape:cx="342.54038"
+     inkscape:cy="196.20924"
+     inkscape:window-width="2560"
+     inkscape:window-height="1387"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g3-6" />
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8" />
+    </marker>
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="191.091"
+       height="32.609386"
+       id="rect3" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="191.091"
+       height="32.609386"
+       id="rect3-9" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="191.091"
+       height="32.609386"
+       id="rect3-4" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="191.091"
+       height="32.609386"
+       id="rect3-6" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="215.22195"
+       height="48.26189"
+       id="rect3-44" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="224.35258"
+       height="58.044704"
+       id="rect3-44-2" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="224.35258"
+       height="58.044704"
+       id="rect3-44-2-0" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="224.35258"
+       height="58.044704"
+       id="rect3-44-2-0-7" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="191.091"
+       height="32.609386"
+       id="rect3-4-1" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="215.22195"
+       height="48.26189"
+       id="rect3-44-8" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9-3" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9-3-2" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9-3-2-9" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9-3-2-9-4" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9-3-2-9-4-1" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="116.6544"
+       height="128.78236"
+       id="rect3-4-9-3-2-9-4-15" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="160.38715"
+       height="140.26115"
+       id="rect3-4-9-3-2-9-4-15-3" />
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="211.30882"
+       height="157.17725"
+       id="rect3-4-9-3-7" />
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-8"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-0" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-8-2"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-0-3" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-1"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-1" />
+    </marker>
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="127.32768"
+       height="144.65244"
+       id="rect3-4-9-3-7-5" />
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-8-8-7"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-0-0-5" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-8-8-7-9"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-0-0-5-2" />
+    </marker>
+    <rect
+       x="63.262211"
+       y="84.132217"
+       width="191.091"
+       height="32.609386"
+       id="rect3-9-9" />
+  </defs>
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-2.0638784,-2.8775364)">
+    <g
+       id="g3-1"
+       transform="matrix(0.78181819,0,0,0.71090863,-10.392589,-9.7989072)"
+       inkscape:label="Initial Feature Set Box"
+       style="stroke-width:1.34134">
+      <g
+         id="g4"
+         style="stroke-width:1.34134">
+        <rect
+           style="display:inline;fill:#f9f1f9;fill-opacity:1;stroke:#000000;stroke-width:0.670673;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"
+           id="rect1-7"
+           width="56.944141"
+           height="9.6086149"
+           x="76.527931"
+           y="18.278223"
+           inkscape:label="rect1" />
+        <text
+           xml:space="preserve"
+           transform="matrix(0.26458333,0,0,0.26458333,74.733296,-1.3508415)"
+           id="text3-2"
+           style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-9);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:2.53482;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+             x="63.261719"
+             y="94.476179"
+             id="tspan1">Feature Set</tspan></text>
+      </g>
+    </g>
+    <g
+       id="g3-1-1"
+       transform="matrix(0.78181819,0,0,0.76511326,-10.034719,-2.0002786)"
+       inkscape:label="Initial Feature Set Box"
+       style="stroke-width:1.29296">
+      <g
+         id="g4-7"
+         style="stroke-width:1.29296" />
+    </g>
+    <g
+       id="g3-6"
+       transform="matrix(1.1027554,0,0,1.0935048,-80.184051,20.033569)"
+       style="stroke-width:0.910647">
+      <rect
+         style="display:inline;fill:#f9f1f9;fill-opacity:1;stroke:#000000;stroke-width:0.455324;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"
+         id="rect1-5"
+         width="82.798195"
+         height="71.723907"
+         x="75.002701"
+         y="2.2621143"
+         inkscape:label="rect1" />
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,59.29535,-18.352403)"
+         id="text3-9"
+         style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="94.476179"
+           id="tspan2">optuna TPE optimizer</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,59.334733,-14.760007)"
+         id="text3-9-0"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan3">During N iterations the optuna optimizer </tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan4">(Bayesian optimization) optimizes pattern </tspan><tspan
+           x="63.261719"
+           y="111.0953"
+           id="tspan5">parameters to return highest validation score </tspan><tspan
+           x="63.261719"
+           y="120.80887"
+           id="tspan7">based on current feature set</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,165.82333,10.932571)"
+         id="text3-9-0-9"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan8">optuna optimization round let to improved </tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan9">validation score</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,172.97351,-18.073927)"
+         id="text3-9-0-9-1"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-7);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan10">Pattern similarity is added as new feature to </tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan11">current feature set, best validation score is </tspan><tspan
+           x="63.261719"
+           y="111.0953"
+           id="tspan12">updated</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,143.2572,-16.478545)"
+         id="text3-9-0-9-1-4"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-7-5);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan13">New optuna optimization </tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan14">round</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,190.50146,-3.8688578)"
+         id="text3-9-0-9-3"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-2);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan15">Yes</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,191.27824,20.384816)"
+         id="text3-9-0-9-3-7"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-2-9);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan16">No</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,163.11528,29.179514)"
+         id="text3-9-0-9-3-7-5"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-2-9-4);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan17">patX feature extraction finished and 
+</tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan18">final feature set determined. patX class has </tspan><tspan
+           x="63.261719"
+           y="111.0953"
+           id="tspan19">stored all pattern characteristics as json files, as </tspan><tspan
+           x="63.261719"
+           y="120.80887"
+           id="tspan21">well as train, validation and test feature set.</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,160.61555,48.080864)"
+         id="text3-9-0-9-3-7-5-5"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-2-9-4-15);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan22">test feature set can be </tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan23">used for final test </tspan><tspan
+           x="63.261719"
+           y="111.0953"
+           id="tspan24">prediction</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,188.40617,48.407758)"
+         id="text3-9-0-9-3-7-5-5-9"
+         style="font-size:9.71357px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-2-9-4-15-3);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+           x="63.261719"
+           y="91.668157"
+           id="tspan25">With visualize_patterns function the </tspan><tspan
+           x="63.261719"
+           y="101.38173"
+           id="tspan26">extracted patterns can be visualized</tspan></text>
+      <text
+         xml:space="preserve"
+         transform="matrix(0.26458333,0,0,0.26458333,143.27711,138.66045)"
+         id="text3-9-0-9-3-7-5-8"
+         style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-4-9-3-2-9-4-1);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.7209;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240942px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         d="m 162.68167,70.621596 v 0"
+         id="path4"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240942px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow-1)"
+         d="M 178.66264,14.300651 H 163.3277"
+         id="path5-7"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240942px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow-8)"
+         d="M 205.33848,39.864094 V 48.06335"
+         id="path5-8"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240942px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow-8-8-7)"
+         d="m 204.98206,62.236735 -5.8168,6.057259"
+         id="path5-8-9-6"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240942px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow-8-8-7-9)"
+         d="m 205.46132,62.17504 6.4518,6.6952"
+         id="path5-8-9-6-2"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240942px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow-8-2)"
+         d="M 204.90873,23.864045 V 15.611019"
+         id="path5-8-6"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+      <path
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.240943px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;marker-end:url(#RoundedArrow)"
+         d="m 158.94212,35.560862 h 20.24829"
+         id="path5"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0" />
+    </g>
+  </g>
+  <g
+     id="g3"
+     transform="matrix(1,0,0,0.89600578,-58.835461,-1.9360739)"
+     inkscape:label="Time Series / Spatial Data Box"
+     style="stroke-width:1.05644">
+    <rect
+       style="display:inline;fill:#f9f1f9;fill-opacity:1;stroke:#000000;stroke-width:0.528222;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1-9-1"
+       width="85.926064"
+       height="64.328476"
+       x="59.840267"
+       y="43.426712"
+       inkscape:label="rect1" />
+    <rect
+       style="display:inline;fill:#f9f1f9;fill-opacity:1;stroke:#000000;stroke-width:0.528221;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"
+       id="rect1"
+       width="45.727871"
+       height="7.663775"
+       x="59.099571"
+       y="2.4248934"
+       inkscape:label="rect1" />
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,43.874774,-16.09574)"
+       id="text3"
+       style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.99642;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+         x="63.261719"
+         y="94.476179"
+         id="tspan27">Time Series / Spatial Data </tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,44.241966,29.234907)"
+       id="text3-7"
+       style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-44);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.99642;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+         x="63.261719"
+         y="94.476179"
+         id="tspan28">optuna generates polynomial </tspan><tspan
+         x="63.261719"
+         y="107.80948"
+         id="tspan29">function parameters, pattern start </tspan><tspan
+         x="63.261719"
+         y="121.14277"
+         id="tspan30">and pattern width</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,44.250846,24.097638)"
+       id="text3-7-37"
+       style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-44-8);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.99642;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+         x="63.261719"
+         y="94.476179"
+         id="tspan31">Objective function</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,44.260019,42.622675)"
+       id="text3-7-3"
+       style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-44-2);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.99642;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+         x="63.261719"
+         y="94.476179"
+         id="tspan32">Pattern similarity (normalized RMSE) </tspan><tspan
+         x="63.261719"
+         y="107.80948"
+         id="tspan33">is calculated for all instances in </tspan><tspan
+         x="63.261719"
+         y="121.14277"
+         id="tspan34">training and validation set </tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,45.081551,55.61908)"
+       id="text3-7-3-2"
+       style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-44-2-0);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.99642;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+         x="63.261719"
+         y="94.476179"
+         id="tspan35">Pattern similarity is given as new </tspan><tspan
+         x="63.261719"
+         y="107.80948"
+         id="tspan36">feature to existing feature set. 
+</tspan><tspan
+         x="63.261719"
+         y="121.14277"
+         id="tspan37">ML Model is trained on train feature </tspan><tspan
+         x="63.261719"
+         y="134.47607"
+         id="tspan38">set</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,44.591007,71.94663)"
+       id="text3-7-3-2-9"
+       style="font-size:13.3333px;line-height:1;font-family:Arial, sans-serif;-inkscape-font-specification:'Arial, sans-serif';text-align:start;writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3-44-2-0-7);display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.99642;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1"><tspan
+         x="63.261719"
+         y="94.476179"
+         id="tspan39">ML Model performance is evaluated </tspan><tspan
+         x="63.261719"
+         y="107.80948"
+         id="tspan40">on validation set and validation score </tspan><tspan
+         x="63.261719"
+         y="121.14277"
+         id="tspan41">is returned</tspan></text>
+  </g>
+</svg>

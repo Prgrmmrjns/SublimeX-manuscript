@@ -54,16 +54,12 @@ if os.path.exists(results_file):
     processed_cell_lines = set(existing_df['cell_line'].unique())
     print(f"Loaded existing results for {len(processed_cell_lines)} cell lines: {sorted(processed_cell_lines)}")
 
-for cell_line in cell_lines[:2]:
+for cell_line in cell_lines:
     if cell_line in processed_cell_lines:
         continue
     print(f"Processing {cell_line}")
     
     data_dict = load_remc_data(cell_line)
-    if data_dict is None:
-        print(f"{cell_line}: Skipped (no processed data)")
-        continue
-    
     X_list = data_dict['X_list']
     y = data_dict['y']
     X_combined = data_dict['X']

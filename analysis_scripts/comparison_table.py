@@ -40,17 +40,9 @@ table = r"""\begin{table}[h]
 """
 
 for dataset_name in datasets:
-    if not os.path.exists(file_map[dataset_name]):
-        print(f"Warning: {file_map[dataset_name]} not found, skipping {dataset_name}")
-        continue
         
     df = pd.read_csv(file_map[dataset_name])
     perf_col = get_performance_col(dataset_name)
-    
-    # Check if performance column exists
-    if perf_col not in df.columns:
-        print(f"Warning: {perf_col} column not found in {dataset_name}, skipping")
-        continue
     
     # First pass: collect all approach results to find best performance
     approach_results = {}

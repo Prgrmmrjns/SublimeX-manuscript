@@ -1,0 +1,153 @@
+\begin{thebibliography}{10}
+
+\bibitem{anbalagan2023analysis}
+Thivya Anbalagan, Malaya~Kumar Nath, Dhurairajan Vijayalakshmi, and Archana Anbalagan.
+\newblock Analysis of various techniques for ecg signal in healthcare, past, present, and future.
+\newblock {\em Biomedical Engineering Advances}, 6:100089, 2023.
+
+\bibitem{Andrzejak2001}
+Ralph~G Andrzejak, Klaus Lehnertz, Florian Mormann, Christoph Rieke, Peter David, and Christian~E Elger.
+\newblock Indications of nonlinear deterministic and finite-dimensional structures in time series of brain electrical activity: dependence on recording region and brain state.
+\newblock {\em Physical Review E}, 64(6):061907, 2001.
+
+\bibitem{ansari2023deep}
+Yaqoob Ansari, Omar Mourad, Khalid Qaraqe, and Erchin Serpedin.
+\newblock Deep learning for ecg arrhythmia detection and classification: an overview of progress for period 2017--2023.
+\newblock {\em Frontiers in Physiology}, 14:1246746, 2023.
+
+\bibitem{barandas2020tsfel}
+Mar{\'\i}lia Barandas, Duarte Folgado, Let{\'\i}cia Fernandes, Sara Santos, Mariana Abreu, Patr{\'\i}cia Bota, Hui Liu, Tanja Schultz, and Hugo Gamboa.
+\newblock Tsfel: Time series feature extraction library.
+\newblock {\em SoftwareX}, 11:100456, 2020.
+
+\bibitem{chaddad2023electroencephalography}
+Ahmad Chaddad, Yihang Wu, Reem Kateb, and Ahmed Bouridane.
+\newblock Electroencephalography signal processing: A comprehensive review and analysis of methods and techniques.
+\newblock {\em Sensors}, 23(14):6434, 2023.
+
+\bibitem{christ2018tsfresh}
+Maximilian Christ, Nils Braun, Julius Neuffer, and Alexander~W Kempa-Liehr.
+\newblock Time series feature extraction on basis of scalable hypothesis tests (tsfresh--a python package).
+\newblock {\em Neurocomputing}, 307:72--77, 2018.
+
+\bibitem{Roadmap2015}
+Roadmap~Epigenomics Consortium et~al.
+\newblock Integrative analysis of 111 reference human epigenomes.
+\newblock {\em Nature}, 518(7539):317--330, 2015.
+
+\bibitem{ennab2024enhancing}
+Mohammad Ennab and Hamid Mcheick.
+\newblock Enhancing interpretability and accuracy of ai models in healthcare: a comprehensive review on challenges and future directions.
+\newblock {\em Frontiers in Robotics and AI}, 11:1444763, 2024.
+
+\bibitem{fulcher2018feature}
+Ben~D Fulcher.
+\newblock Feature-based time-series analysis.
+\newblock In {\em Feature engineering for machine learning and data analytics}, pages 87--116. CRC press, 2018.
+
+\bibitem{fulcher2017hctsa}
+Ben~D Fulcher and Nick~S Jones.
+\newblock hctsa: A computational framework for automated time-series phenotyping using massive feature extraction.
+\newblock {\em Cell systems}, 5(5):527--531, 2017.
+
+\bibitem{gelen2025novel}
+Mehmet~Ali Gelen, Prabal~Datta Barua, Irem Tasci, Gulay Tasci, Emrah Aydemir, Sengul Dogan, Turker Tuncer, and UR~Acharya.
+\newblock Novel accurate classification system developed using order transition pattern feature engineering technique with physiological signals.
+\newblock {\em Scientific Reports}, 15(1):15278, 2025.
+
+\bibitem{Goldberger2000}
+Ary~L Goldberger, Luis~AN Amaral, Leon Glass, Jeffrey~M Hausdorff, Plamen~Ch Ivanov, Roger~G Mark, Joseph~E Mietus, George~B Moody, Chung-Kang Peng, and H~Eugene Stanley.
+\newblock Physiobank, physiotoolkit, and physionet: components of a new research resource for complex physiologic signals.
+\newblock {\em Circulation}, 101(23):e215--e220, 2000.
+
+\bibitem{henderson2021empirical}
+Trent Henderson and Ben~D Fulcher.
+\newblock An empirical evaluation of time-series feature sets.
+\newblock In {\em 2021 International Conference on Data Mining Workshops (ICDMW)}, pages 1032--1038. IEEE, 2021.
+
+\bibitem{Johnson2023MIMICIV}
+Alistair~EW Johnson, Lucas Bulgarelli, Lu~Shen, Alvin Gayles, Ayad Shammout, Steven Horng, Tom~J Pollard, Sicheng Hao, Benjamin Moody, Brian Gow, et~al.
+\newblock Mimic-iv, a freely accessible electronic health record dataset.
+\newblock {\em Scientific data}, 10(1):1, 2023.
+
+\bibitem{lee2021modeling}
+Jeong~Min Lee and Milos Hauskrecht.
+\newblock Modeling multivariate clinical event time-series with recurrent temporal mechanisms.
+\newblock {\em Artificial intelligence in medicine}, 112:102021, 2021.
+
+\bibitem{liu2022arrhythmia}
+Pengfei Liu, Xiaoming Sun, Yang Han, Zhishuai He, Weifeng Zhang, and Chenxu Wu.
+\newblock Arrhythmia classification of lstm autoencoder based on time series anomaly detection.
+\newblock {\em Biomedical Signal Processing and Control}, 71:103228, 2022.
+
+\bibitem{lubba2019catch22}
+Carl~H Lubba, Sarab~S Sethi, Philip Knaute, Simon~R Schultz, Ben~D Fulcher, and Nick~S Jones.
+\newblock catch22: Canonical time-series characteristics: Selected through highly comparative time-series analysis.
+\newblock {\em Data mining and knowledge discovery}, 33(6):1821--1852, 2019.
+
+\bibitem{miotto2018deep}
+Riccardo Miotto, Fei Wang, Shuang Wang, Xiaoqian Jiang, and Joel~T Dudley.
+\newblock Deep learning for healthcare: review, opportunities and challenges.
+\newblock {\em Briefings in bioinformatics}, 19(6):1236--1246, 2018.
+
+\bibitem{MoodyMark1992}
+George~B Moody and Roger~G Mark.
+\newblock The impact of the mit-bih arrhythmia database.
+\newblock {\em IEEE Engineering in Medicine and Biology Magazine}, 20(3):45--50, 2001.
+
+\bibitem{morid2023time}
+Mohammad~Amin Morid, Olivia R~Liu Sheng, and Joseph Dunbar.
+\newblock Time series prediction using deep learning methods in healthcare.
+\newblock {\em ACM Transactions on Management Information Systems}, 14(1):1--29, 2023.
+
+\bibitem{morid2020learning}
+Mohammad~Amin Morid, Olivia R~Liu Sheng, Kensaku Kawamoto, and Samir Abdelrahman.
+\newblock Learning hidden patterns from patient multivariate time series data using convolutional neural networks: A case study of healthcare cost prediction.
+\newblock {\em Journal of Biomedical Informatics}, 111:103565, 2020.
+
+\bibitem{moutonnet2025augmentation}
+Nina Moutonnet, Gregory Scott, and Danilo~P Mandic.
+\newblock Augmentation of eeg and ecg time series for deep learning applications: Integrating changepoint detection into the iaaft surrogates.
+\newblock {\em arXiv preprint arXiv:2504.03761}, 2025.
+
+\bibitem{patharkar2024predictive}
+Abhidnya Patharkar, Fulin Cai, Firas Al-Hindawi, and Teresa Wu.
+\newblock Predictive modeling of biomedical temporal data in healthcare applications: review and future directions.
+\newblock {\em Frontiers in Physiology}, 15:1386760, 2024.
+
+\bibitem{paul2025prediction}
+Niels~Benjamin Paul, Jonas~Chanrithy Wolber, Malte~Lennart Sahrhage, Tim Bei{\ss}barth, and Martin Haubrock.
+\newblock Prediction of gene expression using histone modification patterns extracted by particle swarm optimization.
+\newblock {\em Bioinformatics}, 41(2):btaf033, 2025.
+
+\bibitem{petelin2023towards}
+Ga{\v{s}}per Petelin, Gjorgjina Cenikj, and Tome Eftimov.
+\newblock Towards understanding the importance of time-series features in automated algorithm performance prediction.
+\newblock {\em Expert systems with applications}, 213:119023, 2023.
+
+\bibitem{roe2020feature}
+Kenneth~D Roe, Vibhu Jawa, Xiaohan Zhang, Christopher~G Chute, Jeremy~A Epstein, Jordan Matelsky, Ilya Shpitser, and Casey~Overby Taylor.
+\newblock Feature engineering with clinical expert knowledge: A case study assessment of machine learning model complexity and performance.
+\newblock {\em PloS one}, 15(4):e0231300, 2020.
+
+\bibitem{rood2022impact}
+Jennifer~E Rood, Aidan Maartens, Anna Hupalowska, Sarah~A Teichmann, and Aviv Regev.
+\newblock Impact of the human cell atlas on medicine.
+\newblock {\em Nature medicine}, 28(12):2486--2496, 2022.
+
+\bibitem{rudin2019stop}
+Cynthia Rudin.
+\newblock Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead.
+\newblock {\em Nature machine intelligence}, 1(5):206--215, 2019.
+
+\bibitem{wang2022systematic}
+Will~Ke Wang, Ina Chen, Leeor Hershkovich, Jiamu Yang, Ayush Shetty, Geetika Singh, Yihang Jiang, Aditya Kotla, Jason~Zisheng Shang, Rushil Yerrabelli, et~al.
+\newblock A systematic review of time series classification techniques used in biomedical applications.
+\newblock {\em Sensors}, 22(20):8016, 2022.
+
+\bibitem{yadav2022systems}
+Amit~Kumar Yadav, Sanjay~Kumar Banerjee, Bhabatosh Das, and Kumardeep Chaudhary.
+\newblock systems biology and omics approaches for understanding complex disease biology.
+\newblock {\em Frontiers in Genetics}, 13:896818, 2022.
+
+\end{thebibliography}
