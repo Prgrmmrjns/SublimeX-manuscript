@@ -2,107 +2,192 @@ import pandas as pd
 import numpy as np
 import os
 import time
+import json
 import warnings
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
-from patx import PatternExtractor, get_model
-from params import *
+from patx import feature_extraction
+from models import LightGBMModelWrapper
 from tsfresh_utils import run_tsfresh
+from catch22_utils import run_catch22
 from cnn import run_cnn
-
+from params import *
 warnings.filterwarnings('ignore')
 
-df = pd.read_csv('../processed_datasets/mimic_processed.csv')
-y = df['ARDS_FLAG'].values
-anchor_age = df['anchor_age'].values
+def load_mimic_data():
+    """Load MIMIC data with multivariate time series."""
+    df = pd.read_csv('../processed_datasets/mimic_processed.csv')
+    y = df['ARDS_FLAG']
+    anchor_age = df['anchor_age'].values
+    
+    # Extract time series names from column names
+    feature_cols = [col for col in df.columns if col not in ['subject_id', 'anchor_age', 'ARDS_FLAG']]
+    series_names = []
+    for col in feature_cols:
+        if '_hour_' in col:
+            series_name = col.split('_hour_')[0]
+            if series_name not in series_names:
+                series_names.append(series_name)
+    
+    # Create list of DataFrames for each time series
+    X_list = []
+    for series_name in series_names:
+        series_cols = [col for col in feature_cols if col.startswith(f"{series_name}_hour_")]
+        series_cols.sort(key=lambda x: int(x.split('_hour_')[1]))
+        X_series = df[series_cols]
+        X_list.append(X_series)
+    
+    return X_list, y, anchor_age, series_names
 
-feature_cols = [col for col in df.columns if col not in ['subject_id', 'anchor_age', 'ARDS_FLAG']]
-series_names = []
-for col in feature_cols:
-    if '_hour_' in col:
-        series_name = col.split('_hour_')[0]
-        if series_name not in series_names:
-            series_names.append(series_name)
+# Load data once
+X_list, y, anchor_age, series_names = load_mimic_data()
 
-X_list = []
-for series_name in series_names:
-    series_cols = [col for col in feature_cols if col.startswith(f"{series_name}_hour_")]
-    series_cols.sort(key=lambda x: int(x.split('_hour_')[1]))
-    X_series = df[series_cols].values
-    X_list.append(X_series)
+# Store KFold indices first
+kfold_indices = list(StratifiedKFold(5, shuffle=True, random_state=42).split(pd.concat(X_list, axis=1), y))
 
-skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 results = []
 
-for approach in ['PATX', 'TSFRESH', 'CNN']:
-    for fold, (train_idx, val_idx) in enumerate(skf.split(X_list[0], y)):
-        y_train, y_val = y[train_idx], y[val_idx]
-        n_classes = len(np.unique(y_train))
+if os.path.exists('../results/mimic.csv'):
+    existing = pd.read_csv('../results/mimic.csv')
+    results = existing.to_dict('records')
+    done = set(zip(existing['approach'], existing['fold']))
+else:
+    done = set()
+
+# PATX Approach
+if ('PATX', 1) not in done:
+    approach_results = []
+    all_patterns = {}
+    for fold, (train_idx, val_idx) in enumerate(kfold_indices):
+        y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+        input_series_train = [x.iloc[train_idx] for x in X_list]
+        input_series_test = [x.iloc[val_idx] for x in X_list]
+        
+        # Standardize each time series
+        for i in range(len(input_series_train)):
+            scaler = StandardScaler()
+            train_vals = input_series_train[i].values
+            test_vals = input_series_test[i].values
+            input_series_train[i] = pd.DataFrame(
+                scaler.fit_transform(train_vals), 
+                columns=input_series_train[i].columns,
+                index=input_series_train[i].index
+            )
+            input_series_test[i] = pd.DataFrame(
+                scaler.transform(test_vals), 
+                columns=input_series_test[i].columns,
+                index=input_series_test[i].index
+            )
+        
+        # Prepare initial features (age)
+        age_scaler = StandardScaler()
+        train_init = age_scaler.fit_transform(anchor_age[train_idx].reshape(-1, 1))
+        test_init = age_scaler.transform(anchor_age[val_idx].reshape(-1, 1))
         
         t0 = time.time()
+        res = feature_extraction(
+            input_series_train, y_train, input_series_test,
+            initial_features=(train_init, test_init),
+            metric='accuracy', n_trials=N_TRIALS, show_progress=SHOW_PROGRESS
+        )
+        # Convert patterns to JSON-serializable format
+        serializable_patterns = []
+        for pattern in res['patterns']:
+            serializable_pattern = {
+                'pattern': pattern['pattern'].tolist(),
+                'start': int(pattern['start']),
+                'width': int(pattern['width']),
+                'series_idx': int(pattern['series_idx'])
+            }
+            # Add control_points only if it exists
+            if 'control_points' in pattern:
+                serializable_pattern['control_points'] = [float(cp) for cp in pattern['control_points']]
+            serializable_patterns.append(serializable_pattern)
         
-        if approach == 'PATX':
-            X_tr_list, X_val_list = [], []
-            for X in X_list:
-                scaler = StandardScaler()
-                X_train = scaler.fit_transform(X[train_idx])
-                X_val = scaler.transform(X[val_idx])
-                X_tr_list.append(X_train)
-                X_val_list.append(X_val)
-            
-            age_scaler = StandardScaler()
-            train_init = age_scaler.fit_transform(anchor_age[train_idx].reshape(-1, 1))
-            val_init = age_scaler.transform(anchor_age[val_idx].reshape(-1, 1))
-            
-            model = get_model('classification', 'MIMIC', n_classes)
-            extractor = PatternExtractor(X_tr_list, y_train, model=model, max_n_trials=MAX_N_TRIALS,
-                                  show_progress=SHOW_PROGRESS, n_jobs=N_JOBS,
-                                  dataset='MIMIC', multiple_series=True, X_test=X_val_list,
-                                  polynomial_degree=POLYNOMIAL_DEGREE, metric='accuracy', 
-                                  val_size=VAL_SIZE, initial_features=(train_init, val_init))
-            result = extractor.feature_extraction()
-            if fold == 0:
-                extractor.save_parameters_to_json('../json_files/MIMIC')
-            model = result['model']
-            test_preds = model.predict(result['X_test'])
-            n_features = len(result['patterns'])
-            
-        elif approach == 'TSFRESH':
-            # Combine all series for TSFRESH
-            X_combined = np.concatenate(X_list, axis=1)
-            X_train, X_val = X_combined[train_idx], X_combined[val_idx]
-            
-            model = get_model('classification', 'MIMIC', n_classes)
-            val_f, X_tr, X_v, y_tr, y_v, _ = run_tsfresh(X_train, y_train, X_val, task_type='classification', val_size=VAL_SIZE, n_jobs=TSFRESH_N_JOBS)
-            model.train(X_tr, y_tr, X_v, y_v)
-            test_preds = model.predict(val_f)
-            n_features = X_tr.shape[1]
-            
-        elif approach == 'CNN':
-            X_combined = np.concatenate(X_list, axis=1)
-            X_with_age = np.column_stack([X_combined, anchor_age])
-            
-            X_tr, X_val = X_with_age[train_idx], X_with_age[val_idx]
-            
-            result = run_cnn(X_tr, y_train, X_val, task_type='classification', 
-                            metric='accuracy', val_size=VAL_SIZE, 
-                            num_classes=n_classes, epochs=CNN_EPOCHS, lr=CNN_LEARNING_RATE)
-            test_preds = result['test_predictions']
-            n_features = X_tr.shape[1]
-        
-        t1 = time.time()
-        score = accuracy_score(y_val, test_preds)
-        
-        results.append({
-            'approach': approach,
-            'fold': fold + 1,
-            'score': float(score),
-            'processing_time': float(t1 - t0),
-            'n_features': int(n_features)
-        })
-        
-        print(f"{approach} fold {fold+1}: {score:.4f}")
+        # Store patterns for this fold
+        all_patterns[f'fold_{fold+1}'] = serializable_patterns
+        test_features = res['test_features']
+        preds = res['model'].predict(test_features)
+        n_feat = len(res['patterns'])
+        accuracy = accuracy_score(y_val, preds)
+        processing_time = time.time() - t0
+        results.append({'approach': 'PATX', 'fold': fold + 1, 'score': accuracy, 'processing_time': processing_time, 'n_features': n_feat})
+        approach_results.append({'accuracy': accuracy, 'time': processing_time, 'features': n_feat})
+    
+    # Save all patterns to single JSON file with proper formatting
+    with open('../json_files/mimic/pattern_parameters.json', 'w') as f:
+        json.dump(all_patterns, f, indent=2, separators=(',', ': '))
 
-df = pd.DataFrame(results)
-df.to_csv('../results/mimic.csv', index=False)
+# TSFRESH Approach
+if ('TSFRESH', 1) not in done:
+    approach_results = []
+    for fold, (train_idx, val_idx) in enumerate(kfold_indices):
+        y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+        input_series_train_concat = pd.concat([x.iloc[train_idx] for x in X_list], axis=1)
+        input_series_test_concat = pd.concat([x.iloc[val_idx] for x in X_list], axis=1)
+        t0 = time.time()
+        test_features, train_features = run_tsfresh(input_series_train_concat.values, input_series_test_concat.values)
+        train_features, val_features, y_train_split, y_valid = train_test_split(train_features, y_train.values, test_size=0.2, random_state=42, stratify=y_train.values)
+        model = LightGBMModelWrapper('classification', n_classes=len(np.unique(y_train)))
+        model.fit(train_features, y_train_split, val_features, y_valid)
+        preds = model.predict(test_features)
+        n_feat = train_features.shape[1]
+        accuracy = accuracy_score(y_val, preds)
+        processing_time = time.time() - t0
+        results.append({'approach': 'TSFRESH', 'fold': fold + 1, 'score': accuracy, 'processing_time': processing_time, 'n_features': n_feat})
+        approach_results.append({'accuracy': accuracy, 'time': processing_time, 'features': n_feat})
+
+# CATCH22 Approach (univariate - use only first series)
+if ('CATCH22', 1) not in done:
+    approach_results = []
+    for fold, (train_idx, val_idx) in enumerate(kfold_indices):
+        y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+        first_series_train = X_list[0].iloc[train_idx]  # Use first time series only
+        first_series_test = X_list[0].iloc[val_idx]
+        t0 = time.time()
+        test_features, train_features = run_catch22(first_series_train.values, first_series_test.values)
+        train_features, val_features, y_train_split, y_valid = train_test_split(train_features, y_train.values, test_size=0.2, random_state=42, stratify=y_train.values)
+        model = LightGBMModelWrapper('classification', n_classes=len(np.unique(y_train)))
+        model.fit(train_features, y_train_split, val_features, y_valid)
+        preds = model.predict(test_features)
+        n_feat = train_features.shape[1]
+        accuracy = accuracy_score(y_val, preds)
+        processing_time = time.time() - t0
+        results.append({'approach': 'CATCH22', 'fold': fold + 1, 'score': accuracy, 'processing_time': processing_time, 'n_features': n_feat})
+        approach_results.append({'accuracy': accuracy, 'time': processing_time, 'features': n_feat})
+
+# CNN Approach (multivariate - concatenate all series + age)
+if ('CNN', 1) not in done:
+    approach_results = []
+    for fold, (train_idx, val_idx) in enumerate(kfold_indices):
+        y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
+        input_series_train_concat = pd.concat([x.iloc[train_idx] for x in X_list], axis=1)
+        input_series_test_concat = pd.concat([x.iloc[val_idx] for x in X_list], axis=1)
+        
+        # Add age as additional feature
+        input_series_train_with_age = np.column_stack([input_series_train_concat.values, anchor_age[train_idx]])
+        input_series_test_with_age = np.column_stack([input_series_test_concat.values, anchor_age[val_idx]])
+        
+        t0 = time.time()
+        preds = run_cnn(input_series_train_with_age, y_train.values, input_series_test_with_age, task_type='classification', metric='accuracy', num_classes=len(np.unique(y_train)), epochs=CNN_EPOCHS, lr=CNN_LEARNING_RATE)
+        n_feat = input_series_train_with_age.shape[1]
+        accuracy = accuracy_score(y_val, preds)
+        processing_time = time.time() - t0
+        results.append({'approach': 'CNN', 'fold': fold + 1, 'score': accuracy, 'processing_time': processing_time, 'n_features': n_feat})
+        approach_results.append({'accuracy': accuracy, 'time': processing_time, 'features': n_feat})
+
+# Print overall summary
+mimic_results = pd.DataFrame(results)
+for approach in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
+    approach_results = mimic_results[mimic_results['approach'] == approach]
+    if len(approach_results) > 0:
+        mean_acc = approach_results['score'].mean()
+        std_acc = approach_results['score'].std()
+        mean_time = approach_results['processing_time'].mean()
+        std_time = approach_results['processing_time'].std()
+        mean_features = approach_results['n_features'].mean()
+        std_features = approach_results['n_features'].std()
+        print(f"{approach:8}: Accuracy={mean_acc:.4f}±{std_acc:.4f}, Time={mean_time:.1f}±{std_time:.1f}s, Features={mean_features:.0f}±{std_features:.0f}")
+
+pd.DataFrame(results).to_csv('../results/mimic.csv', index=False)

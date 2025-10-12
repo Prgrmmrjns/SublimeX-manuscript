@@ -27,6 +27,7 @@ alwaysApply: true
 - **results/**: Aggregated CSVs with metrics per dataset/split/seed.
 - **requirements.txt**: Python dependencies.
 - **README.md**: Project overview and quickstart.
+- **core.py**: Core implementation of the patX framework.
 
 ## Rules for editing files
 

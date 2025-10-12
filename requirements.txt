@@ -2,7 +2,7 @@ numpy
 pandas
 matplotlib
 scikit-learn
-optuna
+hyperopt
 lightgbm
 imblearn
 fastparquet
@@ -10,4 +10,4 @@ seaborn
 tsfresh
 torch
 PyWavelets
-patx
+pycatch22

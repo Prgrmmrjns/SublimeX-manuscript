@@ -13,10 +13,7 @@ def format_mean_std(values, decimals=3, bold=False):
 
 def get_performance_col(dataset_name):
     """Get the performance column name based on dataset"""
-    if dataset_name == 'AZT1D':
-        return 'test_rmse'
-    else:
-        return 'score'
+    return 'score'
 
 # Dataset configuration
 datasets = ['AZT1D', 'MITBIH', 'Bonn EEG', 'REMC', 'MIMIC-IV']
@@ -31,12 +28,13 @@ file_map = {
 # Create LaTeX table
 table = r"""\begin{table}[h]
 \centering
-\caption{Performance comparison across biomedical datasets showing mean $\pm$ standard deviation across folds/subjects.}
+\caption{Performance comparison across biomedical datasets showing mean $\pm$ standard deviation across folds/subjects. Best performance per dataset in bold.}
 \label{tab:results}
-\begin{tabular}{|l|l|c|c|c|}
-\hline
+\footnotesize
+\begin{tabular}{llccc}
+\toprule
 \textbf{Dataset} & \textbf{Method} & \textbf{Performance} & \textbf{\# Features} & \textbf{Time (s)} \\
-\hline
+\midrule
 """
 
 for dataset_name in datasets:
@@ -46,7 +44,7 @@ for dataset_name in datasets:
     
     # First pass: collect all approach results to find best performance
     approach_results = {}
-    for approach in ['PATX', 'TSFRESH', 'CNN']:
+    for approach in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
         approach_df = df[df['approach'] == approach]
         if approach_df.empty:
             continue
@@ -70,7 +68,7 @@ for dataset_name in datasets:
             best_approach = max(approach_results.keys(), key=lambda x: approach_results[x]['perf_mean'])
         
         # Second pass: format and add to table
-        for i, approach in enumerate(['PATX', 'TSFRESH', 'CNN']):
+        for i, approach in enumerate(['PATX', 'TSFRESH', 'CATCH22', 'CNN']):
             if approach not in approach_results:
                 continue
                 
@@ -86,9 +84,12 @@ for dataset_name in datasets:
             else:
                 table += f" & {approach} & {perf_str} & {n_features_str} & {time_str} \\\\\n"
     
-    table += r"\hline" + "\n"
+    table += r"\midrule" + "\n"
 
-table += r"""\end{tabular}
+table += r"""\bottomrule
+\end{tabular}
+\vspace{0.2cm}
+\\ \footnotesize \textit{Note: AZT1D reports RMSE (lower is better); all others report accuracy or AUC (higher is better).}
 \end{table}"""
 
 # Save table

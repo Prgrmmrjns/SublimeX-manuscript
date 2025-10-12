@@ -15,6 +15,11 @@ Yaqoob Ansari, Omar Mourad, Khalid Qaraqe, and Erchin Serpedin.
 \newblock Deep learning for ecg arrhythmia detection and classification: an overview of progress for period 2017--2023.
 \newblock {\em Frontiers in Physiology}, 14:1246746, 2023.
 
+\bibitem{balestriero2018spline}
+Randall Balestriero and Richard~G. Baraniuk.
+\newblock A spline theory of deep networks.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning}, volume~80 of {\em PMLR}, pages 383--392, Stockholm, Sweden, 2018.
+
 \bibitem{barandas2020tsfel}
 Mar{\'\i}lia Barandas, Duarte Folgado, Let{\'\i}cia Fernandes, Sara Santos, Mariana Abreu, Patr{\'\i}cia Bota, Hui Liu, Tanja Schultz, and Hugo Gamboa.
 \newblock Tsfel: Time series feature extraction library.

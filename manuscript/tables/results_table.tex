@@ -1,30 +1,39 @@
 \begin{table}[h]
 \centering
-\caption{Performance comparison across biomedical datasets showing mean $\pm$ standard deviation across folds/subjects.}
+\caption{Performance comparison across biomedical datasets showing mean $\pm$ standard deviation across folds/subjects. Best performance per dataset in bold.}
 \label{tab:results}
-\begin{tabular}{|l|l|c|c|c|}
-\hline
+\footnotesize
+\begin{tabular}{llccc}
+\toprule
 \textbf{Dataset} & \textbf{Method} & \textbf{Performance} & \textbf{\# Features} & \textbf{Time (s)} \\
-\hline
-AZT1D & PATX & 18.868 $\pm$ 0.592 & 3.7 $\pm$ 1.2 & 27.4 $\pm$ 6.2 \\
- & TSFRESH & 20.010 $\pm$ 0.812 & 10.0 $\pm$ 0.0 & 1.9 $\pm$ 0.2 \\
- & CNN & \textbf{16.585 $\pm$ 0.304} & \textbf{24.0 $\pm$ 0.0} & \textbf{51.2 $\pm$ 5.4} \\
-\hline
-MITBIH & PATX & 0.893 $\pm$ 0.005 & 8.6 $\pm$ 1.5 & 113.3 $\pm$ 19.4 \\
- & TSFRESH & 0.823 $\pm$ 0.004 & 10.0 $\pm$ 0.0 & 65.4 $\pm$ 142.0 \\
- & CNN & \textbf{0.958 $\pm$ 0.003} & \textbf{100.0 $\pm$ 0.0} & \textbf{243.8 $\pm$ 303.1} \\
-\hline
-Bonn EEG & PATX & 0.700 $\pm$ 0.073 & 4.6 $\pm$ 1.1 & 44.6 $\pm$ 10.0 \\
- & TSFRESH & 0.584 $\pm$ 0.036 & 10.0 $\pm$ 0.0 & 0.7 $\pm$ 0.1 \\
- & CNN & \textbf{0.788 $\pm$ 0.040} & \textbf{4101.0 $\pm$ 0.0} & \textbf{38.5 $\pm$ 10.7} \\
-\hline
-REMC & PATX & \textbf{0.928 $\pm$ 0.024} & \textbf{9.0 $\pm$ 2.2} & \textbf{92.4 $\pm$ 192.8} \\
- & TSFRESH & 0.874 $\pm$ 0.030 & 10.0 $\pm$ 0.0 & 5.8 $\pm$ 0.1 \\
- & CNN & 0.889 $\pm$ 0.029 & 1000.0 $\pm$ 0.0 & 381.5 $\pm$ 1308.7 \\
-\hline
-MIMIC-IV & PATX & \textbf{0.778 $\pm$ 0.002} & \textbf{5.2 $\pm$ 1.3} & \textbf{30.0 $\pm$ 7.2} \\
- & TSFRESH & 0.769 $\pm$ 0.004 & 10.0 $\pm$ 0.0 & 1.2 $\pm$ 0.0 \\
- & CNN & 0.773 $\pm$ 0.009 & 697.0 $\pm$ 0.0 & 36.6 $\pm$ 4.4 \\
-\hline
+\midrule
+AZT1D & PATX & 19.470 $\pm$ 2.880 & 10.7 $\pm$ 3.3 & 30.3 $\pm$ 9.5 \\
+ & TSFRESH & 19.965 $\pm$ 2.727 & 11.0 $\pm$ 0.0 & 1.8 $\pm$ 0.2 \\
+ & CATCH22 & 20.663 $\pm$ 2.862 & 23.0 $\pm$ 0.0 & 1.3 $\pm$ 0.2 \\
+ & CNN & \textbf{18.636 $\pm$ 2.690} & \textbf{72.0 $\pm$ 0.0} & \textbf{19.6 $\pm$ 2.2} \\
+\midrule
+MITBIH & PATX & 0.910 $\pm$ 0.005 & 8.2 $\pm$ 2.2 & 27.0 $\pm$ 6.3 \\
+ & TSFRESH & 0.910 $\pm$ 0.006 & 10.0 $\pm$ 0.0 & 1.9 $\pm$ 0.0 \\
+ & CATCH22 & \textbf{0.948 $\pm$ 0.002} & \textbf{22.0 $\pm$ 0.0} & \textbf{3.9 $\pm$ 0.0} \\
+ & CNN & 0.937 $\pm$ 0.008 & 100.0 $\pm$ 0.0 & 17.6 $\pm$ 3.6 \\
+\midrule
+Bonn EEG & PATX & 0.768 $\pm$ 0.054 & 5.0 $\pm$ 1.2 & 22.2 $\pm$ 5.0 \\
+ & TSFRESH & 0.638 $\pm$ 0.041 & 10.0 $\pm$ 0.0 & 0.7 $\pm$ 0.1 \\
+ & CATCH22 & \textbf{0.774 $\pm$ 0.033} & \textbf{22.0 $\pm$ 0.0} & \textbf{15.7 $\pm$ 0.2} \\
+ & CNN & 0.756 $\pm$ 0.049 & 4101.0 $\pm$ 0.0 & 14.7 $\pm$ 1.3 \\
+\midrule
+REMC & PATX & 0.930 $\pm$ 0.023 & 13.9 $\pm$ 3.3 & 59.9 $\pm$ 15.2 \\
+ & TSFRESH & 0.875 $\pm$ 0.030 & 10.0 $\pm$ 0.0 & 5.8 $\pm$ 0.1 \\
+ & CATCH22 & 0.884 $\pm$ 0.028 & 22.0 $\pm$ 0.0 & 10.2 $\pm$ 0.2 \\
+ & CNN & \textbf{0.935 $\pm$ 0.022} & \textbf{1000.0 $\pm$ 0.0} & \textbf{14.0 $\pm$ 3.5} \\
+\midrule
+MIMIC-IV & PATX & \textbf{0.776 $\pm$ 0.007} & \textbf{7.4 $\pm$ 1.7} & \textbf{21.5 $\pm$ 5.2} \\
+ & TSFRESH & 0.766 $\pm$ 0.004 & 10.0 $\pm$ 0.0 & 1.1 $\pm$ 0.0 \\
+ & CATCH22 & 0.743 $\pm$ 0.000 & 22.0 $\pm$ 0.0 & 0.4 $\pm$ 0.0 \\
+ & CNN & 0.726 $\pm$ 0.040 & 697.0 $\pm$ 0.0 & 6.4 $\pm$ 0.5 \\
+\midrule
+\bottomrule
 \end{tabular}
+\vspace{0.2cm}
+\\ \footnotesize \textit{Note: AZT1D reports RMSE (lower is better); all others report accuracy or AUC (higher is better).}
 \end{table}
