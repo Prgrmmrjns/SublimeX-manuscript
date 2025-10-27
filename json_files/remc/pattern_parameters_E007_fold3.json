@@ -1,0 +1,98 @@
+[
+  {
+    "pattern_id": 1,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.14569900808070238,
+    "series_idx": 0,
+    "center": 70,
+    "width": 17.849504221371404,
+    "control_points": [
+      0.9481849015639279,
+      0.49908929029557997,
+      0.27268193690006726,
+      0.1568779775296323
+    ],
+    "score": 0.8867319501832744
+  },
+  {
+    "pattern_id": 2,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.1669448519850573,
+    "series_idx": 2,
+    "center": 81,
+    "width": 28.919691880930767,
+    "control_points": [
+      0.32231166129187944,
+      0.26951045652446165,
+      0.6206576412018951,
+      0.1997505864099875
+    ],
+    "score": 0.9046687940461646
+  },
+  {
+    "pattern_id": 3,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.4717290064984919,
+    "series_idx": 4,
+    "center": 24,
+    "width": 25.333262975194117,
+    "control_points": [
+      0.022459073897775676,
+      0.5613546497981614,
+      0.28561808201219197,
+      0.5598958465995276
+    ],
+    "score": 0.9206251341759806
+  },
+  {
+    "pattern_id": 4,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.2944176461830116,
+    "series_idx": 3,
+    "center": 79,
+    "width": 26.196131576736192,
+    "control_points": [
+      0.7943824414373474,
+      0.29361332784614014,
+      0.20296299710743293,
+      0.2215308895098822
+    ],
+    "score": 0.9244841016371458
+  },
+  {
+    "pattern_id": 5,
+    "transform_type": "fft_power",
+    "use_relative": false,
+    "shift_tolerance": 0.2171105588095618,
+    "series_idx": 1,
+    "center": 127,
+    "width": 48.08760567468495,
+    "control_points": [
+      0.354997701344,
+      0.30197511161337076,
+      0.6029078533733738,
+      0.039475826382221885
+    ],
+    "score": 0.9283748737751886
+  },
+  {
+    "pattern_id": 6,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.36304193337964835,
+    "series_idx": 3,
+    "center": 159,
+    "width": 47.16680997684293,
+    "control_points": [
+      0.688719618096544,
+      0.4647715641364023,
+      0.15872913196501978,
+      0.15824172299225817
+    ],
+    "score": 0.9300028756728678
+  }
+]

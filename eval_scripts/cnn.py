@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.model_selection import train_test_split
+from params import VAL_SIZE
 
 torch.set_num_threads(1)
 
@@ -89,7 +90,7 @@ def run_cnn(
     train_features, val_features, y_train_split, y_valid = train_test_split(
         input_series_train,
         y_train,
-        test_size=0.2,
+        test_size=VAL_SIZE,
         random_state=42,
         stratify=y_train if task_type == 'classification' else None,
     )

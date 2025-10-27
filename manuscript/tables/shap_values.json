@@ -1,0 +1,56 @@
+{
+  "mimic": {
+    "feature_names": [
+      "Age",
+      "P1: wbc (rel, raw)",
+      "P2: wbc (rel, cumsum)",
+      "P3: pulse_pressure (abs, spectral_entropy)",
+      "P4: fio2 (rel, raw)"
+    ],
+    "shap_values": [
+      0.014470916866027625,
+      0.21770716617679509,
+      0.05801907499598262,
+      0.4736537409689152,
+      -0.5057335685017135
+    ],
+    "base_value": -2.2467482498096154,
+    "final_prediction": -1.9886309193036082
+  },
+  "azt1d": {
+    "feature_names": [
+      "CGM_0",
+      "P1: CGM (rel, cumsum)",
+      "P2: Insulin (abs, wavelet)",
+      "P3: CGM (abs, derivative)",
+      "P4: CGM (abs, derivative)",
+      "P5: Carbs (abs, fft_power)",
+      "P6: CGM (abs, derivative)",
+      "P7: CGM (rel, derivative)",
+      "P8: CGM (abs, raw)",
+      "P9: Insulin (abs, cumsum)",
+      "P10: CGM (rel, cumsum)",
+      "P11: Carbs (rel, raw)",
+      "P12: Insulin (rel, cumsum)",
+      "P13: Carbs (rel, wavelet)"
+    ],
+    "shap_values": [
+      -0.8352301686951301,
+      -1.1112919879617222,
+      0.12547884821686112,
+      0.5866552565180183,
+      1.3715992306033251,
+      -1.3823316139484492,
+      -5.884394052453755,
+      0.7824822733618825,
+      -0.05156396652175203,
+      5.237935492259487,
+      2.316056955886928,
+      -0.04208955865517536,
+      -0.4382324468500468,
+      -0.7355823614890068
+    ],
+    "base_value": 0.054618578369499515,
+    "final_prediction": -0.005889521359036143
+  }
+}

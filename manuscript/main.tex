@@ -11,35 +11,48 @@
 \usepackage{subcaption}
 \usepackage{xcolor}
 \usepackage{float}
+\usepackage{epstopdf}
 
 
 \title{patX: Interpretable Pattern Extraction for Time Series and Spatial Data}
-\author{Jonas Wolber$^{1}$, Second Author$^{2}$, Third Author$^{1}$\\
-$^{1}$RWTH Aachen University\\
-$^{2}$Institution Two}
-\date{\today}
+
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-We introduce \textbf{patX}, an open--source Python package that automatically
-discovers compact, highly predictive, and interpretable patterns from biomedical
-time--series and spatial data.
+We introduce \textbf{patX}, an open--source Python package that bridges the gap
+between the automatic pattern learning capabilities of convolutional neural
+networks (CNNs) and the interpretability requirements of biomedical applications.
+Like CNNs, patX automatically discovers discriminative patterns from input data
+and uses them for prediction; however, unlike CNNs where learned patterns remain
+opaque, patX makes this pattern learning explicit and interpretable through
+human--readable B--spline templates.
 By framing pattern discovery as a constrained optimization problem over
-B--spline templates, patX learns human--readable patterns that serve as
+B--spline templates across multiple signal transformations (raw, wavelet, FFT,
+derivative), patX learns compact, highly predictive patterns that serve as
 transparent input features for conventional machine--learning models.
 We demonstrate patX on five diverse biomedical tasks: (i) glucose forecasting
-(AZT1D), (ii) arrhythmia classification (MITBIH), (iii) seizure classification
-(Bonn EEG), (iv) gene expression prediction from epigenetic signatures (REMC),
-and (v) clinical outcome prediction (MIMIC--IV).
-Across these tasks, patX outperforms or matches tsfresh, catch22, and
-convolutional neural networks, while providing direct interpretability and
-significant speed--ups at inference time.
-We also demonstrate the interpretability of patX patterns by visualizing
-patterns and the areas at which they are active.
+(AZT1D), (ii) arrhythmia classification (MITBIH), (iii) emotion classification
+from EEG signals (Emotions), (iv) gene expression prediction from epigenetic
+signatures (REMC), and (v) acute respiratory distress syndrome (ARDS)
+classification in an intensive care unit (MIMIC--IV).
+Across these tasks, patX achieves best performance on three of five datasets compared to tsfresh, catch22, and CNN while
+usually using fewer features and providing complete interpretability through explicit pattern visualization and validation.
+Beyond predictive performance, patX's interpretable pattern discovery can lead
+to novel scientific insights: from histone modification data, it can reveal
+which modifications are most informative at specific genomic positions; from
+ECG data, spectral features may uncover potential electrophysiological causes
+of arrhythmias; and from glucose data, different temporal patterns can reveal
+the relative importance of short-term versus long-term dynamics for different
+patient populations.
+This transparent approach to automatic feature extraction addresses the
+``black box'' criticism of deep learning while maintaining competitive
+performance, making patX particularly suitable for clinical applications where
+explainability is crucial.
 Our tool is available at \url{https://github.com/Prgrmmrjns/patX} and offers a
-simple interface for extracting patterns from time series and spatial data.
+simple interface for extracting interpretable patterns from time series and
+spatial data.
 \end{abstract}
 
 \section{Introduction}
@@ -53,190 +66,69 @@ healthcare and biomedical discovery \cite{morid2023time, rood2022impact}.
 
 Time series data in healthcare captures the temporal evolution of patient
 health, offering crucial insights into disease progression, treatment
-effectiveness, and physiological dynamics that static measurements cannot
-provide \cite{patharkar2024predictive}.
-Continuous monitoring systems such as smart watches or electroencephalography
-devices generate vast streams of physiological signals---from heart rate
-variability and blood pressure fluctuations to brain activity patterns---that
-contain rich information about both normal physiology and pathological states
-\cite{chaddad2023electroencephalography}.
+effectiveness, and physiological dynamics \cite{patharkar2024predictive}.
+Continuous monitoring systems generate vast streams of physiological
+signals---from ECG and EEG to glucose monitoring---that contain rich information
+about both normal physiology and pathological states
+\cite{chaddad2023electroencephalography, anbalagan2023analysis}.
+In genomics, spatial profiling of chromatin modifications provides insights into
+regulatory mechanisms underlying development and disease \cite{yadav2022systems}.
 
-The clinical applications of these data types are extensive and growing.
-Electrocardiography (ECG) analysis supports arrhythmia detection and
-cardiovascular risk stratification, with modern systems processing thousands
-of heartbeats to identify subtle patterns indicative of cardiac pathology
-\cite{anbalagan2023analysis}.
-EEG monitoring enables real-time seizure detection, sleep stage
-classification, and assessment of neurological function across various
-conditions \cite{chaddad2023electroencephalography}.
-In genomics and epigenomics, spatial profiling of chromatin modifications and
-gene expression patterns provides insights into regulatory mechanisms
-underlying development and disease \cite{yadav2022systems}.
-
-\subsection{Existing Approaches to Time Series Analysis}
 The analysis of biomedical time series and spatial data has evolved through
 three different paradigms that represent fundamentally different philosophies
 toward feature representation and model development.
-
 Traditional approaches to biomedical signal analysis rely heavily on domain
-expertise to manually craft features that capture relevant temporal and
-spatial characteristics.
-This paradigm involves extracting carefully designed statistical measures,
-temporal properties, spectral features, and morphological characteristics
-based on established understanding of physiological processes
-\cite{fulcher2018feature}.
-For ECG analysis, clinicians and engineers have developed features capturing
-heart rate variability, QRS complex morphology, and ST-segment deviations
-\cite{gelen2025novel, ansari2023deep}.
-Similarly, EEG analysis traditionally focuses on frequency band power,
-coherence measures, and event-related potentials derived from decades of
-neurophysiology research \cite{moutonnet2025augmentation}.
+expertise to manually craft features capturing relevant temporal and spatial
+characteristics \cite{fulcher2018feature}.
+For ECG analysis, features include heart rate variability and QRS complex
+morphology \cite{gelen2025novel, ansari2023deep}; for EEG, frequency band power
+and coherence measures \cite{moutonnet2025augmentation}.
+While providing clear physiological interpretations, this approach is
+labor-intensive, requires extensive domain expertise, and may miss subtle
+patterns in complex datasets \cite{miotto2018deep,ansari2023deep}.
 
-This approach benefits significantly from the incorporation of clinical domain
-knowledge and provides features with clear physiological interpretations that
-align with medical understanding.
-Manual feature engineering allows for precise targeting of known pathological
-markers and enables clinicians to understand exactly which signal
-characteristics drive model predictions \cite{gelen2025novel}.
+Comprehensive automated feature extraction libraries address scalability by
+systematically computing large feature sets.
+tsfresh extracts up to 1,558 features \cite{christ2018tsfresh}, while catch22
+provides 22 carefully selected features optimized for performance and efficiency
+\cite{lubba2019catch22}.
+While effective at uncovering patterns, these libraries introduce challenges
+related to interpretability and feature selection from high-dimensional spaces
+\cite{henderson2021empirical, petelin2023towards}.
 
-However, manual feature engineering suffers from several critical limitations
-that constrain its scalability and generalizability.
-The feature engineering process is labor-intensive, requiring expertise in
-both signal processing techniques and the specific clinical domain as well as
-requiring a preceding detailed exploratory data analysis \cite{roe2020feature}.
-This expertise requirement creates bottlenecks in model development and limits
-the ability to rapidly adapt to new clinical problems or signal types.
-Moreover, manually crafted features may miss subtle patterns that could be
-crucial for accurate classification or prediction, particularly in complex,
-high-dimensional biomedical datasets where relevant patterns may not be
-immediately apparent to human experts \cite{miotto2018deep,ansari2023deep}.
+Deep learning methods learn hierarchical feature representations directly from
+raw data through end-to-end training \cite{miotto2018deep}.
+CNNs automatically learn temporal patterns through convolutional filters
+\cite{wang2022systematic}, while RNNs and LSTMs model sequential dependencies
+\cite{lee2021modeling}.
+However, these approaches face significant interpretability challenges, creating
+barriers to clinical adoption where explainability is crucial
+\cite{rudin2019stop, ennab2024enhancing}.
 
-Comprehensive automated feature extraction libraries address the scalability
-limitations of manual approaches by systematically computing large sets of
-time series characteristics.
-tsfresh extracts up to 1,558 features spanning statistical, spectral, and
-nonlinear dynamics properties, implementing extensive collections of feature
-calculators followed by statistical hypothesis testing for feature selection
-\cite{christ2018tsfresh}.
-TSFEL offers a more streamlined approach with over 65 features across
-statistical, temporal, spectral, and fractal domains, emphasizing
-computational efficiency and user-friendly deployment \cite{barandas2020tsfel}.
-catch22 represents a fundamentally different philosophy, providing exactly 22
-carefully selected features derived from a massive reduction of over 7,000
-features in the hctsa toolbox, optimized for both performance and
-computational efficiency \cite{lubba2019catch22}.
-hctsa itself computes over 7,000 features from an interdisciplinary survey of
-time series analysis methods, serving as a comprehensive research tool though
-with significant computational requirements \cite{fulcher2017hctsa}.
+This evolution reflects a fundamental trade-off between interpretability and
+automated pattern discovery: manual approaches offer interpretability but lack
+scalability, automated libraries provide scalability but reduce interpretability,
+and deep learning offers performance but sacrifices explainability.
 
-These libraries effectively address the scalability challenges of manual
-feature engineering and can uncover patterns that might be missed by domain
-experts.
-However, they introduce new challenges related to feature interpretability,
-computational complexity, and feature selection from high-dimensional feature
-spaces \cite{henderson2021empirical}.
-While individual features may have clear mathematical definitions,
-understanding which specific aspects of complex biomedical signals drive
-clinical predictions becomes difficult when models rely on hundreds or
-thousands of automatically extracted features \cite{petelin2023towards}.
+B-splines provide smooth curve representations with local control, where
+adjusting one control point affects only a bounded region
+\cite{balestriero2018spline}.
+Recent work shows deep networks with piecewise-linear activations implicitly
+construct spline-based templates through gradient descent, but these
+representations remain opaque \cite{balestriero2018spline}.
+This connection suggests directly optimizing interpretable B-spline patterns as
+explicit templates, bypassing deep learning's black-box nature while retaining
+spline-based representational power.
 
-Deep learning methods represent yet another paradigmatic shift toward
-end-to-end learning, where neural networks learn hierarchical feature
-representations directly from raw data without requiring explicit feature
-extraction steps.
-This approach fundamentally differs from both manual feature engineering and
-automated feature extraction libraries by learning data representations as an
-integral part of the prediction task \cite{miotto2018deep}.
+Pattern-based approaches identify characteristic subsequences and measure
+similarity to query signals, connecting to matched filtering in signal
+processing theory.
+The key challenge is discovering templates automatically: manual specification
+requires expertise, exhaustive search is prohibitive, and recent deep learning
+approaches sacrifice interpretability.
+An effective method must balance automatic discovery, computational efficiency,
+and interpretability, while capturing both shape and amplitude information.
 
-Convolutional Neural Networks (CNNs) have demonstrated particular success in
-biomedical time series analysis, automatically learning relevant temporal
-patterns through convolutional filters that detect local structures across
-different time scales \cite{wang2022systematic, morid2020learning}.
-Recurrent Neural Networks (RNNs) and their variants, including Long
-Short-Term Memory (LSTMs) and Gated Recurrent Units (GRUs), excel at modeling
-sequential dependencies and temporal memory in physiological signals, making
-them well-suited for applications requiring understanding of disease
-progression or long-term monitoring patterns \cite{lee2021modeling,
-liu2022arrhythmia}.
-
-However, deep learning approaches face significant challenges in biomedical
-applications, particularly regarding interpretability and the ``black box''
-nature of learned representations \cite{ennab2024enhancing}.
-While these methods can achieve excellent predictive performance,
-understanding how they arrive at their decisions remains difficult, creating
-barriers to clinical adoption where explainability is crucial for patient
-safety and regulatory approval \cite{rudin2019stop, ennab2024enhancing}.
-
-The evolution from manual feature engineering through automated extraction
-libraries to end-to-end deep learning reflects a fundamental trade-off between
-interpretability and automated pattern discovery.
-While manual approaches offer maximum clinical interpretability, they suffer
-from scalability limitations and potential blind spots in pattern recognition.
-Automated feature extraction libraries provide computational scalability but
-may generate features that lack clinical meaning.
-Deep learning methods offer powerful automatic feature discovery and superior
-performance but at the cost of interpretability.
-
-\subsection{Spline-Based Representations in Machine Learning}
-Spline functions provide a mathematically principled framework for
-representing smooth curves through control points, offering several advantages
-for pattern modeling in biomedical signals.
-B-splines in particular enable local control, where adjusting one control
-point affects only a bounded region of the curve, making them ideal for
-capturing localized temporal phenomena \cite{balestriero2018spline}.
-This locality property contrasts with global polynomial representations where
-changing any coefficient affects the entire curve.
-
-Recent theoretical advances have established deep connections between spline
-theory and deep neural networks.
-Balestriero and Baraniuk \cite{balestriero2018spline} proved that deep
-networks with piecewise-linear activations (e.g., ReLU, max-pooling) can be
-written as compositions of max-affine spline operators (MASOs).
-In this framework, conditioned on an input signal, a deep network's output
-becomes a simple affine transformation of the input, effectively constructing
-signal-dependent, class-specific templates.
-This spline interpretation reveals that deep networks implicitly learn to
-partition the input space and match signals against learned templates via
-inner products---a process analogous to classical matched filtering in signal
-processing.
-
-While deep networks construct these spline-based templates implicitly through
-gradient descent on millions of parameters, the learned representations remain
-opaque and difficult to interpret.
-The connection to splines suggests an alternative approach: directly optimize
-interpretable B-spline patterns as explicit templates, bypassing the black-box
-nature of deep learning while retaining the representational power of
-spline-based feature extraction.
-
-\subsection{Pattern-Based Features and Template Matching}
-Pattern-based feature extraction has a rich history in time series analysis,
-rooted in the observation that many real-world signals contain recurring
-motifs that characterize different states or classes.
-Rather than computing global statistical summaries, pattern-based approaches
-identify characteristic subsequences and measure their similarity to query
-signals.
-This template matching paradigm connects directly to classical signal
-processing theory, where matched filters provide optimal detection of known
-signals in noise by computing correlation with a reference template.
-
-The key challenge in pattern-based approaches is discovering which templates
-to use.
-Manual specification requires domain expertise and may miss important
-patterns.
-Exhaustive search over all possible subsequences is computationally
-prohibitive for high-dimensional signals.
-Recent work has explored learning pattern dictionaries from data, but often
-within complex deep learning architectures that sacrifice interpretability.
-
-An effective pattern-based method must balance three competing objectives:
-(i) automatic discovery of discriminative patterns without manual
-specification, (ii) computational efficiency to enable practical application,
-and (iii) interpretability to support clinical validation and understanding.
-Furthermore, patterns should capture both shape information and absolute scale
-information, as physiological signals often have distinct meanings at
-different amplitude ranges (e.g., blood pressure values).
-
-\subsection{Our Approach and Contributions}
 We address the fundamental trade-off between automation, performance, and
 interpretability with \textbf{patX}, a method that combines spline-based
 pattern representations with Bayesian optimization for automatic template
@@ -247,37 +139,47 @@ specification, learns compact task-specific representations through end-to-end
 optimization, and maintains full interpretability via human-readable B-spline
 patterns that clinicians can directly visualize and validate.
 
-patX searches over start positions, widths, channels, and B-spline control
-points to automatically learn discriminative patterns.
+A key innovation of patX is its multi-representation search strategy.
+Rather than operating solely on raw signals, patX precomputes multiple signal
+transformations---including wavelet decompositions, Fourier transforms, and
+derivatives---and automatically selects the most discriminative representation
+for each pattern during optimization.
+This allows patterns to match signals in the time domain, frequency domain,
+or derivative space, capturing diverse signal characteristics that would
+require manual specification in traditional feature engineering approaches.
+
+patX searches over start positions, widths, channels, B-spline control
+points, temporal shifts, pattern scaling modes (absolute vs. relative), and
+signal transformations to automatically learn discriminative patterns.
 Each discovered pattern induces a dissimilarity feature measuring the root mean
-squared error (RMSE) between the pattern template and the corresponding signal
-segment.
-This direct RMSE computation captures both shape similarity and amplitude
-differences, allowing patterns to distinguish between signals with different
-morphological characteristics.
+squared error (RMSE) between the pattern template and the corresponding
+transformed signal segment, with temporal shifts allowing for robust matching
+of misaligned patterns.
+The optimization process also determines whether to match a pattern's absolute
+values---capturing both shape and amplitude---or its relative shape, enabling
+patX to distinguish between a wider range of morphological characteristics.
 
 We evaluate patX across five heterogeneous biomedical problems: arrhythmia
-classification on MIT-BIH \cite{MoodyMark1992,Goldberger2000}, seizure
-classification on Bonn EEG \cite{Andrzejak2001}, gene expression prediction
+classification on MIT-BIH \cite{MoodyMark1992,Goldberger2000}, emotion
+classification from EEG signals (Emotions), gene expression prediction
 from histone modification profiles (REMC) \cite{Roadmap2015}, clinical
-prediction on MIMIC-IV \cite{Johnson2023MIMICIV}, and glucose forecasting (AZT1D).
+prediction on MIMIC-IV \cite{Johnson2023MIMICIV} (ARDS classification), and glucose forecasting (AZT1D).
 We compare against tsfresh \cite{christ2018tsfresh}, catch22 \cite{lubba2019catch22}, 
 and a convolutional neural network baseline under matched splits and metrics.
 
-Our contributions are:
-\begin{itemize}
-  \item We introduce patX, a B-spline-based pattern discovery method that
-  produces human-readable motifs bridging spline theory and template matching
-  for interpretable time series analysis.
-  \item We demonstrate that patX achieves competitive or superior performance
-  compared to established baselines while using orders of magnitude fewer
-  features (typically $<$12 patterns vs hundreds or thousands of features).
-  \item We provide extensive interpretability analysis with domain-specific
-  pattern validation, visualizing discovered patterns and their activation
-  regions to demonstrate clinical and biological relevance.
-  \item We release patX as an official Python package on PyPI and actively
-  maintain it (\url{https://pypi.org/project/patx/}).
-\end{itemize}
+We introduce patX, a B-spline-based pattern discovery method that
+produces human-readable motifs bridging spline theory and template matching
+for interpretable time series analysis, with automatic selection of signal
+representations across multiple transformations (time, frequency, derivative).
+We demonstrate that patX achieves competitive or superior performance
+compared to established baselines on five diverse biomedical datasets,
+winning on two and remaining competitive on three, while using orders of
+magnitude fewer features (typically $<$14 patterns vs hundreds or thousands
+of features).
+We provide extensive interpretability analysis with domain-specific
+pattern validation, visualizing discovered patterns and their activation
+regions to demonstrate clinical and biological relevance.
+We release patX as an official Python package on PyPI: (\url{https://pypi.org/project/patx/}).
 
 \section{Methods}
 
@@ -286,6 +188,17 @@ patX discovers interpretable patterns from time series and spatial data through 
 The method learns B--spline templates that serve as reference shapes, then
 measures the dissimilarity between each signal segment and these templates using root mean squared error (RMSE).
 These pattern RMSE values become features for downstream prediction tasks.
+
+Before pattern optimization begins, patX precomputes multiple representations
+of the input signals.
+For each signal, the method generates five different views: the raw time--series
+data, cumulative sum, moving average, FFT power spectra, and the temporal derivative.
+These transformations are computed once and cached, enabling efficient pattern
+search across multiple signal representations without repeated transformation
+overhead.
+During optimization, each candidate pattern automatically selects which
+transformation provides the most discriminative features for the prediction task.
+
 The framework is highly flexible, allowing users to configure the optimization
 algorithm, machine learning model, and termination criteria according to their specific needs.
 An overview of the patX methodology is shown in
@@ -293,7 +206,7 @@ Figure~\ref{fig:patx_methodology}.
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=\textwidth,keepaspectratio]{images/patx_methodology.pdf}
+  \includegraphics[width=\textwidth,keepaspectratio]{images/flowchart/flowchart.pdf}
   \caption{patX methodology overview: The iterative optimization process begins
   with time series or spatial data and an optional initial feature set.
   Optuna's Tree--Parzen Estimator (TPE) optimizer proposes B--spline control
@@ -337,9 +250,31 @@ or histone marks), a pattern consists of:
 (i) a start position and width that specify which segment of the signal to
 examine,
 (ii) a set of B--spline control points that define the shape of the template
-curve, and
-(iii) a channel index indicating which signal channel to extract from
-(for multivariate data).
+curve,
+(iii) a channel index indicating which signal channel to extract from (for
+multivariate data),
+(iv) a temporal shift tolerance that allows time--domain patterns (raw and
+derivative transformations) to be matched flexibly within a window around their
+nominal start position, while frequency--domain patterns (FFT and wavelet) match
+at exact positions,
+(v) a pattern mode (relative or absolute) that determines how B--spline control
+point values are interpreted, and
+(vi) a transformation type that selects which signal representation to match
+against.
+Relative mode patterns (control points in [0,1]) capture signal shape, whereas
+absolute mode patterns are scaled to the training data's value range to capture
+both shape and amplitude.
+The transformation type determines which precomputed signal view to use:
+\textit{raw} (original time--series), \textit{cumsum} (cumulative sum),
+\textit{moving\_average} (smoothed signal), \textit{fft\_power} (frequency--domain 
+power spectra), or \textit{derivative} (temporal rate of change via gradient).
+These transformations are precomputed once at the start of optimization,
+allowing efficient pattern search across multiple signal representations without
+repeated transformation cost.
+Critically, when matching in a transformed space, the B--spline pattern itself
+is also transformed using the same transformation before computing RMSE,
+ensuring mathematically consistent comparison between pattern and signal in the
+same representation space.
 The B--spline is constructed using cubic basis functions (degree 3) with
 control points distributed uniformly over the pattern width.
 The optimizer suggests values for all these parameters by learning from
@@ -350,14 +285,38 @@ different parts of the signal and different B--spline shapes.
 \textbf{2. Pattern RMSE Calculation.}
 For each candidate pattern, patX computes an RMSE--based dissimilarity value
 for every sample in the training and validation sets.
-The method calculates the root mean squared error between the B--spline pattern
-template and the corresponding signal segment:
-$\text{RMSE} = \sqrt{\frac{1}{W}\sum_{i=1}^{W}(x_i - p_i)^2}$, where $W$ is
-the pattern width, $x_i$ are the signal values in the extracted region, and
-$p_i$ are the pattern template values.
-This direct RMSE computation captures both shape differences and amplitude
-variations, enabling the method to distinguish between morphologically distinct
-signal characteristics.
+First, both the signal segment and the B--spline pattern template are
+transformed to the same representation space (raw, wavelet, FFT, or derivative)
+as specified by the pattern's selected transformation type.
+Then, the method calculates the root mean squared error between the transformed
+pattern and the transformed signal segment, where $W$ is the pattern width,
+$x_i$ are the transformed signal values, and $p_i$ are the transformed pattern
+values.
+For time--domain patterns (raw and derivative transformations), this calculation
+accounts for temporal variations by performing the RMSE computation over a
+search window around the pattern's start position, as determined by its optimized
+shift tolerance.
+The method evaluates the pattern at multiple positions within this window using
+an adaptive stride mechanism that automatically scales with the search space
+size to maintain computational efficiency.
+For frequency--domain patterns (FFT power), shift tolerance is set to zero and 
+patterns match at exact positions, as positional shifts in frequency space do not 
+correspond to temporal offsets.
+Specifically, the stride is computed as $\text{stride} = \max(1, W_{\text{search}}
+/ N_{\text{max}})$, where $W_{\text{search}}$ is the window size and
+$N_{\text{max}}$ is the maximum number of positions to evaluate (set to 50 in
+our experiments).
+This ensures that pattern matching remains computationally tractable across
+datasets with varying temporal resolutions---from short glucose time series
+(24 time points) to long EEG recordings (4097 time points)---while still
+providing sufficient spatial sampling to find optimal matches.
+The minimum RMSE found across all evaluated positions within the search window
+is used as the final dissimilarity feature.
+This mathematically consistent RMSE computation in the same representation space,
+combined with the optimized choice between absolute and relative pattern modes,
+captures both shape differences and amplitude variations across multiple signal
+representations, enabling the method to distinguish between morphologically
+distinct signal characteristics in time, frequency, or derivative domains.
 These RMSE values become features that are fed into a machine learning model.
 The extracted RMSE feature is appended to the existing feature set, which may
 already contain RMSE values from previously discovered patterns or baseline
@@ -392,7 +351,7 @@ knowledge.
 For the experiments reported in this work, we use the following configuration.
 These choices can be customized based on the specific dataset and task
 requirements, as the patX framework supports alternative optimizers, machine
-learning models, and B--spline degrees.
+learning models, and B--spline degrees. patX is available as an official Python package on PyPI (\url{https://pypi.org/project/patx/}).
 
 \begin{table}[H]
 \centering
@@ -403,19 +362,23 @@ learning models, and B--spline degrees.
 \textbf{Component} & \textbf{Configuration} \\
 \midrule
 Optimization Algorithm & Bayesian optimization (Optuna TPE) \\
-Candidates per Round & 300 pattern evaluations \\
-Pattern Representation & Cubic B--splines (degree 3, 5 control points) \\
+Candidates per Round & 500 pattern evaluations \\
+Pattern Representation & Cubic B--splines (degree 3, 4 control points) \\
+Signal Transformations & Raw, cumsum, moving\_average, FFT power, derivative \\
+Shift Tolerance & Optimized in [0.0, 1.0] for raw/derivative (time domain) \\
+& Fixed at 0.0 for FFT power (frequency domain) \\
+& Adaptive stride: max 50 position evaluations \\
 Machine Learning Model & LightGBM (classifier/regressor) \\
 Evaluation Metrics & AUC, accuracy (classification); RMSE (regression) \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-patX is available as an official Python package on PyPI (\url{https://pypi.org/project/patx/}).
+
 
 \subsection{Datasets}
 We evaluate patX across five diverse biomedical datasets spanning glucose
-forecasting, arrhythmia classification, seizure detection, gene expression prediction, and clinical outcome prediction.
+forecasting, arrhythmia classification, emotion classification, gene expression prediction, and clinical outcome prediction.
 Table~\ref{tab:datasets} summarizes the key characteristics of each dataset.
 
 \begin{table}[H]
@@ -430,8 +393,8 @@ Table~\ref{tab:datasets} summarizes the key characteristics of each dataset.
 \midrule
 AZT1D & $\sim$12k & 3 & 24 & RMSE & CGM, Insulin, Carbs & Future glucose change \\
 MITBIH & $\sim$12k & 1 & 100 & Acc. & ECG beats & 5--class arrhythmia type \\
-Bonn EEG & 500 & 1 & 4101 & AUC & Wavelet coefficients & 5--class seizure state \\
-REMC & $\sim$1031k & 5 & 200 & AUC & Histone marks & Gene expression
+Emotions & 2,048 & 5 & 254 & AUC & EEG channels & 3--class emotion state \\
+REMC & 18,421 & 5 & 200 & AUC & Histone marks & Gene expression
 (high/low) \\
 MIMIC--IV & $\sim$4k & 29 & 24 & AUC & EHR time series & ARDS diagnosis \\
 \bottomrule
@@ -439,10 +402,26 @@ MIMIC--IV & $\sim$4k & 29 & 24 & AUC & EHR time series & ARDS diagnosis \\
 \end{table}
 
 \textbf{AZT1D (glucose forecasting).}
-We parse CGM records per subject and create supervised learning examples using
-24 lagged glucose features \(\{g_{t-\ell}\}_{\ell=0}^{23}\) with regression
-target \(g_{t+h}-g_t\) (where \(h\) is the prediction horizon).
-We pass two initial features (raw glucose and time--of--day) to patX.
+We parse continuous glucose monitoring (CGM) records per subject and create
+supervised learning examples with 24 lagged timepoints (2 hours history at
+5-minute intervals) for three physiological signals: CGM, insulin, and carbs.
+The regression target is future glucose change $g_{t+h}-g_t$ where $h=30$
+minutes.
+A critical challenge in glucose forecasting is modeling delayed physiological
+responses: insulin takes 10--90 minutes to affect glucose levels, while
+carbohydrates impact glucose within 10--60 minutes, with effects persisting for
+2--4 hours \cite{woldaregay2019data}.
+We address this by computing active insulin and carbohydrate effects at each
+timepoint using physiological response curves that model onset, peak, and
+duration dynamics based on established pharmacokinetic and glycemic response
+literature.
+For insulin, we use a gamma-like function with 15-minute onset, 60-minute peak,
+and 4-hour duration; for carbs, 10-minute onset, 45-minute peak, and 3-hour
+duration.
+These response curves convolve with event times and amounts to compute cumulative
+active effects, creating interpretable time series that capture overlapping
+insulin doses and meal intakes (see Supplementary Figure~\ref{fig:azt1d_preprocessing}).
+We pass initial CGM value (CGM\_0) as baseline feature to patX.
 Link: \url{https://data.mendeley.com/datasets/gk9m674wcx/1}.
 
 \textbf{MITBIH (arrhythmia classification).}
@@ -454,32 +433,57 @@ or ventricular premature (V).
 We apply random undersampling to balance class distributions.
 Link: \url{https://www.kaggle.com/datasets/mondejar/mitbih-database}.
 
-\textbf{Bonn EEG (five--class EEG).}
-We preprocess raw EEG recordings using 4--level wavelet decomposition with
-Daubechies--4 wavelets (db4) and periodization mode, yielding concatenated
-wavelet coefficients representing the signal's frequency spectrum.
-Each sample becomes a 4097--dimensional feature vector containing approximate
-and detail coefficients across multiple frequency scales.
-The dataset contains five classes: seizure activity (S), focal area (F),
-healthy brain (N), eyes closed (O), and eyes open (Z).
-Link: \url{https://dataverse.csuc.cat/dataset.xhtml?persistentId=doi:10.34810/data490}.
+\textbf{Emotions (emotion classification from EEG).}
+We use EEG recordings from the emotions dataset containing brainwave data
+collected while participants experienced different emotional states.
+Each sample contains 254 time points across 5 EEG channels (AF3, F7, F3, FC5, T7).
+The dataset contains three emotion classes: positive, neutral, and negative.
+We allow patX to automatically select appropriate signal transformations
+(including wavelet decompositions) as needed for pattern discovery.
+Link: \url{https://www.kaggle.com/datasets/birdy654/eeg-brainwave-dataset-feeling-emotions}.
 
 \textbf{REMC (ChIP-seq).}
-Following our prior work on PatternChrome \cite{paul2025prediction}, we extract
-histone modification profiles from promoter regions and create binary gene
-expression targets (high/low expression).
-We group 12 histone marks (H3K4me1, H3K4me3, H3K27me3, etc.) as separate
-channels.
+Following our prior work on PatternChrome \cite{paul2025prediction}, we predict
+binary gene expression (high/low) from histone modification ChIP-seq profiles.
+The dataset contains gene expression data for 19,795 genes across 56 cell lines
+from the Roadmap Epigenomics Consortium.
+We convert RefSeq gene annotations to GENCODE identifiers, retaining 18,421
+genes with successful mapping (1,374 genes lost).
+For each gene, we extract five histone modification signals (H3K4me1, H3K4me3,
+H3K36me3, H3K9me3, H3K27me3) from the region 5000 bp upstream and downstream of
+the transcription start site (TSS).
+This 10,000 bp region is divided into 50 bp bins, yielding 200 bins per histone
+mark (1000 total features per gene).
+Gene expression is binarized using the median expression level as threshold:
+genes above the median are labeled as highly expressed, genes below as lowly
+expressed.
+We randomly sample 6,600 genes for training, 5,911 for validation, and 5,910
+for testing, ensuring balanced labels across splits.
+The five histone marks serve as separate input channels for patX.
 Data from Roadmap Epigenomics Consortium:
 \url{https://egg2.wustl.edu/roadmap/web_portal/processed_data.html}.
 
 \textbf{MIMIC--IV (EHR classification).}
-We derive one row per subject with 24 hourly samples per time series (heart
-rate, respiratory rate, blood pressure, labs) and a binary ARDS flag.
-Preprocessing includes cleaning, capping extremes at 0.1/99.9th percentiles,
-forward/backward filling, and padding/truncating to 24 hours per series.
-We group 24 time series as separate channels and provide age as an initial
-feature.
+We predict acute respiratory distress syndrome (ARDS) from multivariate clinical
+time series in intensive care unit patients \cite{Johnson2023MIMICIV}.
+The dataset contains 29 physiological and clinical time series features per
+subject, including vital signs (respiratory rate, heart rate, O2 saturation,
+blood pressure, temperature), ventilator settings (FiO2, PEEP), Glasgow Coma
+Scale scores, laboratory values (arterial pH, PaO2, creatinine, platelets, WBC,
+INR, lactate, bilirubin), vasopressor medications (norepinephrine,
+phenylephrine, epinephrine, dopamine, dobutamine), urine output (Foley), and
+derived features (PaO2/FiO2 ratio, pulse pressure).
+We extract 24-hour time series data from the first day of mechanical
+ventilation in the ICU, binned into hourly intervals, with sequences
+standardized through padding or truncation.
+Missing values are imputed using forward and backward filling within each
+subject's time series.
+Extreme values are capped at the 0.1/99.9th percentiles to prevent scaling
+issues.
+Subjects with fewer than 5 hours of data are excluded.
+The binary ARDS classification target is derived from diagnostic codes, with
+patient age (anchor\_age) provided as an initial baseline feature.
+The 29 time series are grouped as separate input channels for patX.
 Link: \url{https://physionet.org/content/mimiciv/3.1/}.
 
 \subsection{Baselines}
@@ -487,40 +491,24 @@ We compare patX against three established approaches for time series analysis:
 tsfresh and catch22 for automated feature extraction combined with LightGBM,
 and a 1D convolutional neural network for end--to--end learning.
 
-\subsubsection{TSFRESH Baseline Implementation}
-For the tsfresh baseline, we use \texttt{MinimalFCParameters} to extract a
-compact descriptor set including moments, spectral features, and shape statistics.
-We convert matrices to the long format required by tsfresh with sample ids and
-time indices, and we skip feature selection to avoid multiprocessing issues,
-training LightGBM on all extracted features.
-Hyperparameters and evaluation are kept identical to patX and other baselines.
-
-\subsubsection{catch22 Baseline Implementation}
-For the catch22 baseline, we extract the 22 canonical time--series features
-from the catch22 library \cite{lubba2019catch22}.
-These features represent a minimal, high--performance set selected from over 7000 features in the hctsa toolbox.
-We apply catch22 feature extraction to each time series sample and train
-LightGBM on the resulting 22--dimensional feature vectors.
-Hyperparameters and evaluation protocols are kept identical to patX and other
-baselines.
+\subsubsection{TSFRESH and catch22 Baselines}
+For tsfresh, we use \texttt{MinimalFCParameters} to extract compact descriptors
+including moments, spectral features, and shape statistics, training LightGBM
+on all extracted features.
+For catch22, we extract the 22 canonical features from the library
+\cite{lubba2019catch22} and train LightGBM.
+Hyperparameters and evaluation protocols are kept identical to patX for fair
+comparison.
 
 \subsubsection{CNN Baseline Implementation}
-For the CNN baseline, we implement a 1D convolutional neural network using
-PyTorch with architecture tailored to each dataset's input dimensions.
-The network consists of three convolutional blocks with progressively increasing
-filters (64, 128, 256), each containing two convolutional layers, batch
-normalization, ReLU activations, max pooling, and dropout (0.2, 0.2, 0.3)
-for regularization.
-An adaptive average pooling layer aggregates temporal features, followed by a
-fully connected head with two hidden layers (128, 64) with batch normalization and dropout (0.4, 0.3) before the final output layer.
-We use early stopping based on validation loss to prevent overfitting, with a
-patience of 10 epochs and learning rate reduction on plateau (factor 0.5,
-patience 3).
-The network is trained using Adam optimizer with learning rate 0.001, batch size 128, and weight decay 1e-4.
-For multi--class problems, we use cross--entropy loss with class weighting for
-binary tasks; for regression, we use mean squared error loss. Training runs for up to 50 epochs with early stopping.
-Hyperparameters and evaluation protocols are kept identical to patX, tsfresh,
-and catch22 baselines.
+We implement a 1D CNN using PyTorch with three convolutional blocks
+(filters: 64, 128, 256) containing convolutions, batch normalization, ReLU,
+max pooling, and dropout.
+Adaptive pooling aggregates features, followed by fully connected layers
+(128, 64) before the output.
+We train with Adam (lr=0.001, batch size=128), early stopping (patience=10),
+cross-entropy loss (classification) or MSE (regression), matching evaluation
+protocols with other baselines.
 
 \subsection{Evaluation}
 We split all datasets 70\%/30\% train/test with fixed seeds and preserve class balance. 
@@ -538,346 +526,533 @@ Statistically significant differences between approaches are assessed using pair
 Table~\ref{tab:results} presents the test set performance of patX + LightGBM,
 tsfresh + LightGBM, catch22 + LightGBM, and CNN baselines across five biomedical datasets.
 
-On AZT1D (glucose forecasting), CNN achieves the best RMSE (18.636 $\pm$ 2.690),
-closely followed by patX (19.470 $\pm$ 2.880) using only 10.7 features on
-average—6.7× fewer than CNN (72 features).
-patX also significantly outperforms catch22 (20.663 $\pm$ 2.862 with 23
-features), demonstrating that task--specific pattern discovery yields superior
-efficiency.
-Despite requiring longer extraction time (30.3s vs 19.6s), patX's compact
-representation offers advantages for deployment and interpretability.
+On AZT1D (glucose forecasting), patX achieves the best RMSE (15.573 $\pm$ 2.089),
+outperforming CNN (17.570 $\pm$ 2.443), tsfresh (20.133 $\pm$ 2.734), and
+catch22 (20.161 $\pm$ 2.867).
+patX uses 15.2 $\pm$ 4.2 features on average---4.7× fewer than CNN (72 features)
+while achieving 11\% lower error.
+This demonstrates that task-specific multi-representation pattern discovery can
+exceed deep learning performance while maintaining compact, interpretable
+representations.
+Despite longer extraction time (367.4s vs 37.4s for CNN), the superior accuracy
+and interpretability justify the computational investment during training.
 
-On MITBIH (arrhythmia classification), catch22 achieves the highest accuracy
-(0.948 $\pm$ 0.002), followed closely by CNN (0.937 $\pm$ 0.008) and patX/tsfresh
-(both 0.910).
-patX matches tsfresh performance while using a comparable feature count (8.2 vs
-10.0), demonstrating that learned patterns can rival extensively engineered
-feature libraries.
-Notably, patX achieves this with 12.2× fewer features than CNN (8.2 vs 100) and
-2.7× fewer than catch22.
+On MITBIH (arrhythmia classification), CNN achieves the highest accuracy
+(0.942), followed by patX (0.932), catch22 (0.924), and tsfresh (0.856).
+patX uses 12.0 features on average, demonstrating that learned patterns
+across multiple signal representations can achieve competitive performance
+with both extensively engineered feature libraries and deep learning architectures.
+Notably, patX achieves competitive performance while using 8.3× fewer features
+than CNN (12.0 vs 100) and 1.8× fewer than catch22.
 
-On Bonn EEG (seizure classification), catch22 leads with 0.774 $\pm$ 0.033 AUC,
-followed by patX (0.768 $\pm$ 0.054) and CNN (0.756 $\pm$ 0.049).
-patX achieves competitive performance with only 5.0 features on average—820×
-fewer than CNN (4101 features) and 4.4× fewer than catch22 (22 features).
-The exceptionally compact representation makes patX particularly suitable for
-real--time seizure detection on resource--constrained devices.
+On Emotions (emotion classification), patX achieves the highest AUC
+(0.928 $\pm$ 0.008), followed by CNN (0.922 $\pm$ 0.009), tsfresh (0.878 $\pm$ 0.016), and catch22 (0.761 $\pm$ 0.020).
+patX uses 5.8 $\pm$ 2.0 features on average---3.4× fewer than CNN (20 features) and 3.8× fewer than catch22
+(22 features).
+The compact representation combined with competitive performance
+makes patX particularly suitable for real-time emotion recognition on
+resource-constrained devices.
 
-On REMC (gene expression prediction), CNN slightly outperforms patX (0.935 $\pm$
-0.022 vs 0.930 $\pm$ 0.023), but patX uses 71.9× fewer features (13.9 vs 1000)
-while significantly outperforming both catch22 (0.884 $\pm$ 0.028) and tsfresh
-(0.875 $\pm$ 0.030).
-The minimal performance gap between patX and CNN (0.5\% AUC difference)
-demonstrates that interpretable pattern--based features can nearly match
-end--to--end deep learning on complex epigenomic prediction tasks.
+On REMC (gene expression prediction), CNN slightly outperforms patX (0.934 $\pm$
+0.022 vs 0.928 $\pm$ 0.023), but patX uses 87.7× fewer features (11.4 vs 1000)
+while significantly outperforming both catch22 (0.883 $\pm$ 0.027) and tsfresh
+(0.874 $\pm$ 0.030).
+The minimal performance gap between patX and CNN (0.6\% AUC difference)
+demonstrates that interpretable pattern-based features across multiple signal
+representations can nearly match end-to-end deep learning on complex epigenomic
+prediction tasks.
 
-On MIMIC--IV (clinical outcome prediction), patX achieves the best performance
-across all methods (0.776 $\pm$ 0.007), outperforming tsfresh (0.766 $\pm$
-0.004), catch22 (0.743), and CNN (0.726 $\pm$ 0.040) while using only 7.4
-features on average—94.2× fewer than CNN (697 features).
-This result highlights patX's strength on high--dimensional clinical time series
-where deep learning struggles with limited sample sizes.
+On MIMIC-IV (clinical outcome prediction), patX achieves the best performance
+across all methods (0.771 $\pm$ 0.009), outperforming CNN (0.763 $\pm$ 0.019), 
+tsfresh (0.763 $\pm$ 0.003), and catch22 (0.743 $\pm$ 0.000) while using
+only 5.0 $\pm$ 1.0 features on average---139.4× fewer than CNN (697 features).
+This result highlights patX's strength on high-dimensional clinical time series
+where deep learning struggles with limited sample sizes and where multi-representation
+pattern search effectively captures diverse physiological dynamics.
 
-Overall, patX achieves the best performance on 1 of 5 datasets (MIMIC--IV),
-competitive performance (within 2\% of the leader) on 3 datasets (AZT1D, Bonn
-EEG, REMC), and solid performance on MITBIH.
-Critically, patX consistently uses 1--2 orders of magnitude fewer features than
-CNN (5--14 features vs 72--4101) while maintaining full interpretability through
-human--readable B--spline patterns.
-The compact representations enable rapid inference (21.5--59.9s extraction time)
-and direct clinical validation, addressing key deployment barriers for deep
-learning in healthcare.
+Overall, patX achieves the best performance on 3 of 5 datasets (AZT1D, Emotions, MIMIC-IV),
+competitive performance (within 1-6\% of the leader) on 2 datasets
+(MITBIH, REMC).
+Critically, patX consistently uses 1-2 orders of magnitude fewer features than
+CNN (4.0-15.2 features vs 20-1000) while maintaining full interpretability
+through human-readable B-spline patterns discovered across multiple signal
+representations.
+The compact representations enable efficient inference and direct clinical
+validation, addressing key deployment barriers for deep learning in healthcare.
 
 \subsection{Domain-Specific Pattern Interpretation}
 
 To demonstrate patX's interpretability advantage, we analyze discovered patterns
-through the lens of domain knowledge, examining their biological and clinical relevance.
+through the lens of domain knowledge, examining their biological and clinical
+relevance across multiple biomedical domains.
+The multi-representation search strategy enables patterns to be discovered in
+the most discriminative signal space---whether time domain, frequency domain
+(via wavelets or FFT), or derivative space---enhancing both interpretability
+and predictive power.
+
+Figure~\ref{fig:domain_pattern_interpretation} presents a comprehensive
+comparison of pattern discovery across two distinct biomedical domains:
+cardiac arrhythmia detection (MITBIH) and gene expression prediction (REMC).
+This side-by-side analysis demonstrates how patX autonomously discovers
+domain-appropriate patterns operating in the most discriminative signal
+representations for each task.
 
 \subsubsection{MITBIH: Cardiac Arrhythmia Patterns}
 
-Figure~\ref{fig:mitbih_pattern_interpretation} visualizes the top three patterns
-discovered for arrhythmia classification, overlaid on representative normal and arrhythmic ECG beats.
-All signals are z-score normalized for visual comparison, with discovered
-patterns shown in red spanning their target regions (shaded areas).
-
-The first pattern targets the mid-to-late QRS complex and early ST segment,
-capturing the characteristic morphology of ventricular depolarization and repolarization onset.
-On normal beats, this region exhibits smooth, coordinated deflections that align well with the template.
-On arrhythmic beats, aberrant conduction pathways produce irregular morphology
-with clear deviations from the learned pattern, enabling effective discrimination.
-
-The second pattern focuses on the later repolarization phase, encompassing the
-T-wave region—a critical marker for detecting ischemia and repolarization abnormalities.
-Normal beats show consistent T-wave morphology, while arrhythmic beats exhibit
-characteristic elevations, depressions, or bifurcations indicative of abnormal repolarization dynamics.
-
-The third pattern captures early cardiac cycle features, including P-wave and
-PR interval characteristics essential for identifying atrial activity and atrioventricular conduction timing.
-Bundle branch blocks and atrial arrhythmias produce distinctive patterns in
-this region that diverge from the normal template.
-
-These autonomously discovered patterns align with established clinical
-diagnostic criteria for ECG interpretation, demonstrating that patX learns
-physiologically meaningful features without domain-specific engineering.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth,keepaspectratio]
-  {images/mitbih_pattern_interpretation.png}
-  \caption{MITBIH: Top three discovered patterns overlaid on ECG beats.
-  Each row shows a different pattern (red curve with shaded target region)
-  aligned on optimally discriminative examples.
-  Left column: normal beat with best pattern match (low RMSE, green box);
-  right column: arrhythmic beat with worst match (high RMSE, red box).
-  All signals are z-scored for visual comparison.
-  Pattern 1 (top) captures QRS/early ST segment morphology.
-  Pattern 2 (middle) targets T-wave repolarization dynamics.
-  Pattern 3 (bottom) identifies P-wave/PR interval features.
-  RMSE values quantify pattern-to-signal dissimilarity, enabling class
-  discrimination.
-  Patterns autonomously discover clinically relevant cardiac cycle components
-  without manual feature engineering.}
-  \label{fig:mitbih_pattern_interpretation}
-\end{figure}
+The MITBIH analysis (top row) reveals a pattern discovered in derivative space,
+positioned at samples 2-42 (center=23.0, width=39.7).
+This pattern targets the early portion of the ECG beat, specifically capturing
+the P-wave region and early depolarization phase---critical regions for
+detecting atrial arrhythmias such as atrial fibrillation.
+The derivative transformation enables the pattern to focus on temporal dynamics
+and rate-of-change characteristics rather than absolute amplitude values,
+making it particularly effective at distinguishing different types of cardiac
+rhythms.
+The pattern demonstrates strong discriminative power with clear RMSE separation
+between normal and arrhythmic beats, where normal beats exhibit consistent
+derivative patterns that align well with the template, while arrhythmic beats
+show characteristic deviations in their temporal dynamics.
+The search region (highlighted in red) shows the wider area where the pattern
+can be found, accounting for temporal misalignment between different ECG
+recordings through shift tolerance.
+This autonomously discovered pattern aligns with established clinical diagnostic
+criteria, as the P-wave region and its derivative characteristics are
+fundamental to detecting atrial arrhythmias and other cardiac rhythm
+disturbances.
 
 \subsubsection{REMC: Epigenetic Regulatory Patterns}
 
-For gene expression prediction from histone modifications, patX identifies
-patterns that capture known regulatory mechanisms.
-Figure~\ref{fig:remc_pattern_interpretation} visualizes the top three patterns
-discovered for cell line E003, showing average histone modification profiles
-across promoter regions (1000bp windows centered on transcription start sites).
-
-Pattern 1 targets H3K4me3 near the TSS, capturing the characteristic sharp
-peak associated with active promoters.
-The pattern region (shown in red) aligns precisely with elevated H3K4me3
-signal in highly expressed genes (blue line) while remaining depleted in
-silenced genes (orange line).
-This autonomous discovery of the H3K4me3 promoter signature—one of the most
-well-established epigenetic marks of transcriptional activity—validates patX's
-ability to learn canonical regulatory features without prior biological
+The REMC analysis (bottom row) demonstrates pattern discovery in epigenetic
+data, specifically targeting H3K4me3 histone modifications (series 0) in raw
+signal space.
+The pattern is positioned at samples 50-90 (center=71.0, width=40.6), covering 
+the promoter region around the transcription start site (TSS).
+This pattern captures the characteristic H3K4me3 enrichment signature
+associated with active gene promoters.
+The search region (highlighted in red) shows the wider area where the pattern
+can be found, perfectly reflecting the known biology that most gene regulation
+occurs at the TSS or shortly upstream of it \cite{koch2007landscape, kim2020characterization, liang2004distinct}.
+High expression genes show strong pattern matching (RMSE=0.3), while low
+expression genes exhibit poor alignment (RMSE=51.7), achieving 9.6 RMSE units
+of separation (high expression: 12.6±8.3, low expression: 3.0±4.6).
+The autonomous discovery of this canonical active promoter mark---one of the
+most well-established epigenetic signatures of transcriptional activity---validates
+patX's ability to learn biologically meaningful features without prior domain
 knowledge.
 
-Pattern 2 identifies H3K27me3 enrichment patterns spanning broad chromatin
-domains.
-H3K27me3 is a polycomb-mediated repressive mark that spreads across silenced
-regions, and the pattern's extended width reflects this characteristic
-spreading behavior.
-High expression genes (blue) show depletion of this mark, while low expression
-genes (orange) exhibit strong enrichment, correctly capturing the repressive
-function.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]
+  {images/domain_pattern_interpretation.png}
+  \caption{Domain-specific pattern interpretation across biomedical applications.
+  Top row (MITBIH): Cardiac arrhythmia detection showing normal vs arrhythmic
+  ECG beats with discovered pattern overlay (red curve) and RMSE distributions.
+  Pattern operates in raw signal space, targeting late repolarization phase
+  (samples 70-84) with 11.4 RMSE separation between classes.
+  Bottom row (REMC): Gene expression prediction showing high vs low expression
+  H3K4me3 profiles with pattern overlay and RMSE distributions.
+  Pattern targets promoter region (samples 50-90) with 9.6 RMSE separation.
+  Both patterns demonstrate clear discriminative power and align with established
+  domain knowledge: cardiac electrical activity for MITBIH and epigenetic
+  regulatory mechanisms for REMC.}
+  \label{fig:domain_pattern_interpretation}
+\end{figure}
 
-Pattern 3 detects H3K36me3 signal characteristics in gene body regions.
-H3K36me3 marks actively transcribed gene bodies and correlates with
-transcriptional elongation.
-The pattern localizes downstream of the TSS where this modification accumulates
-during productive transcription, distinguishing active from inactive genes.
+\subsubsection{Individual Prediction Explainability via SHAP Analysis}
 
-These autonomously discovered patterns recapitulate fundamental principles of
-epigenetic gene regulation established through decades of chromatin biology
-research, demonstrating that patX learns biologically meaningful features
-aligned with domain expertise.
+To demonstrate the explainability of patX at the individual prediction level,
+we perform SHAP (SHapley Additive exPlanations) analysis \cite{lundberg2017unified, mosca2022shap} on representative
+samples from MIMIC-IV and AZT1D.
+Figure~\ref{fig:shap_waterfall_combined} shows waterfall plots visualizing how
+discovered patterns contribute to predictions for (a) a correctly predicted
+ARDS-positive patient and (b) an accurately forecasted glucose trajectory.
+
+For MIMIC-IV (panel a), the analysis reveals how multiple physiological patterns
+combine to predict ARDS diagnosis, with patterns targeting cardiovascular indicators
+(pulse pressure), respiratory parameters (FiO2), and metabolic markers (WBC levels).
+Each pattern operates in its selected transformation space (raw, cumsum, spectral entropy),
+with the optimization process automatically determining which signal representation
+captures the most discriminative information for each physiological variable.
+
+For AZT1D (panel b), glucose forecasting demonstrates patX's ability to
+autonomously discover complex temporal dynamics without manual feature engineering.
+The discovered patterns target different aspects of glucose dynamics: CGM derivative
+patterns identify rate-of-change characteristics, while CGM cumsum patterns capture
+cumulative glucose trends.
+The example shows how patX adapts to different glucose dynamics across subjects,
+demonstrating the method's flexibility in learning patient-specific patterns
+that capture complex interactions between insulin sensitivity, carbohydrate
+absorption, and glucose metabolism.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth,keepaspectratio]
-  {images/remc_pattern_interpretation.png}
-  \caption{REMC E003: Top three discovered patterns on histone modification tracks.
-  Each panel shows average ChIP-seq signal across 1000bp promoter regions
-  centered on transcription start sites (TSS, marked by dotted line).
-  Blue lines: high expression genes; orange lines: low expression genes.
-  Red dashed curves with shaded regions indicate discovered patterns.
-  Pattern 1 (top): H3K4me3 promoter peak near TSS, canonical active
-  transcription marker.
-  Pattern 2 (middle): H3K27me3 broad repressive domain, polycomb-mediated
-  silencing.
-  Pattern 3 (bottom): H3K36me3 gene body enrichment, transcriptional elongation
-  marker.
-  Patterns autonomously discover established epigenetic regulatory principles.}
-  \label{fig:remc_pattern_interpretation}
+  {images/shap_waterfall_combined.png}
+  \caption{SHAP waterfall plots demonstrating individual prediction
+  explainability through cumulative feature contributions.
+  Y-axis shows model output values: log-odds for classification (a) and predicted
+  values for regression (b), not the final target probabilities or glucose changes.
+  (a) MIMIC-IV: ARDS classification showing how patterns combine from baseline
+  log-odds $-2.25$ to final model output $-1.99$.
+  Pattern 3 (pulse pressure, $+0.47$) provides strongest positive contribution,
+  while Pattern 4 (FiO2, $-0.51$) provides strongest negative contribution,
+  indicating elevated oxygen requirements predict ARDS; patterns targeting WBC
+  ($+0.22$, $+0.06$) capture clinically relevant physiological dynamics.
+  (b) AZT1D: glucose forecasting showing cumulative effects from baseline
+  model output 0.12 to final 0.16.
+  Pattern 3 (CGM derivative, $+0.05$) provides the main contribution;
+  insulin and carbohydrate patterns show minimal contribution in this example,
+  demonstrating how patX adapts to different glucose dynamics across subjects.
+  Dotted gray line shows baseline; connecting lines show cumulative flow;
+  final value annotated at right.
+  Red bars increase prediction, blue bars decrease.
+  Both examples demonstrate transparent, physiologically meaningful feature
+  contributions with automatic transformation selection enabling clinical validation.}
+  \label{fig:shap_waterfall_combined}
 \end{figure}
-
-\subsubsection{Activation Heatmaps and Feature Attribution}
-
-To visualize where patterns activate across the input signal, we compute
-sliding window RMSE between each pattern and all possible signal segments,
-generating per-sample activation heatmaps.
-Figure~\ref{fig:activation_heatmaps} displays these heatmaps for representative
-MITBIH and REMC samples.
-
-For MITBIH ECG analysis, activation heatmaps reveal distinct localization
-patterns between normal and arrhythmic beats.
-Normal beats show concentrated activation in specific cardiac cycle regions—the
-QRS complex where the pattern was discovered—indicating consistent morphology
-that matches the learned template.
-In contrast, arrhythmic beats exhibit dispersed activation across multiple
-temporal regions, reflecting the irregular morphology characteristic of
-abnormal conduction patterns.
-This spatial distribution of activation directly visualizes why patterns
-discriminate effectively: normal beats maintain stable waveform characteristics
-while arrhythmic beats deviate unpredictably.
-
-For REMC epigenomic profiles, activation heatmaps demonstrate precise
-localization at functional regulatory elements.
-High expression genes show strong, focused activation near the transcription
-start site (TSS) where H3K4me3 peaks canonically appear, validating that the
-discovered pattern captures this established regulatory marker.
-Low expression genes exhibit weak or diffuse activation, lacking the sharp TSS
-enrichment characteristic of active promoters.
-This spatial specificity confirms that patterns identify biologically meaningful
-chromatin features rather than spurious correlations.
-
-These activation visualizations provide transparent, interpretable explanations
-of model predictions by highlighting precisely which signal regions drive
-classification or regression outputs.
-Clinicians and biologists can directly validate whether patterns activate in
-physiologically relevant locations, identify potential artifacts, and assess
-whether model decisions align with domain knowledge.
-
-\begin{figure}[H]
-  \centering
-  \includegraphics[width=\textwidth,keepaspectratio]
-  {images/activation_heatmaps.png}
-  \caption{Pattern activation heatmaps showing where patterns match signals
-  across MITBIH and REMC datasets.
-  Top row: MITBIH ECG beats (2 normal, 2 arrhythmic) with top discovered pattern.
-  Bottom row: REMC epigenomic profiles (2 high expression, 2 low expression)
-  with H3K4me3 promoter pattern.
-  Red intensity indicates pattern activation strength computed via sliding
-  window RMSE (high intensity = good match).
-  Blue dashed boxes mark the pattern discovery regions.
-  Green dotted lines (REMC) indicate transcription start sites.
-  For MITBIH, patterns consistently activate in QRS regions for normal beats
-  but show dispersed activation across arrhythmic beats, reflecting multiple
-  morphological deviations.
-  For REMC, activation localizes precisely at the TSS promoter region in high
-  expression genes while remaining diffuse in low expression genes, validating
-  biologically meaningful pattern discovery.}
-  \label{fig:activation_heatmaps}
-\end{figure}
-
-\subsection{Runtime and Efficiency Analysis}
-
-Beyond predictive performance, we evaluate the computational efficiency of patX
-compared to baselines across all datasets.
-Table~\ref{tab:runtime} presents wall-clock feature extraction time and
-inference time per sample for each method.
-
-\begin{table}[H]
-\centering
-\caption{Runtime Comparison: Feature Extraction and Inference}
-\label{tab:runtime}
-\footnotesize
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccccc@{}}
-\toprule
-& \multicolumn{2}{c}{\textbf{PATX}} & \multicolumn{2}{c}{\textbf{TSFRESH}} &
-\multicolumn{2}{c}{\textbf{CATCH22}} & \multicolumn{2}{c}{\textbf{CNN}} \\
-\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
-\textbf{Dataset} & Extract & Infer & Extract & Infer & Extract & Infer &
-Train & Infer \\
-& (s) & (ms) & (s) & (ms) & (s) & (ms) & (s) & (ms) \\
-\midrule
-AZT1D & 45±8 & 0.12 & 128±15 & 0.31 & 18±3 & 0.08 & 156±22 & 1.24 \\
-MITBIH & 312±42 & 0.18 & 892±67 & 0.48 & 32±5 & 0.11 & 523±68 & 2.15 \\
-Bonn EEG & 284±38 & 0.15 & 1124±103 & 0.52 & 28±4 & 0.09 & 648±89 & 3.82 \\
-REMC & 156±28 & 0.21 & 445±52 & 0.38 & 24±3 & 0.10 & 285±34 & 1.67 \\
-MIMIC--IV & 198±31 & 0.19 & 536±61 & 0.42 & 22±3 & 0.09 & 334±45 & 2.08 \\
-\bottomrule
-\end{tabular*}
-\end{table}
-
-patX achieves 2--4× faster feature extraction than tsfresh and comparable
-training time to CNN, while maintaining 6--20× faster inference than deep
-learning approaches.
-The compact feature representations (typically $<$12 patterns) enable rapid
-prediction, critical for real-time clinical decision support systems.
-catch22 offers the fastest extraction due to its fixed 22-feature set, but at
-the cost of reduced accuracy on most tasks.
-Inference time for patX scales linearly with pattern count, making it suitable
-for resource-constrained deployment scenarios (embedded devices, mobile health
-applications).
 
 \subsection{Pattern Stability and Reproducibility}
 
-To demonstrate the robustness of discovered patterns, we evaluate consistency
-across 5-fold cross-validation on the MITBIH dataset.
-Figure~\ref{fig:pattern_stability} visualizes the first pattern discovered in
-each fold, overlaid on the same representative ECG beat to enable direct
-comparison of both pattern shape and spatial localization.
-
-Across all five folds, patX discovers remarkably consistent patterns targeting
-the same cardiac region (start positions: 10--14, widths: 32--36), corresponding
-to the QRS complex and early ST segment—the primary electrical deflection
-representing ventricular depolarization.
-The B-spline pattern shapes exhibit strong morphological similarity across
-folds, capturing the characteristic sharp positive peak followed by gradual
-decline that defines this critical cardiac phase.
-
-This consistency demonstrates several important properties of the patX framework.
-First, pattern discovery is \textit{stable}: despite training on different data
-subsets (80\% per fold), the optimization converges to nearly identical
-solutions in terms of both spatial location and morphological characteristics.
-Second, patterns are \textit{robust}: the discovered features reflect genuine
-signal structure rather than overfitting to specific training samples or noise.
-Third, patterns are \textit{interpretable}: the consistent localization at the
-QRS complex validates that patX autonomously identifies physiologically
-meaningful cardiac features without manual specification.
-
-The tight clustering of start positions (std=1.6 samples) and widths (std=1.5
-samples) across folds indicates that the iterative optimization reliably
-identifies the same discriminative signal regions.
-Pattern shape similarity, measured via normalized cross-correlation, exceeds
-0.95 for all pairwise fold comparisons, demonstrating that the B-spline
-parameterization learns consistent morphological templates.
-
-This reproducibility is crucial for clinical deployment, as it ensures that
+To evaluate the robustness and reproducibility of patX's pattern discovery, we
+analyze consistency across cross-validation folds for fold-based datasets
+(MITBIH: 5-fold, Emotions: 5-fold, MIMIC: 3-fold, REMC: 5-fold).
+Across these datasets, patX discovers an average of 5--14 patterns per fold,
+with the first extracted pattern consistently providing the strongest
+discriminative power.
+This reproducibility analysis is crucial for clinical deployment, as it ensures that
 patterns discovered during development will generalize to new data and remain
 interpretable across different patient cohorts.
-The stability also validates the optimization procedure: rather than finding
-arbitrary local optima, patX consistently converges to the same global solution
-that captures fundamental discriminative characteristics of the signal.
+
+We focus our stability analysis on the first discovered pattern in each fold,
+as this pattern typically captures the most salient discriminative features.
+We quantify reproducibility using Spearman rank correlation ($\rho$) computed
+from pairwise comparison of B-spline pattern values across all fold combinations,
+which captures monotonic relationships without assuming linearity.
+Spearman correlation assesses pattern similarity by comparing the rank orders
+of pattern values, making it ideal for evaluating shape consistency because it
+detects whether patterns share the same morphological trends (increases,
+decreases, peaks) independent of absolute amplitude or vertical scaling.
+
+For MITBIH, our analysis reveals limited pattern reproducibility across folds.
+The first pattern achieves $\rho = -0.046$ across the five folds, indicating
+poor morphological consistency.
+Despite this low correlation in pattern shapes, we observe moderate positional
+consistency: patterns target similar regions with center position
+$75.0 \pm 35.5$ samples and width $37.4 \pm 7.2$ samples (coefficient of
+variation: CV=0.474 for center, CV=0.191 for width).
+Strikingly, four out of five folds select the \textit{cumsum} transformation
+for the first pattern, demonstrating that while pattern shapes vary, the
+optimization consistently identifies the most discriminative signal
+representation.
+The remaining fold selects the \textit{raw} transformation, resulting in a
+different pattern morphology.
+All five folds use relative pattern matching (normalized shape comparison),
+reflecting the optimization's preference for capturing morphologic differences
+independent of absolute amplitude.
+
+Figure~\ref{fig:pattern_stability} visualizes the first pattern from each fold
+overlaid on the same representative ECG beat, demonstrating the wide variation
+in pattern shapes despite similar positions.
+The visualization clearly shows that patterns discovered across different folds
+exhibit fundamentally different morphologies, though they target overlapping
+temporal regions.
+This lack of shape consistency suggests that the optimization space contains
+multiple distinct local optima, each providing discriminative power through
+different characteristic shapes.
+However, the consistent selection of cumsum transformation across four folds
+validates that the optimization reliably identifies the most appropriate signal
+representation.
+
+Across all datasets, we observe varying degrees of first pattern stability.
+MITBIH exhibits poor pattern correlation ($\rho = -0.046$) despite having
+moderate positional consistency, reflecting the existence of multiple
+morphologically distinct but equally discriminative patterns in different
+training subsets.
+This finding highlights an important limitation: while patX consistently
+achieves strong predictive performance, the specific patterns discovered are
+not fully reproducible across data splits.
+
+REMC demonstrates substantial variability across its 46 cell lines, with
+Spearman correlations ranging from $\rho = -0.445$ to $\rho = 0.990$, with
+a median of $\rho = -0.273$.
+Some cell lines (e.g., REMC\_E054: $\rho = 0.946$, REMC\_E056: $\rho = 0.990$)
+exhibit strong pattern reproducibility, suggesting that certain epigenetic
+profiles produce more consistent first patterns across folds.
+Conversely, other cell lines (e.g., REMC\_E028: $\rho = -0.445$, 
+REMC\_E106: $\rho = -0.419$) show poor reproducibility, likely reflecting
+greater biological heterogeneity or weaker discriminative signals.
+Transformation selection varies across REMC cell lines: all three folds
+consistently select the \textit{raw} transformation for 16 cell lines,
+\textit{cumsum} for 5 cell lines, while the remaining 25 cell lines show
+mixed transformation selections across folds.
+
+This cross-dataset analysis reveals that patX's optimization procedure does
+not guarantee pattern reproducibility across different training subsets,
+though it consistently converges to solutions providing strong discriminative
+power.
+The discovered patterns reflect signal structure and domain characteristics
+that provide transparent features for clinical applications, but practitioners
+should be aware that specific pattern shapes may vary across different data
+splits.
+The variability in pattern reproducibility appears dataset-dependent, with
+some biological contexts (e.g., certain epigenetic cell lines) producing more
+stable patterns than others.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth,keepaspectratio]
   {images/pattern_stability.png}
-  \caption{MITBIH: Pattern consistency across 5-fold cross-validation.
-  Each panel shows the first discovered pattern from a different fold (Fold 1--5)
-  overlaid on the same representative normal ECG beat.
-  Black line: ECG signal (normalized).
-  Colored line: Learned B-spline pattern from that fold, scaled and positioned
-  at its discovered location.
-  Shaded regions indicate pattern coverage area.
-  Dashed vertical lines mark pattern boundaries.
-  All five folds discover nearly identical patterns targeting the QRS complex
-  region (start positions: 10--14, widths: 32--36), demonstrating robust and
-  reproducible pattern discovery.
-  Pattern shapes exhibit strong morphological consistency (cross-correlation
-  $>$0.95), validating that patX reliably identifies the same discriminative
-  cardiac features across different training subsets.}
+  \caption{MITBIH: First pattern variation across 5-fold cross-validation.
+  Each colored line shows the first discovered pattern from a different fold
+  overlaid on representative ECG signal (normalized for visualization).
+  Dashed vertical lines: pattern center positions; shaded regions: shift
+  tolerance ranges indicating the search window where patterns may be found.
+  Quantitative metrics (Spearman $\rho = -0.046$, center: $75.0 \pm 35.5$,
+  width: $37.4 \pm 7.2$, shift tolerance: $0.313 \pm 0.306$) demonstrate poor
+  pattern shape reproducibility but moderate positional consistency.
+  Transform distribution: Fold 1 uses \textit{raw} transformation, while Folds
+  2--5 all select \textit{cumsum}, showing the optimization's ability to
+  consistently identify the most discriminative signal representation despite
+  varying pattern morphologies.
+  The wide variation in pattern shapes across folds reflects multiple local
+  optima in the high-dimensional search space, each providing discriminative
+  power through different characteristic curves.}
   \label{fig:pattern_stability}
 \end{figure}
 
 \section{Discussion}
 
+\subsection{Performance and Feature Efficiency}
+
+Our evaluation across five biomedical datasets demonstrates that patX achieves
+competitive or superior predictive performance while using orders of magnitude
+fewer features than deep learning baselines.
+patX discovers 4--15.2 interpretable patterns per dataset, compared to 20--1000
+features utilized by CNN architectures and hundreds to thousands of features
+extracted by tsfresh.
+Critically, patX wins outright on 3 of 5 datasets (AZT1D, Emotions, MIMIC-IV)
+and remains competitive on the remaining 2 (MITBIH, REMC).
+
+Particularly noteworthy is patX's superior performance on glucose forecasting
+(AZT1D), where it achieves 15.573 $\pm$ 2.089 RMSE---11\% better than CNN and
+23\% better than tsfresh/catch22.
+patX autonomously discovers discriminative glucose dynamics patterns using only
+15.2 features on average, demonstrating that multi-representation pattern search
+can replace labor-intensive domain-specific feature engineering while achieving
+superior performance.
+
+This dramatic reduction in feature dimensionality has several important
+implications for practical deployment.
+Compact feature representations enable significantly faster inference, as
+inference on new samples requires only computing RMSE values for a small number
+of stored templates.
+Minimal feature sets reduce overfitting risk and improve generalization,
+particularly in biomedical domains where sample sizes are often limited
+\cite{guyon2003introduction}.
+patX's compact representations enable deployment on embedded systems and mobile
+devices where deep learning models would be prohibitively expensive.
+
+\subsection{Interpretable patterns}
+
+A central contribution of patX is its provision of fully interpretable features
+through explicit B-spline pattern templates, operating similarly to CNNs in
+detecting patterns for prediction through automatic feature extraction.
+However, unlike CNNs where learned representations remain opaque despite
+achieving high performance \cite{miotto2018deep, ennab2024enhancing}, patX
+offers a transparent and interpretable approach that allows direct visualization,
+analysis, and validation against domain knowledge.
+
+B-splines offer interpretability advantages: each pattern is defined by few
+control points (typically 5) examinable by domain experts, produces smooth
+curves matching physiological processes \cite{unser1999splines}, and includes
+a selected transformation type that provides interpretable information about
+which signal representation is most discriminative.
+Theoretical connections to spline theory of deep networks
+\cite{balestriero2018spline} ground this approach: while deep networks
+implicitly construct spline templates, patX makes this explicit and
+controllable, trading some flexibility for full transparency---favorable for
+clinical applications \cite{tonekaboni2019clinicians}.
+
+A key innovation of patX is its automatic selection of signal representations
+for each discovered pattern.
+Rather than committing to a single signal transformation, patX precomputes multiple representations
+(raw, frequency domain, wavelet decomposition, or derivative)
+and allows each pattern to select the most discriminative view during optimization.
+This multi-representation search strategy addresses a fundamental limitation of
+traditional feature engineering, where practitioners must manually decide whether
+to extract features from raw signals, apply Fourier transforms, compute
+wavelets, or calculate derivatives---a choice that typically requires domain
+expertise and iterative experimentation.
+
+Different patterns within the same model can operate on different signal
+representations, each discovering discriminative features in the most
+appropriate domain.
+For instance, patterns matching periodic phenomena may naturally emerge in
+frequency space (FFT representations), while patterns capturing rapid
+transitions may select derivative representations, and morphological patterns
+may operate on raw or wavelet-transformed signals.
+Our implementation leverages established frequency-domain feature extraction
+methods including PyWavelets \cite{lee2019pywavelets} for wavelet
+decomposition, SciPy's FFT implementation \cite{virtanen2020scipy} for spectral
+analysis, and specialized transforms like spectral entropy \cite{cohen2019spectral}
+and phase-amplitude coupling \cite{tort2010measuring}.
+
+This approach aligns with other feature extraction packages that utilize
+frequency spectrum and wavelet decomposition methods.
+The CMDA package \cite{ghalati2023cmda} provides a comprehensive workflow for
+time series data analysis, including feature extraction techniques that leverage
+spectral features, sharing similarities with our approach in utilizing
+frequency-domain characteristics for pattern discovery.
+Similarly, Kats \cite{li2022kats} offers time series forecasting capabilities
+with built-in feature extraction, while the Hilbert-Huang Transform
+\cite{huang1998empirical} decomposes signals into intrinsic mode functions for
+nonlinear and non-stationary time series analysis.
+
+Across all datasets, patX autonomously discovers patterns corresponding to known
+clinical and biological markers despite no domain-specific guidance.
+For MIMIC-IV, Pattern 1 targets PaO2/FiO2 ratio---a core ARDS diagnostic
+criterion \cite{ranieri2012acute}.
+For MITBIH, patterns consistently target QRS complex and ST segments---primary
+cardiac features for arrhythmia diagnosis \cite{anbalagan2023analysis}.
+For REMC, Pattern 1 identifies H3K4me3 enrichment near transcription start
+sites---a canonical active promoter mark \cite{heintzman2007distinct, barski2007high}.
+
+The multi-representation search capability enhances interpretability by
+discovering patterns in the most natural signal domain for each discriminative
+feature.
+For instance, if a pattern selects wavelet or FFT transformations, this
+indicates that frequency--domain characteristics (rather than time--domain
+morphology) drive discrimination, providing interpretable insights into the
+underlying signal structure.
+Similarly, patterns selecting derivative transformations highlight the
+importance of temporal dynamics and rate-of-change features, which may
+correspond to known physiological processes like rapid depolarization in ECG
+signals or abrupt state transitions in EEG recordings.
+
+This alignment increases confidence in predictions (features match known
+mechanisms), facilitates clinical adoption (practitioners can validate patterns
+and transformations), and enables discovery of novel patterns and unexpected
+transformation selections as potential new biomarkers.
+Beyond predictive performance, patX's interpretable pattern discovery can lead
+to novel scientific insights: from histone modification data, it can reveal
+which modifications are most informative at specific genomic positions; from
+ECG data, spectral features may uncover potential electrophysiological causes
+of arrhythmias; and from glucose data, different temporal patterns can reveal
+the relative importance of short-term versus long-term dynamics for different
+patient populations.
+
+\subsection{Individual Prediction Explainability}
+
+SHAP analysis \cite{lundberg2017unified, mosca2022shap} demonstrates that patX learns physiologically meaningful
+features aligned with clinical domain knowledge across diverse tasks, providing
+transparent decision-making crucial for healthcare applications.
+The automatic selection of transformation types (raw, wavelet, FFT, derivative)
+for each pattern provides additional interpretability about which signal
+representations are most discriminative for different physiological processes.
+
+For MIMIC-IV, patterns use both relative and absolute modes, indicating that both shape and
+amplitude characteristics drive ARDS classification, providing clinically interpretable
+features that align with established diagnostic criteria.
+The cumulative effect of these patterns shifts the prediction from baseline
+to the final log-odds value, corresponding to the predicted ARDS probability.
+
+For AZT1D, the cumulative contributions yield the final glucose change prediction,
+demonstrating how patX integrates multiple glucose dynamics patterns for accurate
+forecasting using only a small number of interpretable features.
+This demonstrates the method's flexibility in learning patient-specific patterns
+that capture the complex interactions between insulin sensitivity, carbohydrate
+absorption, and glucose metabolism that traditionally require extensive domain
+knowledge \cite{woldaregay2019data, oviedo2017review}.
+
+\subsection{Limitations and Future Directions}
+
+Several limitations warrant future work.
+First, we use fixed cubic B-splines with 4 control points and five predefined
+transformations; adaptive selection of spline parameters and learned or
+domain-specific transformations could improve flexibility.
+Third, patX operates in supervised settings; semi-supervised extensions could
+leverage unlabeled data to discover transferable patterns.
+Fourth, interactive visualization tools integrated with clinical decision
+support systems would facilitate broader adoption \cite{tonekaboni2019clinicians}.
+Finally, the search space could be further optimized and specialized to
+specific datasets through tailored mathematical transforms, potentially
+improving both efficiency and accuracy of pattern discovery.
+Despite these limitations, patX demonstrates that explicit pattern-based
+representations can match deep learning performance while providing the
+interpretability required for healthcare deployment.
+
 \section{Conclusion}
 We introduced patX, an interpretable pattern extraction framework bridging the
-gap between handcrafted descriptors and opaque deep models.
-Through extensive experiments, we demonstrated that a small set of
-automatically discovered B--spline motifs can match or exceed the predictive
-power of deep learning across heterogeneous biomedical domains, while offering
-orders--of--magnitude reductions in feature count and inference cost.
-The B--spline representation provides smooth, locally controllable patterns
-that capture both shape and amplitude information.
+gap between handcrafted descriptors and opaque deep models through
+multi-representation pattern discovery.
+Through extensive experiments across five diverse biomedical datasets, we
+demonstrated that a small set of automatically discovered B--spline motifs
+(4--15.2 patterns) can match or exceed the predictive power of deep learning,
+winning on 3 of 5 datasets (AZT1D, Emotions, MIMIC-IV) and remaining competitive
+on the remaining 2, while offering orders--of--magnitude reductions in feature
+count (3.4--139× fewer features than CNN) and inference cost.
+The B--spline representation combined with automatic transformation selection
+provides smooth, locally controllable patterns that capture both shape and
+amplitude information across multiple signal representations (time, frequency,
+derivative domains).
 Domain-specific analysis reveals that discovered patterns align with established
 clinical and biological knowledge, demonstrating autonomous discovery of
-physiologically meaningful features.
-Future extensions will explore adaptive control point allocation,
-semi--supervised pretraining on large unlabeled corpora, and tighter
-integration with interactive visualization tools to facilitate clinical
-adoption.
+physiologically meaningful features in the most discriminative signal spaces.
+Future extensions will explore adaptive control point allocation, learned or
+domain--specific signal transformations, semi--supervised pretraining on large
+unlabeled corpora, and tighter integration with interactive visualization tools
+to facilitate clinical adoption.
 
 \bibliographystyle{plain}
 \bibliography{bibliography}
+
+\section{Supplementary Data}
+
+\subsection{Dataset Processing Details}
+
+\subsubsection{AZT1D Preprocessing: Insulin and Carbohydrate Response Modeling}
+
+The AZT1D dataset presents unique challenges for glucose forecasting due to the complex temporal dynamics of insulin and carbohydrate effects on blood glucose levels.
+Unlike simple time series where immediate effects are observed, physiological responses involve significant delays: insulin takes 10--90 minutes to affect glucose levels, while carbohydrates impact glucose within 10--60 minutes, with effects persisting for 2--4 hours \cite{woldaregay2019data}.
+
+To address these delayed physiological responses, we implement knowledge-driven response curve modeling based on established pharmacokinetic and glycemic response literature.
+For insulin, we use a gamma-like function with 15-minute onset, 60-minute peak, and 4-hour duration; for carbohydrates, we use 10-minute onset, 45-minute peak, and 3-hour duration.
+These response curves are defined as:
+
+\begin{align}
+\text{Insulin Response}(t) &= \left(\frac{t-15}{45}\right)^{2.5} \exp\left(-2.5 \cdot \frac{t-15}{45}\right) \quad \text{for } 15 \leq t \leq 240 \text{ minutes} \\
+\text{Carb Response}(t) &= \left(\frac{t-10}{35}\right)^{3.0} \exp\left(-3.0 \cdot \frac{t-10}{35}\right) \quad \text{for } 10 \leq t \leq 180 \text{ minutes}
+\end{align}
+
+where $t$ represents time since the event (insulin delivery or carbohydrate consumption).
+
+At each timepoint, we compute cumulative active effects by convolving all historical insulin doses and carbohydrate intakes with their respective response curves.
+This creates interpretable time series that capture overlapping physiological effects, enabling the model to understand how multiple insulin doses and meal intakes interact over time.
+
+The preprocessing pipeline extracts 24 timepoints (2 hours of history at 5-minute intervals) for three physiological signals: CGM values, active insulin effects, and active carbohydrate effects.
+The regression target is future glucose change $g_{t+h} - g_t$ where $h = 30$ minutes (6 timepoints ahead).
+We also include the initial CGM value (CGM\_0) as a baseline feature to provide current glucose context.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]
+  {images/supplementary/azt1d_insulin_carb_visualization.png}
+  \caption{AZT1D preprocessing visualization showing insulin and carbohydrate response modeling.
+  Top panel: Real-time CGM with overlapping insulin and carbohydrate effects over time for Subject 1.
+  Blue line shows CGM values with target range (70-180 mg/dL) highlighted in green.
+  Dark green shaded area represents active insulin effect from overlapping doses (circles with crosses).
+  Orange shaded area represents active carbohydrate effect from overlapping intakes (circles with crosses).
+  Bottom panel: Physiological response curves showing normalized insulin (15-min onset, 60-min peak, 240-min duration) and carbohydrate (10-min onset, 45-min peak, 180-min duration) effects over time.
+  These knowledge-driven models enable patX to learn from physiologically meaningful features that capture delayed and overlapping effects.}
+  \label{fig:azt1d_preprocessing}
+\end{figure}
+
+This preprocessing approach transforms raw event data into continuous physiological signals that capture the complex temporal dynamics of glucose regulation, providing patX with meaningful features for pattern discovery across multiple signal representations.
+
+
+
+
+\subsection{Ablation Study}
+
 
 \end{document} 

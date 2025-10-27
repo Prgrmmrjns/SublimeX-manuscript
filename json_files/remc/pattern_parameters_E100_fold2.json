@@ -1,0 +1,178 @@
+[
+  {
+    "pattern_id": 1,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.038264327039860144,
+    "series_idx": 0,
+    "center": 87,
+    "width": 9.403053006561962,
+    "control_points": [
+      0.02742899707894734,
+      0.7265148466745865,
+      0.6859625427628377,
+      0.25191446587541694
+    ],
+    "score": 0.8845100988681845
+  },
+  {
+    "pattern_id": 2,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.4219358903021967,
+    "series_idx": 2,
+    "center": 2,
+    "width": 37.70911813771538,
+    "control_points": [
+      0.5596086184724599,
+      0.4608190969793466,
+      0.6196991675040132,
+      0.17862679579882718
+    ],
+    "score": 0.9151827603573037
+  },
+  {
+    "pattern_id": 3,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.40550751361074333,
+    "series_idx": 4,
+    "center": 22,
+    "width": 48.19058470063261,
+    "control_points": [
+      0.200240324758851,
+      0.6185934201773451,
+      0.6089484375600249,
+      0.666278730384303
+    ],
+    "score": 0.9297326848145889
+  },
+  {
+    "pattern_id": 4,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.17028662085253213,
+    "series_idx": 0,
+    "center": 33,
+    "width": 40.579785288361386,
+    "control_points": [
+      0.33845364970173775,
+      0.0955297581731,
+      0.98488488042362,
+      0.8216475990168648
+    ],
+    "score": 0.9371494552972671
+  },
+  {
+    "pattern_id": 5,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.5049932077900972,
+    "series_idx": 3,
+    "center": 11,
+    "width": 39.61990265347492,
+    "control_points": [
+      0.003239397506050512,
+      0.5037552293872134,
+      0.9649939452911259,
+      0.9475249394656624
+    ],
+    "score": 0.9414759323561376
+  },
+  {
+    "pattern_id": 6,
+    "transform_type": "fft_power",
+    "use_relative": false,
+    "shift_tolerance": 0.30483881372959604,
+    "series_idx": 1,
+    "center": 193,
+    "width": 31.529518496338287,
+    "control_points": [
+      0.8614389565526306,
+      0.8918921301538981,
+      0.25608021465480246,
+      0.66849087606806
+    ],
+    "score": 0.9429248283722534
+  },
+  {
+    "pattern_id": 7,
+    "transform_type": "wavelet",
+    "use_relative": false,
+    "shift_tolerance": 0.007165256946758569,
+    "series_idx": 1,
+    "center": 14,
+    "width": 4.968203916954454,
+    "control_points": [
+      0.697995375880376,
+      0.10168378568148904,
+      0.8232566040145843,
+      0.5958962017121984
+    ],
+    "score": 0.9439757998250591
+  },
+  {
+    "pattern_id": 8,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.02736212279528952,
+    "series_idx": 4,
+    "center": 141,
+    "width": 17.122501149908462,
+    "control_points": [
+      0.5110512660969008,
+      0.8455757788016629,
+      0.9548127886193192,
+      0.8383573641591735
+    ],
+    "score": 0.9453875871391841
+  },
+  {
+    "pattern_id": 9,
+    "transform_type": "raw",
+    "use_relative": true,
+    "shift_tolerance": 0.9832896806635932,
+    "series_idx": 1,
+    "center": 197,
+    "width": 18.479051971684708,
+    "control_points": [
+      0.4167152614368522,
+      0.6112066611712419,
+      0.5892553805695485,
+      0.7856984887675779
+    ],
+    "score": 0.945961115381557
+  },
+  {
+    "pattern_id": 10,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.08958095538920621,
+    "series_idx": 0,
+    "center": 121,
+    "width": 19.281331738146285,
+    "control_points": [
+      0.7458060908495852,
+      0.32542992294059814,
+      0.4697723505715645,
+      0.751523405243903
+    ],
+    "score": 0.9462049725660668
+  },
+  {
+    "pattern_id": 11,
+    "transform_type": "fft_power",
+    "use_relative": false,
+    "shift_tolerance": 0.1831800663757495,
+    "series_idx": 0,
+    "center": 101,
+    "width": 37.50148673490059,
+    "control_points": [
+      0.7170532987766046,
+      0.7158007425865287,
+      0.41600050517237214,
+      0.9494296598644246
+    ],
+    "score": 0.9469328995149362
+  }
+]

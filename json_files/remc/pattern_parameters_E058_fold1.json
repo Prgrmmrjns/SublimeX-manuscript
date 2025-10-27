@@ -1,0 +1,114 @@
+[
+  {
+    "pattern_id": 1,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.17819427204205474,
+    "series_idx": 2,
+    "center": 16,
+    "width": 29.432036058215303,
+    "control_points": [
+      0.0951441994856504,
+      0.9897304485773191,
+      0.2610286038024314,
+      0.47221881229877744
+    ],
+    "score": 0.9114884822001257
+  },
+  {
+    "pattern_id": 2,
+    "transform_type": "raw",
+    "use_relative": false,
+    "shift_tolerance": 0.0347871259111984,
+    "series_idx": 0,
+    "center": 85,
+    "width": 44.441321884392515,
+    "control_points": [
+      0.5823669554625477,
+      0.6814170356537832,
+      0.7938854312428182,
+      0.4812956730200668
+    ],
+    "score": 0.9475157250851175
+  },
+  {
+    "pattern_id": 3,
+    "transform_type": "phase_amplitude_coupling",
+    "use_relative": false,
+    "shift_tolerance": 0.6039094035271365,
+    "series_idx": 3,
+    "center": 153,
+    "width": 6.447997630967717,
+    "control_points": [
+      0.3884379657288266,
+      0.6994680978707142,
+      0.49662103986140993,
+      0.8923856209889357
+    ],
+    "score": 0.9542176658222912
+  },
+  {
+    "pattern_id": 4,
+    "transform_type": "wavelet",
+    "use_relative": false,
+    "shift_tolerance": 0.7282363962507472,
+    "series_idx": 4,
+    "center": 43,
+    "width": 13.492673806504996,
+    "control_points": [
+      0.5483298404704648,
+      0.9216162063040635,
+      0.5653565206696968,
+      0.85181800020766
+    ],
+    "score": 0.9578448988905053
+  },
+  {
+    "pattern_id": 5,
+    "transform_type": "cumsum",
+    "use_relative": false,
+    "shift_tolerance": 0.6300267261811722,
+    "series_idx": 1,
+    "center": 178,
+    "width": 40.511245667928,
+    "control_points": [
+      0.24584999322287732,
+      0.5225618491776213,
+      0.23968113468827046,
+      0.8555286311181426
+    ],
+    "score": 0.9593807603094407
+  },
+  {
+    "pattern_id": 6,
+    "transform_type": "spectral_entropy",
+    "use_relative": false,
+    "shift_tolerance": 0.862567127204239,
+    "series_idx": 1,
+    "center": 145,
+    "width": 22.859205347159367,
+    "control_points": [
+      0.13039732481003385,
+      0.674659087400733,
+      0.3433738940876331,
+      0.16943981554674847
+    ],
+    "score": 0.9603372328493264
+  },
+  {
+    "pattern_id": 7,
+    "transform_type": "wavelet",
+    "use_relative": false,
+    "shift_tolerance": 0.9835340175384439,
+    "series_idx": 2,
+    "center": 87,
+    "width": 19.925080468344728,
+    "control_points": [
+      0.6903356152744766,
+      0.9637682660996874,
+      0.043324766631074665,
+      0.24199138800166867
+    ],
+    "score": 0.9612748014589855
+  }
+]

@@ -5,11 +5,6 @@ Thivya Anbalagan, Malaya~Kumar Nath, Dhurairajan Vijayalakshmi, and Archana Anba
 \newblock Analysis of various techniques for ecg signal in healthcare, past, present, and future.
 \newblock {\em Biomedical Engineering Advances}, 6:100089, 2023.
 
-\bibitem{Andrzejak2001}
-Ralph~G Andrzejak, Klaus Lehnertz, Florian Mormann, Christoph Rieke, Peter David, and Christian~E Elger.
-\newblock Indications of nonlinear deterministic and finite-dimensional structures in time series of brain electrical activity: dependence on recording region and brain state.
-\newblock {\em Physical Review E}, 64(6):061907, 2001.
-
 \bibitem{ansari2023deep}
 Yaqoob Ansari, Omar Mourad, Khalid Qaraqe, and Erchin Serpedin.
 \newblock Deep learning for ecg arrhythmia detection and classification: an overview of progress for period 2017--2023.
@@ -20,10 +15,10 @@ Randall Balestriero and Richard~G. Baraniuk.
 \newblock A spline theory of deep networks.
 \newblock In {\em Proceedings of the 35th International Conference on Machine Learning}, volume~80 of {\em PMLR}, pages 383--392, Stockholm, Sweden, 2018.
 
-\bibitem{barandas2020tsfel}
-Mar{\'\i}lia Barandas, Duarte Folgado, Let{\'\i}cia Fernandes, Sara Santos, Mariana Abreu, Patr{\'\i}cia Bota, Hui Liu, Tanja Schultz, and Hugo Gamboa.
-\newblock Tsfel: Time series feature extraction library.
-\newblock {\em SoftwareX}, 11:100456, 2020.
+\bibitem{barski2007high}
+Artem Barski, Suresh Cuddapah, Kairong Cui, Tae-Young Roh, Dustin~E Schones, Zhibin Wang, Gang Wei, Iouri Chepelev, and Keji Zhao.
+\newblock High-resolution profiling of histone methylations in the human genome.
+\newblock {\em Cell}, 129(4):823--837, 2007.
 
 \bibitem{chaddad2023electroencephalography}
 Ahmad Chaddad, Yihang Wu, Reem Kateb, and Ahmed Bouridane.
@@ -34,6 +29,11 @@ Ahmad Chaddad, Yihang Wu, Reem Kateb, and Ahmed Bouridane.
 Maximilian Christ, Nils Braun, Julius Neuffer, and Alexander~W Kempa-Liehr.
 \newblock Time series feature extraction on basis of scalable hypothesis tests (tsfresh--a python package).
 \newblock {\em Neurocomputing}, 307:72--77, 2018.
+
+\bibitem{cohen2019spectral}
+Emily Cohen, Fiona~M Baumer, John~E Kline, Tammy~N Tsuchida, and Mark~S Scher.
+\newblock Spectral entropy as a measure of hypoxic stress in the developing brain.
+\newblock {\em Clinical neurophysiology}, 130(7):1138--1144, 2019.
 
 \bibitem{Roadmap2015}
 Roadmap~Epigenomics Consortium et~al.
@@ -50,45 +50,85 @@ Ben~D Fulcher.
 \newblock Feature-based time-series analysis.
 \newblock In {\em Feature engineering for machine learning and data analytics}, pages 87--116. CRC press, 2018.
 
-\bibitem{fulcher2017hctsa}
-Ben~D Fulcher and Nick~S Jones.
-\newblock hctsa: A computational framework for automated time-series phenotyping using massive feature extraction.
-\newblock {\em Cell systems}, 5(5):527--531, 2017.
-
 \bibitem{gelen2025novel}
 Mehmet~Ali Gelen, Prabal~Datta Barua, Irem Tasci, Gulay Tasci, Emrah Aydemir, Sengul Dogan, Turker Tuncer, and UR~Acharya.
 \newblock Novel accurate classification system developed using order transition pattern feature engineering technique with physiological signals.
 \newblock {\em Scientific Reports}, 15(1):15278, 2025.
+
+\bibitem{ghalati2023cmda}
+Pejman~Farhadi Ghalati and Andreas Schuppert.
+\newblock Cmda: a tool for continuous monitoring data analysis.
+\newblock {\em arXiv preprint arXiv:2310.14427}, 2023.
 
 \bibitem{Goldberger2000}
 Ary~L Goldberger, Luis~AN Amaral, Leon Glass, Jeffrey~M Hausdorff, Plamen~Ch Ivanov, Roger~G Mark, Joseph~E Mietus, George~B Moody, Chung-Kang Peng, and H~Eugene Stanley.
 \newblock Physiobank, physiotoolkit, and physionet: components of a new research resource for complex physiologic signals.
 \newblock {\em Circulation}, 101(23):e215--e220, 2000.
 
+\bibitem{guyon2003introduction}
+Isabelle Guyon and Andr{\'e} Elisseeff.
+\newblock An introduction to variable and feature selection.
+\newblock {\em Journal of machine learning research}, 3:1157--1182, 2003.
+
+\bibitem{heintzman2007distinct}
+Nathaniel~D Heintzman, Rhona~K Stuart, Gary Hon, Yutao Fu, Christina~W Ching, R~David Hawkins, Leah~O Barrera, Sara Van~Calcar, Chunxu Qu, Keith~A Ching, et~al.
+\newblock Distinct and predictive chromatin signatures of transcriptional promoters and enhancers in the human genome.
+\newblock {\em Nature genetics}, 39(3):311--318, 2007.
+
 \bibitem{henderson2021empirical}
 Trent Henderson and Ben~D Fulcher.
 \newblock An empirical evaluation of time-series feature sets.
 \newblock In {\em 2021 International Conference on Data Mining Workshops (ICDMW)}, pages 1032--1038. IEEE, 2021.
+
+\bibitem{huang1998empirical}
+Norden~E Huang, Zheng Shen, Steven~R Long, Manli~C Wu, Hsing~H Shih, Quanan Zheng, Nai-Chyuan Yen, Chi~Chao Tung, and Henry~H Liu.
+\newblock The empirical mode decomposition and the hilbert spectrum for nonlinear and non-stationary time series analysis.
+\newblock {\em Proceedings of the Royal Society of London. Series A: mathematical, physical and engineering sciences}, 454(1971):903--995, 1998.
 
 \bibitem{Johnson2023MIMICIV}
 Alistair~EW Johnson, Lucas Bulgarelli, Lu~Shen, Alvin Gayles, Ayad Shammout, Steven Horng, Tom~J Pollard, Sicheng Hao, Benjamin Moody, Brian Gow, et~al.
 \newblock Mimic-iv, a freely accessible electronic health record dataset.
 \newblock {\em Scientific data}, 10(1):1, 2023.
 
+\bibitem{kim2020characterization}
+Mijeong Kim and Shili Lin.
+\newblock Characterization of histone modification patterns and prediction of novel promoters using functional principal component analysis.
+\newblock {\em Plos one}, 15(5):e0233630, 2020.
+
+\bibitem{koch2007landscape}
+Christoph~M Koch, Robert~M Andrews, Paul Flicek, Shane~C Dillon, Ula{\c{s}} Kara{\"o}z, Gayle~K Clelland, Sarah Wilcox, David~M Beare, Joanna~C Fowler, Phillippe Couttet, et~al.
+\newblock The landscape of histone modifications across 1\% of the human genome in five human cell lines.
+\newblock {\em Genome research}, 17(6):691--707, 2007.
+
+\bibitem{lee2019pywavelets}
+Gregory~R Lee, Ralf Gommers, Filip Waselewski, Kai Wohlfahrt, and Andrew O'Leary.
+\newblock Pywavelets: A python package for wavelet analysis.
+\newblock {\em Journal of Open Source Software}, 4(36):1237, 2019.
+
 \bibitem{lee2021modeling}
 Jeong~Min Lee and Milos Hauskrecht.
 \newblock Modeling multivariate clinical event time-series with recurrent temporal mechanisms.
 \newblock {\em Artificial intelligence in medicine}, 112:102021, 2021.
 
-\bibitem{liu2022arrhythmia}
-Pengfei Liu, Xiaoming Sun, Yang Han, Zhishuai He, Weifeng Zhang, and Chenxu Wu.
-\newblock Arrhythmia classification of lstm autoencoder based on time series anomaly detection.
-\newblock {\em Biomedical Signal Processing and Control}, 71:103228, 2022.
+\bibitem{li2022kats}
+Yan Li, Yifei Jin, Kai Wen, Chao Zhang, Yifan Chen, Yuxin Chen, Xiaoyong Li, Yiming Zhang, Huandong Wang, Hao Xu, et~al.
+\newblock Kats: A generalized time series forecasting framework.
+\newblock {\em arXiv preprint arXiv:2201.12887}, 2022.
+
+\bibitem{liang2004distinct}
+Gangning Liang, Joy~CY Lin, Vivian Wei, Christine Yoo, Jonathan~C Cheng, Carvell~T Nguyen, Daniel~J Weisenberger, Gerda Egger, Daiya Takai, Felicidad~A Gonzales, et~al.
+\newblock Distinct localization of histone h3 acetylation and h3-k4 methylation to the transcription start sites in the human genome.
+\newblock {\em Proceedings of the National Academy of Sciences}, 101(19):7357--7362, 2004.
 
 \bibitem{lubba2019catch22}
 Carl~H Lubba, Sarab~S Sethi, Philip Knaute, Simon~R Schultz, Ben~D Fulcher, and Nick~S Jones.
 \newblock catch22: Canonical time-series characteristics: Selected through highly comparative time-series analysis.
 \newblock {\em Data mining and knowledge discovery}, 33(6):1821--1852, 2019.
+
+\bibitem{lundberg2017unified}
+Scott~M Lundberg and Su-In Lee.
+\newblock A unified approach to interpreting model predictions.
+\newblock {\em Advances in neural information processing systems}, 30, 2017.
 
 \bibitem{miotto2018deep}
 Riccardo Miotto, Fei Wang, Shuang Wang, Xiaoqian Jiang, and Joel~T Dudley.
@@ -105,15 +145,20 @@ Mohammad~Amin Morid, Olivia R~Liu Sheng, and Joseph Dunbar.
 \newblock Time series prediction using deep learning methods in healthcare.
 \newblock {\em ACM Transactions on Management Information Systems}, 14(1):1--29, 2023.
 
-\bibitem{morid2020learning}
-Mohammad~Amin Morid, Olivia R~Liu Sheng, Kensaku Kawamoto, and Samir Abdelrahman.
-\newblock Learning hidden patterns from patient multivariate time series data using convolutional neural networks: A case study of healthcare cost prediction.
-\newblock {\em Journal of Biomedical Informatics}, 111:103565, 2020.
+\bibitem{mosca2022shap}
+Edoardo Mosca, Ferenc Szigeti, Stella Tragianni, Daniel Gallagher, and Georg Groh.
+\newblock Shap-based explanation methods: a review for nlp interpretability.
+\newblock In {\em Proceedings of the 29th international conference on computational linguistics}, pages 4593--4603, 2022.
 
 \bibitem{moutonnet2025augmentation}
 Nina Moutonnet, Gregory Scott, and Danilo~P Mandic.
 \newblock Augmentation of eeg and ecg time series for deep learning applications: Integrating changepoint detection into the iaaft surrogates.
 \newblock {\em arXiv preprint arXiv:2504.03761}, 2025.
+
+\bibitem{oviedo2017review}
+Silvia Oviedo, Josep Veh{\'\i}, Remei Calm, and Joaquim Armengol.
+\newblock A review of personalized blood glucose prediction strategies for t1dm patients.
+\newblock {\em International Journal for Numerical Methods in Biomedical Engineering}, 33(6):e2833, 2017.
 
 \bibitem{patharkar2024predictive}
 Abhidnya Patharkar, Fulin Cai, Firas Al-Hindawi, and Teresa Wu.
@@ -130,10 +175,10 @@ Ga{\v{s}}per Petelin, Gjorgjina Cenikj, and Tome Eftimov.
 \newblock Towards understanding the importance of time-series features in automated algorithm performance prediction.
 \newblock {\em Expert systems with applications}, 213:119023, 2023.
 
-\bibitem{roe2020feature}
-Kenneth~D Roe, Vibhu Jawa, Xiaohan Zhang, Christopher~G Chute, Jeremy~A Epstein, Jordan Matelsky, Ilya Shpitser, and Casey~Overby Taylor.
-\newblock Feature engineering with clinical expert knowledge: A case study assessment of machine learning model complexity and performance.
-\newblock {\em PloS one}, 15(4):e0231300, 2020.
+\bibitem{ranieri2012acute}
+V~Marco Ranieri, Gordon~D Rubenfeld, B~Taylor Thompson, Niall~D Ferguson, Ellen Caldwell, Eddy Fan, Luigi Camporota, and Arthur~S Slutsky.
+\newblock Acute respiratory distress syndrome: the berlin definition.
+\newblock {\em JAMA}, 307(23):2526--2533, 2012.
 
 \bibitem{rood2022impact}
 Jennifer~E Rood, Aidan Maartens, Anna Hupalowska, Sarah~A Teichmann, and Aviv Regev.
@@ -145,10 +190,35 @@ Cynthia Rudin.
 \newblock Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead.
 \newblock {\em Nature machine intelligence}, 1(5):206--215, 2019.
 
+\bibitem{tonekaboni2019clinicians}
+Sana Tonekaboni, Shalmali Joshi, Melissa~D McCradden, and Anna Goldenberg.
+\newblock What clinicians want: contextualizing explainable machine learning for clinical end use.
+\newblock {\em Machine learning for healthcare conference}, pages 359--380, 2019.
+
+\bibitem{tort2010measuring}
+Adriano~BL Tort, Robert Komorowski, Howard Eichenbaum, and Nancy Kopell.
+\newblock Measuring phase--amplitude coupling between neuronal oscillations of different frequencies.
+\newblock {\em Journal of neurophysiology}, 104(2):1195--1210, 2010.
+
+\bibitem{unser1999splines}
+Michael Unser.
+\newblock Splines: a perfect fit for signal and image processing.
+\newblock {\em IEEE Signal processing magazine}, 16(6):22--38, 1999.
+
+\bibitem{virtanen2020scipy}
+Pauli Virtanen, Ralf Gommers, Travis~E Oliphant, Matt Haberland, Tyler Reddy, David Cournapeau, Evgeni Burovski, Pearu Peterson, Warren Weckesser, Jonathan Bright, et~al.
+\newblock Scipy 1.0: fundamental algorithms for scientific computing in python.
+\newblock {\em Nature methods}, 17(3):261--272, 2020.
+
 \bibitem{wang2022systematic}
 Will~Ke Wang, Ina Chen, Leeor Hershkovich, Jiamu Yang, Ayush Shetty, Geetika Singh, Yihang Jiang, Aditya Kotla, Jason~Zisheng Shang, Rushil Yerrabelli, et~al.
 \newblock A systematic review of time series classification techniques used in biomedical applications.
 \newblock {\em Sensors}, 22(20):8016, 2022.
+
+\bibitem{woldaregay2019data}
+Ashenafi~Zebene Woldaregay, Eirik {\AA}rsand, St{\aa}le Walderhaug, David Albers, Lena Mamykina, Taxiarchis Botsis, and Gunnar Hartvigsen.
+\newblock Data-driven modeling and prediction of blood glucose dynamics: Machine learning applications in type 1 diabetes.
+\newblock {\em Artificial Intelligence in Medicine}, 98:109--134, 2019.
 
 \bibitem{yadav2022systems}
 Amit~Kumar Yadav, Sanjay~Kumar Banerjee, Bhabatosh Das, and Kumardeep Chaudhary.

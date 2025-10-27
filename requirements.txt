@@ -1,13 +1,13 @@
 numpy
 pandas
 matplotlib
+scipy
 scikit-learn
-hyperopt
+optuna
 lightgbm
 imblearn
 fastparquet
 seaborn
-tsfresh
-torch
 PyWavelets
 pycatch22
+numba 
