@@ -501,13 +501,22 @@ Hyperparameters and evaluation protocols are kept identical to patX for fair
 comparison.
 
 \subsubsection{CNN Baseline Implementation}
-We implement a 1D CNN using PyTorch with three convolutional blocks
-(filters: 64, 128, 256) containing convolutions, batch normalization, ReLU,
+We implement a 1D CNN using PyTorch with three convolutional layers
+(filters: 64, 128, 256) each containing convolution, batch normalization, ReLU,
 max pooling, and dropout.
-Adaptive pooling aggregates features, followed by fully connected layers
-(128, 64) before the output.
-We train with Adam (lr=0.001, batch size=128), early stopping (patience=10),
-cross-entropy loss (classification) or MSE (regression), matching evaluation
+The architecture uses kernel sizes of 7, 5, and 3 for the three layers
+respectively, with appropriate padding to maintain temporal resolution.
+Adaptive average pooling aggregates features across the temporal dimension,
+followed by fully connected layers (256→128→64→output) with ReLU activations,
+batch normalization, and dropout (0.4, 0.3) for regularization.
+We train with Adam optimizer (lr=0.01, weight decay=1e-4), early stopping
+(patience=10), and learning rate reduction on plateau (factor=0.5, patience=3).
+For classification tasks, we use cross-entropy loss with class weights computed
+to handle imbalanced datasets; for regression, we use MSE loss.
+The model automatically detects the number of input channels based on the
+dataset structure: 3 channels for AZT1D (CGM, insulin, carbs), 5 channels for
+REMC (histone marks), and 1 channel for univariate time series.
+Training uses 100 epochs maximum with batch size 128, matching evaluation
 protocols with other baselines.
 
 \subsection{Evaluation}
