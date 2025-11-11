@@ -16,27 +16,9 @@ warnings.filterwarnings('ignore')
 
 def load_mitbih_data():
     data = pd.read_csv("../processed_datasets/mitbih_processed.csv")
+    print(data.shape)
     return data.drop('target', axis=1), data['target']
 
-def save_patterns_to_json(patterns, fold):
-    os.makedirs('../json_files/mitbih', exist_ok=True)
-    pattern_data = []
-    for i, pattern in enumerate(patterns):
-        pattern_info = {
-            'pattern_id': i + 1,
-            'transform_type': pattern['transform_type'],
-            'use_relative': pattern['use_relative'],
-            'shift_tolerance': pattern['shift_tolerance'],
-            'series_idx': pattern['series_idx'],
-            'center': pattern['center'],
-            'width': pattern['width'],
-            'control_points': pattern['control_points'],
-            'score': pattern.get('score', None)
-        }
-        pattern_data.append(pattern_info)
-    filename = f'../json_files/mitbih/pattern_parameters_fold{fold}.json'
-    with open(filename, 'w') as f:
-        json.dump(pattern_data, f, indent=2)
 
 input_series, y = load_mitbih_data()
 kfold_indices = list(StratifiedKFold(K_FOLDS, shuffle=True, random_state=42).split(input_series, y))
@@ -55,7 +37,6 @@ for fold, (train_idx, val_idx) in enumerate(kfold_indices):
     t0 = time.time()
     res = feature_extraction([X_train], y_train.values, [X_test], metric='accuracy', n_trials=N_TRIALS, show_progress=SHOW_PROGRESS, n_control_points=N_CONTROL_POINTS)
     all_patterns[f'fold_{fold+1}'] = res['patterns']
-    save_patterns_to_json(res['patterns'], fold+1)
     accuracy = accuracy_score(y_val.values, res['model'].predict(res['test_features']))
     processing_time = time.time() - t0
     patx_scores.append(accuracy)
@@ -145,17 +126,7 @@ avg_time = np.mean(cnn_times)
 avg_features = np.mean(cnn_features)
 print(f"CNN Average: Accuracy={avg_accuracy:.4f}, Time={avg_time:.1f}s, Features={avg_features:.1f}")
 
-# Print detailed results
-print("\n" + "="*60)
-print("DETAILED RESULTS BY FOLD")
-print("="*60)
 df_res = pd.DataFrame(results)
-for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
-    app_res = df_res[df_res['approach'] == app]
-    if len(app_res) > 0:
-        print(f"\n{app}:")
-        for _, row in app_res.iterrows():
-            print(f"  Fold {row['fold']+1}: Accuracy={row['score']:.4f}, Time={row['processing_time']:.1f}s, Features={row['n_features']:.0f}")
 
 # Print summary results
 print("\n" + "="*60)
@@ -163,14 +134,33 @@ print("SUMMARY RESULTS (Mean ± Std)")
 print("="*60)
 for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
     app_res = df_res[df_res['approach'] == app]
-    if len(app_res) > 0:
-        scores = app_res['score'].values
-        times = app_res['processing_time'].values
-        features = app_res['n_features'].values
-        print(f"{app:8}: Accuracy={np.mean(scores):.4f}±{np.std(scores):.4f}, "
-              f"Time={np.mean(times):.1f}±{np.std(times):.1f}s, "
-              f"Features={np.mean(features):.1f}±{np.std(features):.1f}")
+    scores = app_res['score'].values
+    times = app_res['processing_time'].values
+    features = app_res['n_features'].values
+    print(f"{app:8}: Accuracy={np.mean(scores):.4f}±{np.std(scores):.4f}, "
+            f"Time={np.mean(times):.1f}±{np.std(times):.1f}s, "
+            f"Features={np.mean(features):.1f}±{np.std(features):.1f}")
 
 # Save results
 df_res.to_csv('../results/mitbih.csv', index=False)
 print(f"\nResults saved to ../results/mitbih.csv")
+
+# Save all patterns to a single JSON file
+os.makedirs('../json_files/mitbih', exist_ok=True)
+serializable_all_patterns = {}
+for fold_key, patterns in all_patterns.items():
+    serializable_patterns = []
+    for pattern in patterns:
+        serializable_pattern = {}
+        for key, value in pattern.items():
+            if isinstance(value, np.ndarray):
+                serializable_pattern[key] = value.tolist()
+            elif isinstance(value, (np.integer, np.floating)):
+                serializable_pattern[key] = value.item()
+            else:
+                serializable_pattern[key] = value
+        serializable_patterns.append(serializable_pattern)
+    serializable_all_patterns[fold_key] = serializable_patterns
+
+with open('../json_files/mitbih/pattern_parameters.json', 'w') as f:
+    json.dump(serializable_all_patterns, f, indent=2)

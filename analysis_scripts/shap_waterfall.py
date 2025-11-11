@@ -33,64 +33,24 @@ def load_mimic_data():
     return X_list, y, anchor_age, series_names
 
 def load_azt1d_data(subject_id='10'):
-    try:
-        df = pd.read_parquet(f'../processed_datasets/azt1d/subject_{subject_id}.parquet', engine='fastparquet')
-    except (ImportError, FileNotFoundError):
-        # Create mock data if parquet file or fastparquet is not available
-        print(f"AZT1D data not available for subject {subject_id}, using mock data")
-        np.random.seed(42)
-        n_samples = 100
-        n_timepoints = 24
-        
-        # Create mock time series data
-        cgm_data = pd.DataFrame(np.random.randn(n_samples, n_timepoints), 
-                               columns=[f'CGM_{i}' for i in range(n_timepoints)])
-        insulin_data = pd.DataFrame(np.random.randn(n_samples, n_timepoints), 
-                                  columns=[f'Insulin_{i}' for i in range(n_timepoints)])
-        carbs_data = pd.DataFrame(np.random.randn(n_samples, n_timepoints), 
-                                columns=[f'Carbs_{i}' for i in range(n_timepoints)])
-        
-        y = pd.Series(np.random.randn(n_samples), name='target')
-        df = pd.concat([cgm_data, insulin_data, carbs_data, y], axis=1)
-    
+    df = pd.read_parquet(f'../processed_datasets/azt1d/subject_{subject_id}.parquet', engine='fastparquet')
     y = df['target']
-    
     cgm_data = df[[col for col in df.columns if col.startswith('CGM_')]]
     insulin_data = df[[col for col in df.columns if col.startswith('Insulin_')]]
     carbs_data = df[[col for col in df.columns if col.startswith('Carbs_')]]
-    
     X_list = [cgm_data, insulin_data, carbs_data]
     series_names = ['CGM', 'Insulin', 'Carbs']
     cgm0 = cgm_data['CGM_0'].values
-    
     return X_list, y, cgm0, series_names
 
 def process_mimic():
     X_list, y, anchor_age, series_names = load_mimic_data()
     
     # Try to load actual pattern parameters, fall back to representative example
-    try:
-        with open('../json_files/mimic/pattern_parameters.json', 'r') as f:
-            all_patterns = json.load(f)
-        fold_1_patterns = all_patterns['fold_1']
-        print("Using actual MIMIC pattern parameters")
-    except FileNotFoundError:
-        print("MIMIC pattern parameters not found, using representative example")
-        # Create representative pattern structure
-        fold_1_patterns = [
-            {
-                'pattern_id': 1,
-                'transform_type': 'raw',
-                'use_relative': False,
-                'pattern_mode': 'absolute',
-                'shift_tolerance': 0.2,
-                'series_idx': 0,
-                'center': 15,
-                'width': 8,
-                'control_points': [0.2, 0.4, 0.6, 0.8, 1.0],
-                'score': 0.92
-            }
-        ]
+    with open('../json_files/mimic/pattern_parameters.json', 'r') as f:
+        all_patterns = json.load(f)
+    fold_1_patterns = all_patterns['fold_1']
+
     
     kfold = StratifiedKFold(5, shuffle=True, random_state=42)
     train_idx, val_idx = list(kfold.split(pd.concat(X_list, axis=1), y))[0]
@@ -117,22 +77,35 @@ def process_mimic():
     
     for pattern in fold_1_patterns:
         data_min, data_max = np.min(input_series_train_stacked), np.max(input_series_train_stacked)
-        width = pattern.get('width', 10)  # Default width if not specified
+        width = int(pattern.get('width', 10))
         use_relative = pattern.get('use_relative', False)
         shift_tolerance = pattern.get('shift_tolerance', 0.0)
+        start = pattern.get('start', int(pattern.get('center', 0) - width/2))
         
         # Create pattern array from pattern values or control points
-        if 'pattern' in pattern:
-            control_points = np.array(pattern['pattern'])
+        if 'pattern' in pattern and len(pattern['pattern']) > 0:
+            pattern_array = np.array(pattern['pattern'])
+            if len(pattern_array) != width:
+                from scipy.interpolate import interp1d
+                x_old = np.linspace(0, 1, len(pattern_array))
+                x_new = np.linspace(0, 1, width)
+                pattern_array = interp1d(x_old, pattern_array, kind='linear')(x_new)
+            control_points = pattern_array
         else:
-            control_points = np.array(pattern['control_points'])
+            from scipy.interpolate import BSpline
+            degree = 3
+            cp = np.array(pattern['control_points'])
+            n_cp = len(cp)
+            knots = np.concatenate([np.zeros(degree + 1), np.linspace(0, 1, n_cp - degree + 1)[1:-1], np.ones(degree + 1)])
+            control_points = BSpline(knots, cp, degree)(np.linspace(0, 1, width))
+        
         if not use_relative:
             control_points = control_points * (data_max - data_min) + data_min
         
-        train_feat = pattern_to_features(input_series_train_stacked, width, pattern['start'], 
+        train_feat = pattern_to_features(input_series_train_stacked, width, start, 
                                         pattern['series_idx'], pattern=control_points, data_min=data_min, data_max=data_max, 
                                         use_relative=use_relative, shift_tolerance=shift_tolerance)
-        test_feat = pattern_to_features(input_series_test_stacked, width, pattern['start'], 
+        test_feat = pattern_to_features(input_series_test_stacked, width, start, 
                                        pattern['series_idx'], pattern=control_points, data_min=data_min, data_max=data_max,
                                        use_relative=use_relative, shift_tolerance=shift_tolerance)
         train_features.append(train_feat.reshape(-1, 1))
@@ -144,11 +117,7 @@ def process_mimic():
     
     # Find a representative ARDS case (or any case if no ARDS cases)
     ards_cases = np.where(y_val.values == 1)[0]
-    if len(ards_cases) > 0:
-        correct_ards = ards_cases[0]
-    else:
-        # If no ARDS cases, use the first case
-        correct_ards = 0
+    correct_ards = ards_cases[0]
     
     explainer = shap.TreeExplainer(model.model)
     shap_vals = explainer.shap_values(X_test)
@@ -168,30 +137,16 @@ def process_azt1d(subject_id='1'):
     X_list, y, cgm0, series_names = load_azt1d_data(subject_id)
     
     # Try to load actual pattern parameters, fall back to representative example
-    try:
-        with open(f'../json_files/azt1d/pattern_parameters_{subject_id}.json', 'r') as f:
-            pattern_data = json.load(f)
+    with open(f'../json_files/azt1d/pattern_parameters_{subject_id}.json', 'r') as f:
+        pattern_data = json.load(f)
+    if isinstance(pattern_data, list):
+        patterns = pattern_data
+    elif isinstance(pattern_data, dict) and 'patterns' in pattern_data:
         patterns = pattern_data['patterns']
-        print(f"Using actual AZT1D pattern parameters for subject {subject_id}")
-    except FileNotFoundError:
-        print(f"AZT1D pattern parameters for subject {subject_id} not found, using representative example")
-        # Create representative pattern structure
-        patterns = [
-            {
-                'pattern_id': 1,
-                'transform_type': 'raw',
-                'use_relative': True,
-                'pattern_mode': 'relative',
-                'shift_tolerance': 0.1,
-                'series_idx': 0,
-                'center': 10,
-                'width': 5,
-                'start': 7,
-                'end': 12,
-                'control_points': [0.1, 0.3, 0.5, 0.7, 0.9],
-                'score': 0.85
-            }
-        ]
+    elif isinstance(pattern_data, dict) and 'fold_1' in pattern_data:
+        patterns = pattern_data['fold_1']
+    else:
+        patterns = pattern_data
     
     train_idx, test_idx = train_test_split(np.arange(len(y)), test_size=0.3, random_state=42)
     y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
@@ -208,22 +163,35 @@ def process_azt1d(subject_id='1'):
     
     for pattern in patterns:
         data_min, data_max = np.min(input_series_train_stacked), np.max(input_series_train_stacked)
-        width = pattern.get('width', 10)  # Default width if not specified
+        width = int(pattern.get('width', 10))
         use_relative = pattern.get('use_relative', False)
         shift_tolerance = pattern.get('shift_tolerance', 0.0)
+        start = pattern.get('start', int(pattern.get('center', 0) - width/2))
         
         # Create pattern array from pattern values or control points
-        if 'pattern' in pattern:
-            control_points = np.array(pattern['pattern'])
+        if 'pattern' in pattern and len(pattern['pattern']) > 0:
+            pattern_array = np.array(pattern['pattern'])
+            if len(pattern_array) != width:
+                from scipy.interpolate import interp1d
+                x_old = np.linspace(0, 1, len(pattern_array))
+                x_new = np.linspace(0, 1, width)
+                pattern_array = interp1d(x_old, pattern_array, kind='linear')(x_new)
+            control_points = pattern_array
         else:
-            control_points = np.array(pattern['control_points'])
+            from scipy.interpolate import BSpline
+            degree = 3
+            cp = np.array(pattern['control_points'])
+            n_cp = len(cp)
+            knots = np.concatenate([np.zeros(degree + 1), np.linspace(0, 1, n_cp - degree + 1)[1:-1], np.ones(degree + 1)])
+            control_points = BSpline(knots, cp, degree)(np.linspace(0, 1, width))
+        
         if not use_relative:
             control_points = control_points * (data_max - data_min) + data_min
         
-        train_feat = pattern_to_features(input_series_train_stacked, width, pattern['start'], 
+        train_feat = pattern_to_features(input_series_train_stacked, width, start, 
                                         pattern['series_idx'], pattern=control_points, data_min=data_min, data_max=data_max,
                                         use_relative=use_relative, shift_tolerance=shift_tolerance)
-        test_feat = pattern_to_features(input_series_test_stacked, width, pattern['start'], 
+        test_feat = pattern_to_features(input_series_test_stacked, width, start, 
                                        pattern['series_idx'], pattern=control_points, data_min=data_min, data_max=data_max,
                                        use_relative=use_relative, shift_tolerance=shift_tolerance)
         train_features.append(train_feat.reshape(-1, 1))
@@ -321,14 +289,12 @@ def plot_custom_shap(explanation, ax, title, task_type='classification'):
              loc='upper left', fontsize=9, framealpha=0.9)
 
 def main():
-    print("Processing SHAP examples...")
     
     # Process MIMIC-IV
     mimic_exp = process_mimic()
     
     # Process AZT1D
     azt1d_exp = process_azt1d(subject_id='1')
-    
     shap_data = {
         'mimic': {
             'feature_names': mimic_exp.feature_names,
@@ -346,16 +312,12 @@ def main():
     
     with open('../manuscript/tables/shap_values.json', 'w') as f:
         json.dump(shap_data, f, indent=2)
-    print("SHAP values saved to manuscript/tables/shap_values.json")
     
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 8))
-    
     plot_custom_shap(mimic_exp, ax1, '(a) MIMIC-IV: ARDS Classification', task_type='classification')
     plot_custom_shap(azt1d_exp, ax2, '(b) AZT1D: Glucose Forecasting', task_type='regression')
-    
     plt.tight_layout()
-    plt.savefig('../manuscript/images/shap_waterfall_combined.png', dpi=300, bbox_inches='tight')
-    print(f"Combined feature importance plot saved to manuscript/images/shap_waterfall_combined.png")
+    plt.savefig('../manuscript/images/shap_waterfall.png', dpi=300, bbox_inches='tight')
 
 if __name__ == "__main__":
     main()

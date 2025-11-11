@@ -17,13 +17,7 @@ warnings.filterwarnings('ignore')
 TIME_SERIES = ['CGM', 'Insulin', 'Carbs']
 
 def load_azt1d_data(subject_id):
-    try:
-        df = pd.read_parquet(f"../processed_datasets/azt1d/subject_{subject_id}.parquet")
-    except (OSError, FileNotFoundError, ImportError) as e:
-        print(f"Warning: Could not load AZT1D data for subject {subject_id}: {e}")
-        print("Skipping this subject...")
-        return None, None
-    
+    df = pd.read_parquet(f"../processed_datasets/azt1d/subject_{subject_id}.parquet")
     ts_data = {s: df[[c for c in df.columns if c.startswith(f'{s}_')]] for s in TIME_SERIES}
     return ts_data, df['target']
 
@@ -79,28 +73,12 @@ for subject_id in subject_ids:
     results.append({'subject_id': subject_id, 'approach': 'PATX', 'score': rmse, 
                     'processing_time': time.time()-t0, 'n_features': len(res['patterns'])})
     
-    # Store pattern parameters
     os.makedirs('../json_files/azt1d', exist_ok=True)
-    
-    # Convert numpy arrays to lists for JSON serialization
-    serializable_patterns = []
-    for pattern in res['patterns']:
-        serializable_pattern = {}
-        for key, value in pattern.items():
-            if isinstance(value, np.ndarray):
-                serializable_pattern[key] = value.tolist()
-            elif isinstance(value, (np.integer, np.floating)):
-                serializable_pattern[key] = value.item()
-            else:
-                serializable_pattern[key] = value
-        serializable_patterns.append(serializable_pattern)
-    
-    pattern_data = {
-        'patterns': serializable_patterns,
-        'subject_id': subject_id,
-        'n_patterns': len(res['patterns']),
-        'performance': {'rmse': rmse, 'processing_time': time.time()-t0}
-    }
+    pattern_data = []
+    for i, p in enumerate(res['patterns']):
+        p_dict = {k: v.tolist() if isinstance(v, np.ndarray) else float(v) if isinstance(v, (np.floating, np.integer)) else v for k, v in p.items()}
+        p_dict['pattern_id'] = i + 1
+        pattern_data.append(p_dict)
     with open(f'../json_files/azt1d/pattern_parameters_{subject_id}.json', 'w') as f:
         json.dump(pattern_data, f, indent=2)
 
@@ -149,9 +127,8 @@ for subject_id in subject_ids:
     subj_res = pd.DataFrame([r for r in results if str(r['subject_id']) == subject_id])
     for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
         app_res = subj_res[subj_res['approach'] == app]
-        if len(app_res) > 0:
-            r = app_res.iloc[0]
-            print(f"{app:8}: RMSE={r['score']:.4f}, Time={r['processing_time']:.1f}s, Features={r['n_features']:.0f}")
+        r = app_res.iloc[0]
+        print(f"{app:8}: RMSE={r['score']:.4f}, Time={r['processing_time']:.1f}s, Features={r['n_features']:.0f}")
     pd.DataFrame(results).to_csv('../results/azt1d.csv', index=False)
 
 pd.DataFrame(results).to_csv('../results/azt1d.csv', index=False)

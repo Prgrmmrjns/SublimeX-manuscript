@@ -153,24 +153,23 @@ for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
 df_res.to_csv('../results/mimic.csv', index=False)
 
 # Store all patterns in a single file for easy access
-if all_patterns:
-    os.makedirs('../json_files/mimic', exist_ok=True)
-    
-    # Convert numpy arrays to lists for JSON serialization
-    serializable_all_patterns = {}
-    for fold_key, patterns in all_patterns.items():
-        serializable_patterns = []
-        for pattern in patterns:
-            serializable_pattern = {}
-            for key, value in pattern.items():
-                if isinstance(value, np.ndarray):
-                    serializable_pattern[key] = value.tolist()
-                elif isinstance(value, (np.integer, np.floating)):
-                    serializable_pattern[key] = value.item()
-                else:
-                    serializable_pattern[key] = value
-            serializable_patterns.append(serializable_pattern)
-        serializable_all_patterns[fold_key] = serializable_patterns
+os.makedirs('../json_files/mimic', exist_ok=True)
+
+# Convert numpy arrays to lists for JSON serialization
+serializable_all_patterns = {}
+for fold_key, patterns in all_patterns.items():
+    serializable_patterns = []
+    for pattern in patterns:
+        serializable_pattern = {}
+        for key, value in pattern.items():
+            if isinstance(value, np.ndarray):
+                serializable_pattern[key] = value.tolist()
+            elif isinstance(value, (np.integer, np.floating)):
+                serializable_pattern[key] = value.item()
+            else:
+                serializable_pattern[key] = value
+        serializable_patterns.append(serializable_pattern)
+    serializable_all_patterns[fold_key] = serializable_patterns
     
     with open('../json_files/mimic/pattern_parameters.json', 'w') as f:
         json.dump(serializable_all_patterns, f, indent=2)

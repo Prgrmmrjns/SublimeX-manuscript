@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, KFold
 import optuna
 from scipy.interpolate import BSpline
 from sklearn.metrics import accuracy_score, roc_auc_score, mean_squared_error
@@ -9,6 +9,7 @@ from numba import njit
 from scipy import fft
 from functools import lru_cache
 import pywt
+from params import N_STARTUP_TRIALS, INNER_K_FOLDS
 
 
 @lru_cache(maxsize=1000)
@@ -23,21 +24,14 @@ def apply_transformation(data, transform_type):
     elif transform_type == 'cumsum': result = np.cumsum(data, axis=-1)
     elif transform_type == 'fft_power': result = fft_power_transform(data)
     elif transform_type == 'wavelet': result = wavelet_transform(data)
-    elif transform_type == 'spectral_entropy': result = spectral_entropy_transform(data)
-    elif transform_type == 'phase_amplitude_coupling': result = phase_amplitude_coupling_transform(data)
     else: result = data
     return result
 
 def fft_power_transform(data):
-    result = np.zeros_like(data)
-    n_samples, n_series, n_time = data.shape
-    for s in range(n_samples):
-        for ser in range(n_series):
-            fft_coeffs = fft.fft(data[s, ser, :])
-            power_spectrum = np.abs(fft_coeffs) ** 2
-            ifft_result = np.real(fft.ifft(power_spectrum))
-            result[s, ser, :] = np.interp(np.linspace(0, 1, n_time), np.linspace(0, 1, len(ifft_result)), ifft_result)
-    return result
+    fft_coeffs = fft.fft(data, axis=-1)
+    power_spectrum = np.abs(fft_coeffs) ** 2
+    ifft_result = np.real(fft.ifft(power_spectrum, axis=-1))
+    return ifft_result
 
 def wavelet_transform(data):
     result = np.zeros_like(data)
@@ -48,42 +42,6 @@ def wavelet_transform(data):
             coeffs = pywt.wavedec(series, 'db4', level=3, mode='periodization')
             concatenated = np.concatenate(coeffs)
             result[s, ser, :] = np.interp(np.linspace(0, 1, n_time), np.linspace(0, 1, len(concatenated)), concatenated) if len(concatenated) != n_time else concatenated
-    return result
-
-def spectral_entropy_transform(data):
-    result = np.zeros_like(data)
-    n_samples, n_series, n_time = data.shape
-    for s in range(n_samples):
-        for ser in range(n_series):
-            series = data[s, ser, :]
-            psd = np.abs(fft.fft(series)) ** 2
-            psd_sum = np.sum(psd)
-            if psd_sum > 0:
-                psd_norm = psd / psd_sum
-                psd_norm = np.maximum(psd_norm, 1e-12)
-                entropy = -np.sum(psd_norm * np.log2(psd_norm))
-            else:
-                entropy = 0.0
-            result[s, ser, :] = np.full(n_time, entropy)
-    return result
-
-def phase_amplitude_coupling_transform(data):
-    result = np.zeros_like(data)
-    n_samples, n_series, n_time = data.shape
-    for s in range(n_samples):
-        for ser in range(n_series):
-            series = data[s, ser, :]
-            analytic_signal = fft.fft(series)
-            low_freq = np.copy(analytic_signal)
-            low_freq[n_time//8:] = 0
-            low_freq[:n_time//8] = 0
-            phase = np.angle(fft.ifft(low_freq))
-            high_freq = np.copy(analytic_signal)
-            high_freq[:n_time//4] = 0
-            high_freq[n_time//2:] = 0
-            amplitude = np.abs(fft.ifft(high_freq))
-            pac = np.abs(np.mean(amplitude * np.exp(1j * phase)))
-            result[s, ser, :] = np.full(n_time, pac)
     return result
 
 @njit(fastmath=True)
@@ -121,7 +79,6 @@ def pattern_to_features(input_series, pattern_width, pattern_start, series_index
     
     # Normalize pattern if using absolute matching
     if not use_relative and pattern is not None:
-        # Scale pattern to match the data range
         pattern_range = pattern.max() - pattern.min()
         if pattern_range > 0:
             pattern = data_min + (pattern - pattern.min()) / pattern_range * (data_max - data_min)
@@ -181,7 +138,7 @@ def feature_extraction(input_series_train, y_train, input_series_test=None, init
         input_series_test = np.stack([x.values if hasattr(x, 'values') else x for x in input_series_test], axis=1)
     n_input_series, n_time_points = input_series_train.shape[1], input_series_train.shape[2]
     data_min, data_max = input_series_train.min(), input_series_train.max()
-    transform_types = ['raw', 'derivative', 'cumsum', 'fft_power', 'wavelet', 'spectral_entropy', 'phase_amplitude_coupling']
+    transform_types = ['raw', 'derivative', 'cumsum', 'fft_power', 'wavelet']
     transformed_train = {t: apply_transformation(input_series_train, t) for t in transform_types}
     model_features_list = [initial_features[0]] if initial_features else []
     y_train = np.asarray(y_train).flatten()
@@ -194,10 +151,8 @@ def feature_extraction(input_series_train, y_train, input_series_test=None, init
     model_type = 'regression' if metric == 'rmse' else 'classification'
     n_classes = len(np.unique(y_train)) if model_type == 'classification' and len(np.unique(y_train)) > 2 else 2
     model = model or LightGBMModelWrapper(model_type, n_classes=n_classes)
-    train_idx, val_idx = train_test_split(np.arange(len(y_train)), test_size=val_size, random_state=42)
-    y_train_split, y_val = y_train[train_idx], y_train[val_idx]
-    transformed_train_split = {t: transformed_train[t][train_idx] for t in transform_types}
-    transformed_val = {t: transformed_train[t][val_idx] for t in transform_types}
+    kf = KFold(n_splits=INNER_K_FOLDS, shuffle=True, random_state=42)
+    fold_indices = list(kf.split(np.arange(len(y_train))))
     def objective(trial):
         series_idx = trial.suggest_int('series_index', 0, n_input_series - 1) if n_input_series > 1 else 0
         transform_type = trial.suggest_categorical('transform_type', transform_types)
@@ -208,18 +163,25 @@ def feature_extraction(input_series_train, y_train, input_series_test=None, init
         pattern_width = trial.suggest_float('pattern_width', 2.0, min(50.0, n_time_points))
         start = max(0, int(pattern_center - pattern_width // 2))
         pattern = generate_bspline_pattern(tuple(cps), pattern_width, data_min, data_max)
-        train_feat = pattern_to_features(transformed_train_split[transform_type], pattern_width, start, series_idx, pattern=pattern, data_min=data_min, data_max=data_max, use_relative=use_relative, shift_tolerance=shift_tolerance)
-        val_feat = pattern_to_features(transformed_val[transform_type], pattern_width, start, series_idx, pattern=pattern, data_min=data_min, data_max=data_max, use_relative=use_relative, shift_tolerance=shift_tolerance)
-        X_train = np.column_stack([base_X_train, train_feat]) if base_X_train.size > 0 else train_feat.reshape(-1, 1)
-        X_val = np.column_stack([base_X_val, val_feat]) if base_X_val.size > 0 else val_feat.reshape(-1, 1)
-        return evaluate_model_performance(model, metric, (X_train, X_val, y_train_split, y_val))
+        full_feat = pattern_to_features(transformed_train[transform_type], pattern_width, start, series_idx, pattern=pattern, data_min=data_min, data_max=data_max, use_relative=use_relative, shift_tolerance=shift_tolerance)
+        scores = []
+        for base_X_train_fold, base_X_val_fold, fold_train_idx, fold_val_idx in base_X_folds:
+            train_feat = full_feat[fold_train_idx]
+            val_feat = full_feat[fold_val_idx]
+            X_train_fold = np.column_stack([base_X_train_fold, train_feat]) if base_X_train_fold.size > 0 else train_feat.reshape(-1, 1)
+            X_val_fold = np.column_stack([base_X_val_fold, val_feat]) if base_X_val_fold.size > 0 else val_feat.reshape(-1, 1)
+            scores.append(evaluate_model_performance(model, metric, (X_train_fold, X_val_fold, y_train[fold_train_idx], y_train[fold_val_idx])))
+        return np.mean(scores)
     extracted_patterns = []
     best_score = float('inf') if metric == 'rmse' else -float('inf')
     while True:
-        base_X_train = np.column_stack([f[train_idx] for f in model_features_list]) if model_features_list else np.empty((len(train_idx), 0))
-        base_X_val = np.column_stack([f[val_idx] for f in model_features_list]) if model_features_list else np.empty((len(val_idx), 0))
+        base_X_folds = []
+        for fold_train_idx, fold_val_idx in fold_indices:
+            base_X_train_fold = np.column_stack([f[fold_train_idx] for f in model_features_list]) if model_features_list else np.empty((len(fold_train_idx), 0))
+            base_X_val_fold = np.column_stack([f[fold_val_idx] for f in model_features_list]) if model_features_list else np.empty((len(fold_val_idx), 0))
+            base_X_folds.append((base_X_train_fold, base_X_val_fold, fold_train_idx, fold_val_idx))
         warnings.filterwarnings('ignore', category=optuna.exceptions.ExperimentalWarning)
-        study = optuna.create_study(direction='minimize' if metric == 'rmse' else 'maximize', sampler=optuna.samplers.TPESampler(multivariate=True, group=True))
+        study = optuna.create_study(direction='minimize' if metric == 'rmse' else 'maximize', sampler=optuna.samplers.TPESampler(multivariate=True, group=True, n_startup_trials=N_STARTUP_TRIALS))
         study.optimize(objective, n_trials=n_trials, show_progress_bar=show_progress, n_jobs=-1)
         score = study.best_trial.value
         improved = (score < best_score) if metric == 'rmse' else (score > best_score)
@@ -236,10 +198,18 @@ def feature_extraction(input_series_train, y_train, input_series_test=None, init
         start = max(0, int(pattern_center - pattern_width // 2))
         pattern_array = generate_bspline_pattern(tuple(cps), pattern_width, data_min, data_max)
         pattern_type = 'relative' if use_relative else 'absolute'
-        print(f"Pattern {len(extracted_patterns)+1}: {metric}={score:.4f}, transform={transform_type}, type={pattern_type}, series={series_idx}, center={pattern_center}, width={pattern_width:.1f}, shift_tolerance={round(shift_tolerance, 4)}")
+        if shift_tolerance > 0:
+            pattern_width_int = int(round(pattern_width))
+            max_shift = min(int(shift_tolerance * n_time_points), n_time_points - pattern_width_int)
+            search_start = max(0, start - max_shift)
+            search_end = min(n_time_points, start + pattern_width_int + max_shift)
+            print(f"Pattern {len(extracted_patterns)+1}: {metric}={score:.4f}, transform={transform_type}, type={pattern_type}, series={series_idx}, center={pattern_center}, width={pattern_width:.1f}, shift_tolerance={round(shift_tolerance, 4)}, search_range={search_start} to {search_end}")
+        else:
+            print(f"Pattern {len(extracted_patterns)+1}: {metric}={score:.4f}, transform={transform_type}, type={pattern_type}, series={series_idx}, center={pattern_center}, width={pattern_width:.1f}, shift_tolerance={round(shift_tolerance, 4)}")
         extracted_patterns.append({'pattern': pattern_array, 'start': start, 'width': pattern_width, 'center': pattern_center, 'series_idx': series_idx, 'control_points': cps, 'transform_type': transform_type, 'use_relative': use_relative, 'shift_tolerance': shift_tolerance, 'score': score})
         model_features_list.append(pattern_to_features(transformed_train[transform_type], pattern_width, start, series_idx, pattern=pattern_array, data_min=data_min, data_max=data_max, use_relative=use_relative, shift_tolerance=shift_tolerance))
     model_features = np.column_stack(model_features_list) if model_features_list else np.empty((len(y_train), 0))
+    train_idx, val_idx = train_test_split(np.arange(len(y_train)), test_size=val_size, random_state=42)
     model.fit(model_features[train_idx], y_train[train_idx], model_features[val_idx], y_train[val_idx])
     test_features = None
     if input_series_test is not None:

@@ -21,26 +21,6 @@ def load_remc_data(cell_line):
     X = df[[c for c in df.columns if c != 'target']]
     return [X[[c for c in X.columns if c.startswith(f"{s}_")]] for s in TIME_SERIES], df['target']
 
-def save_patterns_to_json(patterns, cell_line, fold):
-    os.makedirs('../json_files/remc', exist_ok=True)
-    pattern_data = []
-    for i, pattern in enumerate(patterns):
-        pattern_info = {
-            'pattern_id': i + 1,
-            'transform_type': pattern['transform_type'],
-            'use_relative': pattern['use_relative'],
-            'shift_tolerance': pattern['shift_tolerance'],
-            'series_idx': pattern['series_idx'],
-            'center': pattern['center'],
-            'width': pattern['width'],
-            'control_points': pattern['control_points'],
-            'score': pattern.get('score', None)
-        }
-        pattern_data.append(pattern_info)
-    
-    filename = f'../json_files/remc/pattern_parameters_{cell_line}_fold{fold}.json'
-    with open(filename, 'w') as f:
-        json.dump(pattern_data, f, indent=2)
 
 cell_lines = sorted([f.replace('.parquet', '') for f in os.listdir('../processed_datasets/remc') if f.endswith('.parquet')])
 results = []
@@ -71,7 +51,6 @@ for cell_line in cell_lines:
             res = feature_extraction(input_train, y_train.values, input_test, metric='auc', val_size=VAL_SIZE,
                                     n_trials=N_TRIALS, show_progress=SHOW_PROGRESS, n_control_points=N_CONTROL_POINTS)
             all_patterns[f'fold_{fold+1}'] = res['patterns']
-            save_patterns_to_json(res['patterns'], cell_line, fold+1)
             preds_proba = res['model'].predict_proba(res['test_features'])
             preds = preds_proba[:, 1] if len(preds_proba.shape) == 2 and preds_proba.shape[1] > 1 else preds_proba
             auc = roc_auc_score(y_val, preds)
@@ -81,6 +60,25 @@ for cell_line in cell_lines:
         avg_auc = np.mean(patx_scores)
         results.append({'cell_line': cell_line, 'approach': 'PATX', 'score': avg_auc, 
                        'processing_time': time.time()-t0, 'n_features': len(res['patterns'])})
+        
+        os.makedirs('../json_files/remc', exist_ok=True)
+        serializable_all_patterns = {}
+        for fold_key, patterns in all_patterns.items():
+            serializable_patterns = []
+            for pattern in patterns:
+                serializable_pattern = {}
+                for key, value in pattern.items():
+                    if isinstance(value, np.ndarray):
+                        serializable_pattern[key] = value.tolist()
+                    elif isinstance(value, (np.integer, np.floating)):
+                        serializable_pattern[key] = value.item()
+                    else:
+                        serializable_pattern[key] = value
+                serializable_patterns.append(serializable_pattern)
+            serializable_all_patterns[fold_key] = serializable_patterns
+        
+        with open(f'../json_files/remc/pattern_parameters_{cell_line}.json', 'w') as f:
+            json.dump(serializable_all_patterns, f, indent=2)
 
         # TSFRESH
         tsfresh_scores = []
@@ -143,10 +141,9 @@ for cell_line in cell_lines:
     cell_line_res = pd.DataFrame([r for r in results if r['cell_line'] == cell_line])
     for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
         app_res = cell_line_res[cell_line_res['approach'] == app]
-        if len(app_res) > 0:
-            r = app_res.iloc[0]
-            print(f"{app:8}: AUC={r['score']:.4f}, Time={r['processing_time']:.1f}s, Features={r['n_features']:.0f}")
-    
+        r = app_res.iloc[0]
+        print(f"{app:8}: AUC={r['score']:.4f}, Time={r['processing_time']:.1f}s, Features={r['n_features']:.0f}")
+
     # Save results after each cell line
     pd.DataFrame(results).to_csv('../results/remc.csv', index=False)
 
