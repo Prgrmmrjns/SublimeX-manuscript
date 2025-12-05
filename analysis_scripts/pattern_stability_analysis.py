@@ -1,7 +1,6 @@
 import json
 import numpy as np
 import glob
-import os
 import sys
 sys.path.append('../eval_scripts')
 from core import generate_bspline_pattern
@@ -10,6 +9,25 @@ import warnings
 warnings.filterwarnings('ignore')
 
 HISTONE_NAMES = ['H3K4me3', 'H3K4me1', 'H3K36me3', 'H3K9me3', 'H3K27me3']
+
+AZT1D_CHANNELS = ['CGM', 'Insulin', 'Carbs']
+
+MIMIC_CHANNELS = ['resp_rate', 'heart_rate', 'o2_sat', 'bp_dias', 'bp_sys', 'foley',
+                  'bp_art_mean', 'temp', 'gcs_eye', 'gcs_verbal', 'gcs_motor', 'fio2',
+                  'peep_set', 'norepinephrine', 'creatinine', 'platelets', 'wbc',
+                  'ph_arterial', 'phenylephrine', 'pao2', 'inr', 'lactate', 'peep_total',
+                  'bilirubin', 'dobutamine', 'epinephrine', 'dopamine', 'pao2_fio2', 'pulse_press']
+
+PAMAP2_CHANNELS = ['heart_rate',
+    'hand_temp', 'hand_acc16_x', 'hand_acc16_y', 'hand_acc16_z', 'hand_acc6_x', 'hand_acc6_y', 'hand_acc6_z',
+    'hand_gyro_x', 'hand_gyro_y', 'hand_gyro_z', 'hand_mag_x', 'hand_mag_y', 'hand_mag_z',
+    'hand_ori_x', 'hand_ori_y', 'hand_ori_z', 'hand_ori_w',
+    'chest_temp', 'chest_acc16_x', 'chest_acc16_y', 'chest_acc16_z', 'chest_acc6_x', 'chest_acc6_y', 'chest_acc6_z',
+    'chest_gyro_x', 'chest_gyro_y', 'chest_gyro_z', 'chest_mag_x', 'chest_mag_y', 'chest_mag_z',
+    'chest_ori_x', 'chest_ori_y', 'chest_ori_z', 'chest_ori_w',
+    'ankle_temp', 'ankle_acc16_x', 'ankle_acc16_y', 'ankle_acc16_z', 'ankle_acc6_x', 'ankle_acc6_y', 'ankle_acc6_z',
+    'ankle_gyro_x', 'ankle_gyro_y', 'ankle_gyro_z', 'ankle_mag_x', 'ankle_mag_y', 'ankle_mag_z',
+    'ankle_ori_x', 'ankle_ori_y', 'ankle_ori_z', 'ankle_ori_w']
 
 def compute_overlap(patterns):
     if len(patterns) < 2:
@@ -24,7 +42,7 @@ def compute_overlap(patterns):
         overlaps.append(overlap / union if union > 0 else 0)
     return np.mean(overlaps), np.std(overlaps)
 
-def analyze_fold_dataset(dataset):
+def analyze_fold_dataset(dataset, channel_names=None):
     json_path = f'../json_files/{dataset}/pattern_parameters.json'
     with open(json_path, 'r') as f:
         data = json.load(f)
@@ -37,7 +55,11 @@ def analyze_fold_dataset(dataset):
     dominant_transform = max(set(transforms), key=transforms.count)
     
     channels = [p['series_idx'] for p in first_patterns]
-    dominant_channel = max(set(channels), key=channels.count)
+    dominant_channel_idx = max(set(channels), key=channels.count)
+    if channel_names:
+        dominant_channel = channel_names[dominant_channel_idx]
+    else:
+        dominant_channel = str(dominant_channel_idx)
     
     overlap_mean, overlap_std = compute_overlap(first_patterns)
     
@@ -48,8 +70,8 @@ def analyze_fold_dataset(dataset):
         'n_patterns_std': np.std([len(data[f]) for f in fold_names]),
         'dominant_transform': dominant_transform,
         'transform_consistency': transforms.count(dominant_transform) / n_folds,
-        'dominant_channel': str(dominant_channel),
-        'channel_consistency': channels.count(dominant_channel) / n_folds,
+        'dominant_channel': dominant_channel,
+        'channel_consistency': channels.count(dominant_channel_idx) / n_folds,
         'overlap_mean': overlap_mean,
         'overlap_std': overlap_std
     }
@@ -95,7 +117,8 @@ def analyze_azt1d():
     dominant = max(set(transforms), key=transforms.count)
     
     channels = [p['series_idx'] for p in patterns]
-    dominant_channel = max(set(channels), key=channels.count)
+    dominant_channel_idx = max(set(channels), key=channels.count)
+    dominant_channel = AZT1D_CHANNELS[dominant_channel_idx]
     
     overlap_mean, overlap_std = compute_overlap(patterns)
     
@@ -106,8 +129,8 @@ def analyze_azt1d():
         'n_patterns_std': 0,
         'dominant_transform': dominant,
         'transform_consistency': transforms.count(dominant) / len(transforms),
-        'dominant_channel': str(dominant_channel),
-        'channel_consistency': channels.count(dominant_channel) / len(channels),
+        'dominant_channel': dominant_channel,
+        'channel_consistency': channels.count(dominant_channel_idx) / len(channels),
         'overlap_mean': overlap_mean,
         'overlap_std': overlap_std
     }
@@ -158,14 +181,37 @@ def main():
     
     results = []
     
-    for dataset in ['mitbih', 'emotions', 'mimic', 'pamap2']:
-        print(f"\n{dataset.upper()}")
-        r = analyze_fold_dataset(dataset)
-        results.append(r)
-        print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
-        print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-        print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-        print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print(f"\nMITBIH")
+    r = analyze_fold_dataset('mitbih', channel_names=['ECG'])
+    results.append(r)
+    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
+    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
+    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    
+    print(f"\nEMOTIONS")
+    r = analyze_fold_dataset('emotions', channel_names=['EEG'])
+    results.append(r)
+    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
+    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
+    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    
+    print(f"\nMIMIC")
+    r = analyze_fold_dataset('mimic', channel_names=MIMIC_CHANNELS)
+    results.append(r)
+    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
+    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
+    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    
+    print(f"\nPAMAP2")
+    r = analyze_fold_dataset('pamap2', channel_names=PAMAP2_CHANNELS)
+    results.append(r)
+    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
+    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
+    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
     
     print(f"\nREMC")
     r = analyze_remc()
@@ -189,14 +235,14 @@ def main():
     print(f"\nSaved pattern_stability_table.tex")
     
     print("\n" + "=" * 80)
-    print(f"{'Dataset':<10} {'Patterns':<12} {'Transform':<12} {'T%':<6} {'Channel':<10} {'C%':<6} {'Overlap':<10}")
+    print(f"{'Dataset':<10} {'Patterns':<10} {'Transform':<12} {'T%':<5} {'Channel':<15} {'C%':<5} {'Overlap':<8}")
     print("-" * 80)
     for r in results:
         pat = f"{r['n_patterns_mean']:.1f}"
         ch = r['dominant_channel']
         ch_pct = f"{r['channel_consistency']*100:.0f}%"
         ovl = f"{r['overlap_mean']:.2f}" if not np.isnan(r['overlap_mean']) else "---"
-        print(f"{r['dataset']:<10} {pat:<12} {r['dominant_transform']:<12} {r['transform_consistency']*100:.0f}%   {ch:<10} {ch_pct:<6} {ovl:<10}")
+        print(f"{r['dataset']:<10} {pat:<10} {r['dominant_transform']:<12} {r['transform_consistency']*100:.0f}%   {ch:<15} {ch_pct:<5} {ovl:<8}")
 
 if __name__ == "__main__":
     main()
