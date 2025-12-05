@@ -31,14 +31,14 @@ By framing pattern discovery as a constrained optimization problem over
 B--spline templates across multiple signal transformations (raw, wavelet, FFT,
 derivative), patX learns compact, highly predictive patterns that serve as
 transparent input features for conventional machine--learning models.
-We demonstrate patX on seven diverse biomedical tasks: (i) glucose forecasting
+We demonstrate patX on six diverse biomedical tasks: (i) glucose forecasting
 (AZT1D), (ii) arrhythmia classification (MITBIH), (iii) emotion classification
 from EEG signals (Emotions), (iv) gene expression prediction from epigenetic
 signatures (REMC), (v) acute respiratory distress syndrome (ARDS)
-classification in an intensive care unit (MIMIC--IV), (vi) human activity
-recognition from inertial measurement unit (IMU) sensors (PAMAP2), and (vii)
-Across these tasks, patX achieves best performance on four of seven datasets
-compared to tsfresh, catch22, and CNN while usually using fewer features and
+classification in an intensive care unit (MIMIC--IV), and (vi) human activity
+recognition from inertial measurement unit (IMU) sensors (PAMAP2).
+Across these tasks, patX achieves best performance on five of six datasets
+compared to tsfresh, catch22, and CNN while using fewer features and
 providing complete interpretability through explicit pattern visualization and
 validation.
 Beyond predictive performance, patX's interpretable pattern discovery can lead
@@ -497,46 +497,51 @@ mean $\pm$ standard deviation across folds or subjects.
 \input{tables/results_table.tex}
 
 Table~\ref{tab:results} presents the test set performance of patX + LightGBM,
-tsfresh + LightGBM, catch22 + LightGBM, and CNN baselines across seven biomedical
+tsfresh + LightGBM, catch22 + LightGBM, and CNN baselines across six biomedical
 datasets.
 
-On AZT1D (glucose forecasting), patX achieves the best RMSE (14.647 $\pm$ 2.062),
-outperforming CNN (17.448 $\pm$ 2.498), tsfresh (20.133 $\pm$ 2.734), and
-catch22 (20.161 $\pm$ 2.867).
-patX uses 21.5 $\pm$ 4.9 features on average---3.3× fewer than CNN (72 features)
-while achieving 16\% lower error.
+On AZT1D (glucose forecasting), patX achieves the best RMSE (19.337 $\pm$ 2.711),
+outperforming CNN (20.411 $\pm$ 2.864), tsfresh (20.443 $\pm$ 2.855), and
+catch22 (19.626 $\pm$ 2.929).
+patX uses 13.3 $\pm$ 1.0 features on average---5.5× fewer than CNN (73 features)
+while maintaining competitive performance.
 
-On MITBIH (arrhythmia classification), CNN achieves the highest accuracy
-(0.951 $\pm$ 0.006), followed by patX (0.945 $\pm$ 0.003), catch22 (0.927 $\pm$ 0.003), and tsfresh (0.857 $\pm$ 0.002).
-patX uses 15.4 $\pm$ 4.2 features on average, demonstrating that learned patterns
+On MITBIH (arrhythmia classification), catch22 achieves the highest accuracy
+(0.925 $\pm$ 0.005), followed closely by patX (0.921 $\pm$ 0.006), tsfresh
+(0.841 $\pm$ 0.005), and CNN (0.769 $\pm$ 0.245).
+patX uses 13.6 $\pm$ 0.9 features on average, demonstrating that learned patterns
 across multiple signal representations can achieve competitive performance
-with both extensively engineered feature libraries and deep learning architectures.
-Notably, patX achieves competitive performance while using 6.5× fewer features
-than CNN (15.4 vs 100) and 1.4× fewer than catch22.
+with extensively engineered feature libraries while using 7.4× fewer features
+than CNN (13.6 vs 100) and 1.6× fewer than catch22.
 
-On Emotions (emotion classification), patX achieves the highest AUC
-(0.946 $\pm$ 0.010), followed by CNN (0.919 $\pm$ 0.005), tsfresh (0.878 $\pm$ 0.016), and catch22 (0.761 $\pm$ 0.020).
-patX uses 10.8 $\pm$ 2.4 features on average---1.9× fewer than CNN (20 features) and 2.0× fewer than catch22
-(22 features).
+On Emotions (emotion classification), patX achieves the best AUC
+(0.986 $\pm$ 0.004), substantially outperforming CNN (0.928 $\pm$ 0.010),
+tsfresh (0.662 $\pm$ 0.003), and catch22 (0.661 $\pm$ 0.004).
+patX uses 13.6 $\pm$ 2.6 features on average---110× fewer than CNN (1500 features)
+and 1.6× fewer than catch22 (22 features).
 
-On REMC (gene expression prediction), CNN slightly outperforms patX (0.934 $\pm$
-0.022 vs 0.932 $\pm$ 0.022), but patX uses 56.5× fewer features (17.7 vs 1000)
-while significantly outperforming both catch22 (0.884 $\pm$ 0.027) and tsfresh
-(0.875 $\pm$ 0.030).
+On REMC (gene expression prediction), patX achieves the best performance
+(0.929 $\pm$ 0.024), closely followed by CNN (0.927 $\pm$ 0.024), catch22
+(0.917 $\pm$ 0.025), and tsfresh (0.873 $\pm$ 0.031).
+patX uses 80.6× fewer features than CNN (12.4 vs 1000) while maintaining
+competitive performance, highlighting the efficiency of interpretable pattern
+discovery over deep learning for genomic spatial data.
 
 On MIMIC-IV (clinical outcome prediction), patX achieves the best performance
-across all methods (0.793 $\pm$ 0.012), outperforming CNN (0.711 $\pm$ 0.064), 
-tsfresh (0.766 $\pm$ 0.004), and catch22 (0.743 $\pm$ 0.000) while using
-only 11.0 $\pm$ 4.0 features on average---63.4× fewer than CNN (697 features).
+across all methods (0.788 $\pm$ 0.007), outperforming tsfresh (0.751 $\pm$ 0.004),
+catch22 (0.750 $\pm$ 0.011), and CNN (0.750 $\pm$ 0.015) while using
+only 15.0 features on average---46.4× fewer than CNN (696 features).
 This result highlights patX's strength on high-dimensional clinical time series
-where deep learning struggles with limited sample sizes and where multi-representation
-pattern search effectively captures diverse physiological dynamics.
+where multi-representation pattern search effectively captures diverse
+physiological dynamics.
 
-On PAMAP2 (activity recognition), patX achieves the highest accuracy (0.996 $\pm$ 0.001)
-using only 5.2 $\pm$ 0.4 features, substantially outperforming catch22 (0.825 $\pm$ 0.004),
-tsfresh (0.722 $\pm$ 0.009), and CNN (0.537 $\pm$ 0.278).
-The CNN's high variance suggests instability with this multi-class IMU sensor dataset,
-while patX discovers robust patterns across the 51 sensor channels with 100× fewer
+On PAMAP2 (activity recognition), patX achieves the highest accuracy
+(0.996 $\pm$ 0.001) using only 5.0 features, substantially outperforming
+catch22 (0.825 $\pm$ 0.004), tsfresh (0.722 $\pm$ 0.010), and CNN
+(0.426 $\pm$ 0.265).
+The CNN's high variance suggests instability with this multi-class IMU sensor
+dataset, while patX discovers robust patterns across the 51 sensor channels with
+104× fewer
 features than the CNN baseline (5.2 vs 520).
 
 Overall, patX achieves the best performance on 5 of 6 datasets (AZT1D, Emotions,
