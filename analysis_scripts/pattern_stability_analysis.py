@@ -24,7 +24,7 @@ def compute_overlap(patterns):
         overlaps.append(overlap / union if union > 0 else 0)
     return np.mean(overlaps), np.std(overlaps)
 
-def analyze_fold_dataset(dataset, channel_names=None):
+def analyze_fold_dataset(dataset):
     json_path = f'../json_files/{dataset}/pattern_parameters.json'
     with open(json_path, 'r') as f:
         data = json.load(f)
@@ -32,31 +32,27 @@ def analyze_fold_dataset(dataset, channel_names=None):
     fold_names = sorted(data.keys())
     n_folds = len(fold_names)
     first_patterns = [data[f][0] for f in fold_names]
-    all_patterns = [p for f in fold_names for p in data[f]]
     
     transforms = [p['transform_type'] for p in first_patterns]
     dominant_transform = max(set(transforms), key=transforms.count)
     
+    channels = [p['series_idx'] for p in first_patterns]
+    dominant_channel = max(set(channels), key=channels.count)
+    
     overlap_mean, overlap_std = compute_overlap(first_patterns)
     
-    result = {
+    return {
         'dataset': dataset.upper(),
         'n_folds': n_folds,
         'n_patterns_mean': np.mean([len(data[f]) for f in fold_names]),
         'n_patterns_std': np.std([len(data[f]) for f in fold_names]),
         'dominant_transform': dominant_transform,
         'transform_consistency': transforms.count(dominant_transform) / n_folds,
+        'dominant_channel': str(dominant_channel),
+        'channel_consistency': channels.count(dominant_channel) / n_folds,
         'overlap_mean': overlap_mean,
         'overlap_std': overlap_std
     }
-    
-    if channel_names:
-        channels = [channel_names[p['series_idx']] for p in first_patterns]
-        dominant_channel = max(set(channels), key=channels.count)
-        result['dominant_channel'] = dominant_channel
-        result['channel_consistency'] = channels.count(dominant_channel) / n_folds
-    
-    return result
 
 def analyze_remc():
     files = sorted(glob.glob('../json_files/remc/pattern_parameters_*.json'))
@@ -98,6 +94,9 @@ def analyze_azt1d():
     transforms = [p['transform_type'] for p in patterns]
     dominant = max(set(transforms), key=transforms.count)
     
+    channels = [p['series_idx'] for p in patterns]
+    dominant_channel = max(set(channels), key=channels.count)
+    
     overlap_mean, overlap_std = compute_overlap(patterns)
     
     return {
@@ -107,6 +106,8 @@ def analyze_azt1d():
         'n_patterns_std': 0,
         'dominant_transform': dominant,
         'transform_consistency': transforms.count(dominant) / len(transforms),
+        'dominant_channel': str(dominant_channel),
+        'channel_consistency': channels.count(dominant_channel) / len(channels),
         'overlap_mean': overlap_mean,
         'overlap_std': overlap_std
     }
@@ -116,8 +117,8 @@ def generate_latex_table(results):
         r"\begin{table}[H]",
         r"\centering",
         r"\caption{Pattern discovery characteristics across datasets. We report the dominant",
-        r"signal transformation and its consistency across folds, channel consistency for",
-        r"multi-channel datasets, and pattern area overlap (IoU) between primary patterns.}",
+        r"signal transformation, dominant channel, their consistency across folds, and",
+        r"pattern area overlap (IoU) between primary patterns across folds.}",
         r"\label{tab:pattern_stability}",
         r"\footnotesize",
         r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}",
@@ -134,12 +135,8 @@ def generate_latex_table(results):
         if r['n_patterns_std'] > 0:
             patterns += f" $\\pm$ {r['n_patterns_std']:.1f}"
         
-        if 'dominant_channel' in r:
-            channel = r['dominant_channel'].replace('_', r'\_')
-            chan_pct = f"{r['channel_consistency']*100:.0f}\\%"
-        else:
-            channel = "---"
-            chan_pct = "---"
+        channel = str(r['dominant_channel']).replace('_', r'\_')
+        chan_pct = f"{r['channel_consistency']*100:.0f}\\%"
         
         if np.isnan(r['overlap_mean']):
             overlap = "---"
@@ -167,6 +164,7 @@ def main():
         results.append(r)
         print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
         print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+        print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
         print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
     
     print(f"\nREMC")
@@ -182,6 +180,7 @@ def main():
     results.append(r)
     print(f"  Patterns: {r['n_patterns_mean']:.0f}")
     print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
     print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
     
     latex = generate_latex_table(results)
@@ -194,8 +193,8 @@ def main():
     print("-" * 80)
     for r in results:
         pat = f"{r['n_patterns_mean']:.1f}"
-        ch = r.get('dominant_channel', '---')
-        ch_pct = f"{r.get('channel_consistency', 0)*100:.0f}%" if 'dominant_channel' in r else "---"
+        ch = r['dominant_channel']
+        ch_pct = f"{r['channel_consistency']*100:.0f}%"
         ovl = f"{r['overlap_mean']:.2f}" if not np.isnan(r['overlap_mean']) else "---"
         print(f"{r['dataset']:<10} {pat:<12} {r['dominant_transform']:<12} {r['transform_consistency']*100:.0f}%   {ch:<10} {ch_pct:<6} {ovl:<10}")
 

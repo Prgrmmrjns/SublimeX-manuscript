@@ -1,8 +1,8 @@
 \begin{table}[H]
 \centering
 \caption{Pattern discovery characteristics across datasets. We report the dominant
-signal transformation and its consistency across folds, channel consistency for
-multi-channel datasets, and pattern area overlap (IoU) between primary patterns.}
+signal transformation, dominant channel, their consistency across folds, and
+pattern area overlap (IoU) between primary patterns across folds.}
 \label{tab:pattern_stability}
 \footnotesize
 \begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}
@@ -10,12 +10,12 @@ multi-channel datasets, and pattern area overlap (IoU) between primary patterns.
 \textbf{Dataset} & \textbf{Patterns} & \textbf{Transform} & \textbf{Trans. \%} & 
 \textbf{Channel} & \textbf{Chan. \%} & \textbf{Overlap} \\
 \midrule
-MITBIH & 13.6 $\pm$ 0.8 & derivative & 80\% & --- & --- & 0.15 $\pm$ 0.23 \\
-EMOTIONS & 13.6 $\pm$ 2.3 & fft\_power & 80\% & --- & --- & 0.04 $\pm$ 0.09 \\
-MIMIC & 15.0 & log1p & 40\% & --- & --- & 0.22 $\pm$ 0.19 \\
-PAMAP2 & 5.0 & sorted & 60\% & --- & --- & 0.49 $\pm$ 0.21 \\
+MITBIH & 13.6 $\pm$ 0.8 & derivative & 80\% & 0 & 100\% & 0.15 $\pm$ 0.23 \\
+EMOTIONS & 13.6 $\pm$ 2.3 & fft\_power & 80\% & 0 & 80\% & 0.04 $\pm$ 0.09 \\
+MIMIC & 15.0 & log1p & 40\% & 26 & 40\% & 0.22 $\pm$ 0.19 \\
+PAMAP2 & 5.0 & sorted & 60\% & 1 & 80\% & 0.49 $\pm$ 0.21 \\
 REMC & 11.4 $\pm$ 4.5 & cumsum & 80\% & H3K36me3 & 40\% & 0.12 $\pm$ 0.16 \\
-AZT1D & 14.0 & log1p & 50\% & --- & --- & 0.29 $\pm$ 0.27 \\
+AZT1D & 14.0 & log1p & 50\% & 0 & 43\% & 0.29 $\pm$ 0.27 \\
 \bottomrule
 \end{tabular*}
 \end{table}
