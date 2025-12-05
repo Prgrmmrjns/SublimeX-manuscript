@@ -149,10 +149,10 @@ def generate_latex_table(results, output_file='../manuscript/tables/results_tabl
                     score_str = f"{score:.3f}"
                 
                 # Format features
-                if n_features_std > 0:
+                if n_features_std > 0.05:
                     features_str = f"{n_features:.1f} $\\pm$ {n_features_std:.1f}"
                 else:
-                    features_str = f"{n_features:.0f}"
+                    features_str = f"{n_features:.1f}"
                 
                 # Format time
                 if time_std > 0:
