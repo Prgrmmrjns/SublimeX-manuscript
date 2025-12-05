@@ -224,7 +224,7 @@ def main():
     all_results = []
     
     # Analyze fold-based datasets
-    for dataset in ['mitbih', 'emotions', 'mimic', 'pamap2', 'pancancer']:
+    for dataset in ['mitbih', 'emotions', 'mimic', 'pamap2', 'azt1d']:
         print(f"\n--- {dataset.upper()} ---")
         try:
             results = analyze_fold_dataset(dataset)
@@ -313,10 +313,12 @@ def main():
     print(f"Mean patterns per subject: {np.mean(azt1d_n_patterns):.1f} ± {np.std(azt1d_n_patterns):.1f}")
     print(f"Dominant transform: {dominant_transform_azt1d} ({azt1d_transforms.count(dominant_transform_azt1d)/len(azt1d_transforms)*100:.0f}%)")
     
-    # Generate visualization for REMC E004 only
-    remc_e004_results = analyze_remc('E004')
-    visualize_stability(remc_e004_results, '../manuscript/images/pattern_stability.png')
-    print("\nSaved pattern_stability.png (REMC E004)")
+    # Generate visualization for a representative cell line
+    if len(remc_cell_lines) > 0:
+        representative_cell = remc_cell_lines[0]
+        remc_rep_results = analyze_remc(representative_cell)
+        visualize_stability(remc_rep_results, '../manuscript/images/pattern_stability_remc.png')
+        print(f"\nSaved pattern_stability_remc.png ({representative_cell})")
     
     # Generate LaTeX table
     latex_table = generate_latex_table(all_results)
