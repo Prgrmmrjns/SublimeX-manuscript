@@ -1,22 +1,22 @@
 \begin{table}[H]
 \centering
-\caption{Pattern Stability Analysis Across Datasets. For each dataset, we identify the most
-important pattern per fold using LightGBM feature importance and analyze positional consistency
-(center, width), transformation selection, and shape correlation across folds.
-For REMC, we report mean $\pm$ std across all cell lines analyzed.}
+\caption{Pattern discovery characteristics across datasets. We report the number of
+patterns discovered, dominant signal transformation, and transformation consistency
+(fraction of patterns using the dominant transform). Shape correlation measures
+similarity of primary patterns across cross-validation folds.}
 \label{tab:pattern_stability}
 \footnotesize
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccc@{}}
 \toprule
-\textbf{Dataset} & \textbf{Folds} & \textbf{Center CV} & \textbf{Width CV} & 
-\textbf{Shape $\rho$} & \textbf{Transform} & \textbf{Consistency} \\
+\textbf{Dataset} & \textbf{Units} & \textbf{Patterns} & \textbf{Transform} & 
+\textbf{Consistency} & \textbf{Shape $\rho$} \\
 \midrule
-mitbih & 5 & 0.517 & 0.470 & -0.15 $\pm$ 0.69 & derivative & 80\% \\
-emotions & 5 & 0.499 & 0.176 & 0.17 $\pm$ 0.48 & fft\_power & 80\% \\
-mimic & 5 & 0.853 & 0.518 & -0.01 $\pm$ 0.52 & log1p & 40\% \\
-pamap2 & 5 & 0.894 & 0.353 & -0.01 $\pm$ 0.44 & sorted & 60\% \\
-pancancer & 5 & 0.615 & 0.304 & 0.06 $\pm$ 0.47 & second\_deriv & 40\% \\
-REMC (mean) & 5 & 0.164 $\pm$ 0.130 & 0.411 $\pm$ 0.171 & -0.00 $\pm$ 0.20 & cumsum & 41\% \\
+MITBIH & 5 folds & 13.6 $\pm$ 0.8 & derivative & 80\% & -0.15 $\pm$ 0.69 \\
+EMOTIONS & 5 folds & 13.6 $\pm$ 2.3 & fft\_power & 80\% & 0.17 $\pm$ 0.48 \\
+MIMIC & 5 folds & 15.0 $\pm$ 0.0 & log1p & 40\% & -0.01 $\pm$ 0.52 \\
+PAMAP2 & 5 folds & 5.0 $\pm$ 0.0 & sorted & 60\% & -0.01 $\pm$ 0.44 \\
+AZT1D & 23 subjects & 13.3 $\pm$ 1.0 & reciprocal & 24\% & --- \\
+REMC & 56 cell lines & 12.4 $\pm$ 4.3 & cumsum & 44\% & --- \\
 \bottomrule
 \end{tabular*}
 \end{table}
