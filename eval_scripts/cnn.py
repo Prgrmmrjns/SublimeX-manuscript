@@ -200,4 +200,3 @@ def run_cnn(
     del model, optimizer, scheduler, train_features, val_features, test_features
     torch.cuda.empty_cache() if torch.cuda.is_available() else None
     return test_pred
-

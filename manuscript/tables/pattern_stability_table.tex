@@ -1,0 +1,22 @@
+\begin{table}[H]
+\centering
+\caption{Pattern Stability Analysis Across Datasets. For each dataset, we identify the most
+important pattern per fold using LightGBM feature importance and analyze positional consistency
+(center, width), transformation selection, and shape correlation across folds.
+For REMC, we report mean $\pm$ std across all cell lines analyzed.}
+\label{tab:pattern_stability}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}
+\toprule
+\textbf{Dataset} & \textbf{Folds} & \textbf{Center CV} & \textbf{Width CV} & 
+\textbf{Shape $\rho$} & \textbf{Transform} & \textbf{Consistency} \\
+\midrule
+mitbih & 5 & 0.517 & 0.470 & -0.15 $\pm$ 0.69 & derivative & 80\% \\
+emotions & 5 & 0.499 & 0.176 & 0.17 $\pm$ 0.48 & fft\_power & 80\% \\
+mimic & 5 & 0.853 & 0.518 & -0.01 $\pm$ 0.52 & log1p & 40\% \\
+pamap2 & 5 & 0.894 & 0.353 & -0.01 $\pm$ 0.44 & sorted & 60\% \\
+pancancer & 5 & 0.615 & 0.304 & 0.06 $\pm$ 0.47 & second\_deriv & 40\% \\
+REMC (mean) & 5 & 0.164 $\pm$ 0.130 & 0.411 $\pm$ 0.171 & -0.00 $\pm$ 0.20 & cumsum & 41\% \\
+\bottomrule
+\end{tabular*}
+\end{table}

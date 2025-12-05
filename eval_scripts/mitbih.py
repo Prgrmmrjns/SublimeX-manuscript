@@ -15,7 +15,7 @@ from params import *
 warnings.filterwarnings('ignore')
 
 def load_mitbih_data():
-    data = pd.read_csv("../processed_datasets/mitbih_processed.csv")
+    data = pd.read_csv("../processed_datasets/mitbih/mitbih_processed.csv")
     print(data.shape)
     return data.drop('target', axis=1), data['target']
 
@@ -25,121 +25,65 @@ kfold_indices = list(StratifiedKFold(K_FOLDS, shuffle=True, random_state=42).spl
 
 results = []
 
-# PATX evaluation
 all_patterns = {}
-patx_scores = []
-patx_times = []
-patx_features = []
 for fold, (train_idx, val_idx) in enumerate(kfold_indices):
+    print(f"\n--- Fold {fold+1}/{K_FOLDS} ---")
     y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
     X_train = input_series.iloc[train_idx].astype(np.float32)
     X_test = input_series.iloc[val_idx].astype(np.float32)
+    
+    # PATX
     t0 = time.time()
-    res = feature_extraction([X_train], y_train.values, [X_test], metric='accuracy', n_trials=N_TRIALS, show_progress=SHOW_PROGRESS, n_control_points=N_CONTROL_POINTS)
+    res = feature_extraction([X_train], y_train.values, [X_test], metric='accuracy', n_trials=N_TRIALS, n_control_points=N_CONTROL_POINTS, n_patterns=N_PATTERNS, n_transforms=N_TRANSFORMS, max_samples=MAX_SAMPLES, inner_k_folds=INNER_K_FOLDS, early_stopping_patience=EARLY_STOPPING_PATIENCE, val_size=VAL_SIZE, show_progress=SHOW_PROGRESS, n_workers=N_WORKERS)
     all_patterns[f'fold_{fold+1}'] = res['patterns']
     accuracy = accuracy_score(y_val.values, res['model'].predict(res['test_features']))
-    processing_time = time.time() - t0
-    patx_scores.append(accuracy)
-    patx_times.append(processing_time)
-    patx_features.append(len(res['patterns']))
-    results.append({'approach': 'PATX', 'fold': fold, 'score': accuracy, 
-                    'processing_time': processing_time, 'n_features': len(res['patterns'])})
-    print(f"Fold {fold+1}: Accuracy={accuracy:.4f}, Time={processing_time:.1f}s, Features={len(res['patterns']):.0f}")
-
-avg_accuracy = np.mean(patx_scores)
-avg_time = np.mean(patx_times)
-avg_features = np.mean(patx_features)
-print(f"PATX Average: Accuracy={avg_accuracy:.4f}, Time={avg_time:.1f}s, Features={avg_features:.1f}")
-
-# TSFRESH evaluation
-tsfresh_scores = []
-tsfresh_times = []
-tsfresh_features = []
-for fold, (train_idx, val_idx) in enumerate(kfold_indices):
-    y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
-    X_train = input_series.iloc[train_idx]
-    X_test = input_series.iloc[val_idx]
+    elapsed = time.time() - t0
+    print(f"PATX: Acc={accuracy:.4f}, Time={elapsed:.1f}s, Features={len(res['patterns'])}")
+    results.append({'approach': 'PATX', 'fold': fold+1, 'score': accuracy, 'processing_time': elapsed, 'n_features': len(res['patterns'])})
+    
+    # TSFRESH
     t0 = time.time()
     test_feat, train_feat = run_tsfresh(X_train.values, X_test.values)
     tr_f, val_f, y_tr, y_val_split = train_test_split(train_feat, y_train.values, test_size=VAL_SIZE, random_state=42, stratify=y_train.values)
     model = LightGBMModelWrapper('classification', n_classes=len(np.unique(y_train)))
     model.fit(tr_f, y_tr, val_f, y_val_split)
-    accuracy = accuracy_score(y_val.values, model.predict(test_feat))
-    processing_time = time.time() - t0
-    tsfresh_scores.append(accuracy)
-    tsfresh_times.append(processing_time)
-    tsfresh_features.append(train_feat.shape[1])
-    results.append({'approach': 'TSFRESH', 'fold': fold, 'score': accuracy, 
-                    'processing_time': processing_time, 'n_features': train_feat.shape[1]})
-
-avg_accuracy = np.mean(tsfresh_scores)
-avg_time = np.mean(tsfresh_times)
-avg_features = np.mean(tsfresh_features)
-print(f"TSFRESH Average: Accuracy={avg_accuracy:.4f}, Time={avg_time:.1f}s, Features={avg_features:.1f}")
-
-# CATCH22 evaluation
-catch22_scores = []
-catch22_times = []
-catch22_features = []
-for fold, (train_idx, val_idx) in enumerate(kfold_indices):
-    y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
-    X_train = input_series.iloc[train_idx]
-    X_test = input_series.iloc[val_idx]
+    accuracy = accuracy_score(y_val, model.predict(test_feat))
+    elapsed = time.time()-t0
+    print(f"TSFRESH: Acc={accuracy:.4f}, Time={elapsed:.1f}s, Features={train_feat.shape[1]}")
+    results.append({'approach': 'TSFRESH', 'fold': fold+1, 'score': accuracy, 'processing_time': elapsed, 'n_features': train_feat.shape[1]})
+    
+    # CATCH22
     t0 = time.time()
     test_feat, train_feat = run_catch22(X_train.values, X_test.values)
     tr_f, val_f, y_tr, y_val_split = train_test_split(train_feat, y_train.values, test_size=VAL_SIZE, random_state=42, stratify=y_train.values)
     model = LightGBMModelWrapper('classification', n_classes=len(np.unique(y_train)))
     model.fit(tr_f, y_tr, val_f, y_val_split)
-    accuracy = accuracy_score(y_val.values, model.predict(test_feat))
-    processing_time = time.time() - t0
-    catch22_scores.append(accuracy)
-    catch22_times.append(processing_time)
-    catch22_features.append(train_feat.shape[1])
-    results.append({'approach': 'CATCH22', 'fold': fold, 'score': accuracy, 
-                    'processing_time': processing_time, 'n_features': train_feat.shape[1]})
-
-avg_accuracy = np.mean(catch22_scores)
-avg_time = np.mean(catch22_times)
-avg_features = np.mean(catch22_features)
-print(f"CATCH22 Average: Accuracy={avg_accuracy:.4f}, Time={avg_time:.1f}s, Features={avg_features:.1f}")
-
-# CNN evaluation
-cnn_scores = []
-cnn_times = []
-cnn_features = []
-for fold, (train_idx, val_idx) in enumerate(kfold_indices):
-    y_train, y_val = y.iloc[train_idx], y.iloc[val_idx]
-    X_train = input_series.iloc[train_idx]
-    X_test = input_series.iloc[val_idx]
+    accuracy = accuracy_score(y_val, model.predict(test_feat))
+    elapsed = time.time()-t0
+    print(f"CATCH22: Acc={accuracy:.4f}, Time={elapsed:.1f}s, Features={train_feat.shape[1]}")
+    results.append({'approach': 'CATCH22', 'fold': fold+1, 'score': accuracy, 'processing_time': elapsed, 'n_features': train_feat.shape[1]})
+    
+    # CNN
     t0 = time.time()
     preds = run_cnn(X_train.values, y_train.values, X_test.values, task_type='classification', metric='accuracy', num_classes=len(np.unique(y_train)), epochs=CNN_EPOCHS, lr=CNN_LEARNING_RATE)
-    accuracy = accuracy_score(y_val.values, preds)
-    processing_time = time.time() - t0
-    cnn_scores.append(accuracy)
-    cnn_times.append(processing_time)
-    cnn_features.append(X_train.shape[1])
-    results.append({'approach': 'CNN', 'fold': fold, 'score': accuracy, 
-                    'processing_time': processing_time, 'n_features': X_train.shape[1]})
-
-avg_accuracy = np.mean(cnn_scores)
-avg_time = np.mean(cnn_times)
-avg_features = np.mean(cnn_features)
-print(f"CNN Average: Accuracy={avg_accuracy:.4f}, Time={avg_time:.1f}s, Features={avg_features:.1f}")
+    accuracy = accuracy_score(y_val, preds)
+    elapsed = time.time()-t0
+    print(f"CNN: Acc={accuracy:.4f}, Time={elapsed:.1f}s, Features={X_train.shape[1]}")
+    results.append({'approach': 'CNN', 'fold': fold+1, 'score': accuracy, 'processing_time': elapsed, 'n_features': X_train.shape[1]})
 
 df_res = pd.DataFrame(results)
-
-# Print summary results
 print("\n" + "="*60)
-print("SUMMARY RESULTS (Mean ± Std)")
+print(f"MIT-BIH SUMMARY (Mean ± Std across {K_FOLDS} folds)")
 print("="*60)
 for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
     app_res = df_res[df_res['approach'] == app]
-    scores = app_res['score'].values
-    times = app_res['processing_time'].values
-    features = app_res['n_features'].values
-    print(f"{app:8}: Accuracy={np.mean(scores):.4f}±{np.std(scores):.4f}, "
-            f"Time={np.mean(times):.1f}±{np.std(times):.1f}s, "
-            f"Features={np.mean(features):.1f}±{np.std(features):.1f}")
+    if len(app_res) > 0:
+        scores = app_res['score'].values
+        times = app_res['processing_time'].values
+        features = app_res['n_features'].values
+        print(f"{app:8}: Acc={np.mean(scores):.4f}±{np.std(scores):.4f}, "
+              f"Time={np.mean(times):.1f}±{np.std(times):.1f}s, "
+              f"Features={np.mean(features):.1f}±{np.std(features):.1f}")
 
 # Save results
 df_res.to_csv('../results/mitbih.csv', index=False)
@@ -153,6 +97,7 @@ for fold_key, patterns in all_patterns.items():
     for pattern in patterns:
         serializable_pattern = {}
         for key, value in pattern.items():
+            if key == 'pattern': continue # Skip dense array
             if isinstance(value, np.ndarray):
                 serializable_pattern[key] = value.tolist()
             elif isinstance(value, (np.integer, np.floating)):

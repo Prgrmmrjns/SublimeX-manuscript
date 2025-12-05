@@ -33,7 +33,7 @@ def load_mimic_data():
     return X_list, y, anchor_age, series_names
 
 def load_azt1d_data(subject_id='10'):
-    df = pd.read_parquet(f'../processed_datasets/azt1d/subject_{subject_id}.parquet', engine='fastparquet')
+    df = pd.read_parquet(f'../processed_datasets/azt1d/subject_{subject_id}.parquet')
     y = df['target']
     cgm_data = df[[col for col in df.columns if col.startswith('CGM_')]]
     insulin_data = df[[col for col in df.columns if col.startswith('Insulin_')]]
@@ -133,6 +133,80 @@ def process_mimic():
     
     return shap.Explanation(values=shap_vals[correct_ards], base_values=base_value, data=X_test[correct_ards], feature_names=feature_names)
 
+def load_remc_data(cell_line='E004'):
+    df = pd.read_parquet(f'../processed_datasets/remc/{cell_line}.parquet')
+    y = df['target']
+    histone_names = ['H3K4me3', 'H3K4me1', 'H3K36me3', 'H3K9me3', 'H3K27me3']
+    X_list = []
+    for h in histone_names:
+        cols = [c for c in df.columns if c.startswith(h + "_")]
+        X_list.append(df[cols])
+    return X_list, y, histone_names
+
+def process_remc(cell_line='E004'):
+    from core import apply_transformation, generate_bspline_pattern
+    
+    X_list, y, histone_names = load_remc_data(cell_line)
+    
+    with open(f'../json_files/remc/pattern_parameters_{cell_line}.json', 'r') as f:
+        pattern_data = json.load(f)
+    patterns = pattern_data[list(pattern_data.keys())[0]]
+    
+    train_idx, test_idx = train_test_split(np.arange(len(y)), test_size=0.3, random_state=42, stratify=y)
+    y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    input_series_train = [x.iloc[train_idx] for x in X_list]
+    input_series_test = [x.iloc[test_idx] for x in X_list]
+    
+    input_series_train_stacked = np.stack([x.values for x in input_series_train], axis=1)
+    input_series_test_stacked = np.stack([x.values for x in input_series_test], axis=1)
+    
+    train_features, test_features = [], []
+    
+    for pattern in patterns:
+        width = pattern['width']
+        start = pattern['start']
+        series_idx = pattern['series_idx']
+        transform_type = pattern.get('transform_type', 'raw')
+        
+        # Apply transformation
+        train_transformed = apply_transformation(input_series_train_stacked, transform_type)
+        test_transformed = apply_transformation(input_series_test_stacked, transform_type)
+        
+        # Get the specific series
+        train_series = train_transformed[:, series_idx, :]
+        test_series = test_transformed[:, series_idx, :]
+        
+        # Generate pattern
+        pattern_curve = generate_bspline_pattern(pattern['control_points'], width)
+        
+        # Extract features
+        train_feat = pattern_to_features(train_series, pattern_curve, width, start)
+        test_feat = pattern_to_features(test_series, pattern_curve, width, start)
+        
+        train_features.append(train_feat.reshape(-1, 1))
+        test_features.append(test_feat.reshape(-1, 1))
+    
+    X_train, X_test = np.column_stack(train_features), np.column_stack(test_features)
+    model = LightGBMModelWrapper('classification', n_classes=2)
+    model.fit(X_train, y_train.values, X_test, y_test.values)
+    
+    # Find a representative high expression case
+    high_cases = np.where(y_test.values == 1)[0]
+    correct_high = high_cases[0] if len(high_cases) > 0 else 0
+    
+    explainer = shap.TreeExplainer(model.model)
+    shap_vals = explainer.shap_values(X_test)
+    if isinstance(shap_vals, list): shap_vals = shap_vals[1]
+    if len(shap_vals.shape) == 3: shap_vals = shap_vals[:, :, -1]
+    
+    feature_names = [
+        f"P{i+1}: {histone_names[patterns[i]['series_idx']]} ({patterns[i].get('transform_type', 'raw')})"
+        for i in range(len(patterns))
+    ]
+    base_value = explainer.expected_value[1] if isinstance(explainer.expected_value, (list, np.ndarray)) else explainer.expected_value
+    
+    return shap.Explanation(values=shap_vals[correct_high], base_values=base_value, data=X_test[correct_high], feature_names=feature_names)
+
 def process_azt1d(subject_id='1'):
     X_list, y, cgm0, series_names = load_azt1d_data(subject_id)
     
@@ -217,7 +291,7 @@ def process_azt1d(subject_id='1'):
     
     return shap.Explanation(values=shap_vals[best_pred], base_values=explainer.expected_value, data=X_test[best_pred], feature_names=feature_names)
 
-def plot_custom_shap(explanation, ax, title, task_type='classification'):
+def plot_custom_shap(explanation, ax, task_type='classification'):
     values = explanation.values
     features = explanation.feature_names
     base_value = explanation.base_values
@@ -228,28 +302,44 @@ def plot_custom_shap(explanation, ax, title, task_type='classification'):
     top_values = values[indices]
     top_features = [features[i] for i in indices]
     
-    cumulative = [base_value]
-    for v in top_values:
+    # Add base value as first element
+    all_values = [base_value] + list(top_values)
+    all_labels = ['Base (bias)'] + top_features
+    
+    cumulative = [0]  # Start from 0
+    for v in all_values:
         cumulative.append(cumulative[-1] + v)
     
     final_pred = cumulative[-1]
     
-    x_pos = np.arange(len(top_features))
-    labels = top_features
+    x_pos = np.arange(len(all_labels))
     
     bar_starts = []
     bar_heights = []
     colors = []
     
-    for i, v in enumerate(top_values):
-        if v >= 0:
+    # Use consistent colors from domain_pattern_visualization.py
+    c_positive = '#c0392b'  # Red for positive contributions (pushes towards class 1)
+    c_negative = '#2980b9'  # Blue for negative contributions (pushes towards class 0)
+    c_base = '#7f8c8d'      # Gray for base value
+    
+    for i, v in enumerate(all_values):
+        if i == 0:  # Base value
+            if v >= 0:
+                bar_starts.append(0)
+                bar_heights.append(v)
+            else:
+                bar_starts.append(v)
+                bar_heights.append(-v)
+            colors.append(c_base)
+        elif v >= 0:
             bar_starts.append(cumulative[i])
             bar_heights.append(v)
-            colors.append('#ff6b6b')
+            colors.append(c_positive)
         else:
             bar_starts.append(cumulative[i+1])
             bar_heights.append(-v)
-            colors.append('#4dabf7')
+            colors.append(c_negative)
     
     bars = ax.bar(x_pos, bar_heights, bottom=bar_starts, color=colors, 
                    alpha=0.8, width=0.8)
@@ -260,64 +350,74 @@ def plot_custom_shap(explanation, ax, title, task_type='classification'):
                 [cumulative[i+1], cumulative[i+1]], 
                 'k-', linewidth=1.5, alpha=0.7)
     
-    for i, (start, height, v_idx) in enumerate(zip(bar_starts, bar_heights, range(len(top_values)))):
-        value = top_values[v_idx]
-        y_text = start + height/2 if value >= 0 else start - height/2
-        ax.text(x_pos[i], y_text, f'{value:.2f}', 
-                ha='center', va='center', fontsize=8, fontweight='bold', color='white')
+    # Add line from last bar to Final annotation
+    ax.plot([x_pos[-1]+0.4, x_pos[-1]+0.5], 
+            [final_pred, final_pred], 
+            'k-', linewidth=1.5, alpha=0.7)
     
-    ax.text(x_pos[-1] + 0.5, final_pred, f'  Final: {final_pred:.2f}', 
-            va='center', ha='left', fontsize=10, fontweight='bold',
-            bbox=dict(boxstyle='round,pad=0.4', facecolor='#969696', alpha=0.3, edgecolor='black'))
+    for i, (start, height, v_idx) in enumerate(zip(bar_starts, bar_heights, range(len(all_values)))):
+        value = all_values[v_idx]
+        y_text = start + height/2
+        ax.text(x_pos[i], y_text, f'{value:.2f}', 
+                ha='center', va='center', fontsize=9, fontweight='bold', color='white')
+    
+    ax.text(x_pos[-1] + 0.55, final_pred, f'  Final: {final_pred:.2f}', 
+            va='center', ha='left', fontsize=11, fontweight='bold',
+            bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.8, edgecolor='gray'))
     
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(labels, rotation=15, ha='center', fontsize=8)
+    ax.set_xticklabels(all_labels, rotation=45, ha='right', fontsize=9)
+    ax.tick_params(axis='x', which='major', pad=5)
+    
+    # Decision boundary line at 0 for classification
+    if task_type == 'classification':
+        ax.axhline(0, color='black', linestyle='--', linewidth=2, alpha=0.7, label='Decision boundary')
+        ax.set_ylabel('Log-odds (Model Output)', fontsize=12, fontweight='bold')
+    else:
+        ax.set_ylabel('Predicted Value (Model Output)', fontsize=12, fontweight='bold')
+    
+    ax.grid(axis='y', alpha=0.2, linestyle=':')
+    
+    c_positive = '#c0392b'
+    c_negative = '#2980b9'
+    
+    c_base = '#7f8c8d'
+    pos_patch = plt.Rectangle((0, 0), 1, 1, fc=c_positive, alpha=0.8, edgecolor='black')
+    neg_patch = plt.Rectangle((0, 0), 1, 1, fc=c_negative, alpha=0.8, edgecolor='black')
+    base_patch = plt.Rectangle((0, 0), 1, 1, fc=c_base, alpha=0.8, edgecolor='black')
+    decision_line = plt.Line2D([0], [0], color='black', linestyle='--', linewidth=2, alpha=0.7)
     
     if task_type == 'classification':
-        ax.set_ylabel('Log-odds (Model Output)', fontsize=11, fontweight='bold')
+        ax.legend([base_patch, pos_patch, neg_patch, decision_line], 
+                 ['Base (bias)', 'Positive (→ High Expr)', 'Negative (→ Low Expr)', 'Decision boundary (0)'],
+                 loc='upper left', fontsize=10, framealpha=0.9, frameon=True)
     else:
-        ax.set_ylabel('Predicted Value (Model Output)', fontsize=11, fontweight='bold')
-    
-    ax.set_title(title, fontsize=13, fontweight='bold', pad=15)
-    ax.grid(axis='y', alpha=0.3, linestyle='--')
-    
-    pos_patch = plt.Rectangle((0, 0), 1, 1, fc='#ff6b6b', alpha=0.8, edgecolor='black')
-    neg_patch = plt.Rectangle((0, 0), 1, 1, fc='#4dabf7', alpha=0.8, edgecolor='black')
-    base_line = plt.Line2D([0], [0], color='gray', linestyle=':', linewidth=2, alpha=0.7)
-    ax.legend([pos_patch, neg_patch, base_line], 
-             ['Positive contribution', 'Negative contribution', f'Base: {base_value:.2f}'],
-             loc='upper left', fontsize=9, framealpha=0.9)
+        ax.legend([base_patch, pos_patch, neg_patch], 
+                 ['Base (bias)', 'Positive contribution', 'Negative contribution'],
+                 loc='upper left', fontsize=10, framealpha=0.9, frameon=True)
 
 def main():
     
-    # Process MIMIC-IV
-    mimic_exp = process_mimic()
+    # Process REMC
+    remc_exp = process_remc(cell_line='E004')
     
-    # Process AZT1D
-    azt1d_exp = process_azt1d(subject_id='1')
     shap_data = {
-        'mimic': {
-            'feature_names': mimic_exp.feature_names,
-            'shap_values': mimic_exp.values.tolist(),
-            'base_value': float(mimic_exp.base_values),
-            'final_prediction': float(mimic_exp.base_values + mimic_exp.values.sum())
-        },
-        'azt1d': {
-            'feature_names': azt1d_exp.feature_names,
-            'shap_values': azt1d_exp.values.tolist(),
-            'base_value': float(azt1d_exp.base_values),
-            'final_prediction': float(azt1d_exp.base_values + azt1d_exp.values.sum())
+        'remc': {
+            'feature_names': remc_exp.feature_names,
+            'shap_values': remc_exp.values.tolist(),
+            'base_value': float(remc_exp.base_values),
+            'final_prediction': float(remc_exp.base_values + remc_exp.values.sum())
         }
     }
     
     with open('../manuscript/tables/shap_values.json', 'w') as f:
         json.dump(shap_data, f, indent=2)
     
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 8))
-    plot_custom_shap(mimic_exp, ax1, '(a) MIMIC-IV: ARDS Classification', task_type='classification')
-    plot_custom_shap(azt1d_exp, ax2, '(b) AZT1D: Glucose Forecasting', task_type='regression')
+    fig, ax = plt.subplots(1, 1, figsize=(14, 7))
+    plot_custom_shap(remc_exp, ax, task_type='classification')
     plt.tight_layout()
     plt.savefig('../manuscript/images/shap_waterfall.png', dpi=300, bbox_inches='tight')
+    print("Saved shap_waterfall.png")
 
 if __name__ == "__main__":
     main()

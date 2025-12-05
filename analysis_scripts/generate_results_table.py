@@ -10,7 +10,7 @@ import os
 
 def load_and_process_results(results_dir='results'):
     """Load and process all result CSV files."""
-    datasets = ['azt1d', 'emotions', 'mimic', 'mitbih', 'remc']
+    datasets = ['azt1d', 'emotions', 'mimic', 'mitbih', 'remc', 'pamap2', 'pancancer']
     results = {}
     
     for dataset in datasets:
@@ -46,13 +46,14 @@ def load_and_process_results(results_dir='results'):
                         'processing_time_std': approach_data['processing_time'].std()
                     }
             elif 'fold' in df.columns and 'cell_line' not in df.columns:
-                # MITBIH/Emotions/MIMIC format - aggregate across folds (K-fold CV)
+                # MITBIH/Emotions/MIMIC/Pancancer format - aggregate across folds (K-fold CV)
                 dataset_results = {}
+                score_col = 'auc' if 'auc' in df.columns else 'score'
                 for approach in df['approach'].unique():
                     approach_data = df[df['approach'] == approach]
                     dataset_results[approach] = {
-                        'score': approach_data['score'].mean(),
-                        'score_std': approach_data['score'].std(),
+                        'score': approach_data[score_col].mean(),
+                        'score_std': approach_data[score_col].std(),
                         'n_features': approach_data['n_features'].mean(),
                         'n_features_std': approach_data['n_features'].std(),
                         'processing_time': approach_data['processing_time'].mean(),
@@ -85,7 +86,9 @@ def generate_latex_table(results, output_file='../manuscript/tables/results_tabl
         'emotions': {'name': 'Emotions', 'metric': 'AUC', 'task': 'EEG Emotion Classification'},
         'mimic': {'name': 'MIMIC-IV', 'metric': 'AUC', 'task': 'ARDS Classification'},
         'mitbih': {'name': 'MITBIH', 'metric': 'Accuracy', 'task': 'Arrhythmia Classification'},
-        'remc': {'name': 'REMC', 'metric': 'AUC', 'task': 'Gene Expression Prediction'}
+        'remc': {'name': 'REMC', 'metric': 'AUC', 'task': 'Gene Expression Prediction'},
+        'pamap2': {'name': 'PAMAP2', 'metric': 'Accuracy', 'task': 'Activity Recognition'},
+        'pancancer': {'name': 'Pan-Cancer', 'metric': 'AUC', 'task': 'Cancer Classification'}
     }
     
     approaches = ['PATX', 'TSFRESH', 'CATCH22', 'CNN']
