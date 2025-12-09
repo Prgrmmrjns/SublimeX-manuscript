@@ -18,8 +18,8 @@ TEST_SIZE = 0.3 # Test size for datasets that don't use K-fold cross-validation
 VAL_SIZE = 0.2
 
 # CNN params
-CNN_EPOCHS = 100
-CNN_LEARNING_RATE = 0.1
+CNN_EPOCHS = 300
+CNN_LEARNING_RATE = 1e-3
 
 
 
