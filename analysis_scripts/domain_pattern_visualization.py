@@ -4,21 +4,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
-from scipy.interpolate import BSpline
+from scipy.interpolate import make_interp_spline
+from scipy.fft import dct
 import matplotlib.gridspec as gridspec
 
 # --- Core Logic ---
 
-def generate_bspline_pattern(control_points, width):
-    degree = 3
-    n_cp = len(control_points)
-    knots = np.concatenate([np.zeros(degree + 1), np.linspace(0, 1, n_cp - degree + 1)[1:-1], np.ones(degree + 1)])
-    t = np.linspace(0, 1, int(width))
-    return BSpline(knots, np.asarray(control_points), degree)(t)
+def generate_bspline_pattern(control_points, width, x_positions=None):
+    cps = np.asarray(control_points)
+    xs = np.asarray(x_positions) if x_positions is not None else np.linspace(0, 1, len(cps))
+    k = min(3, len(cps) - 1)
+    t = np.linspace(xs.min(), xs.max(), int(round(width)))
+    return make_interp_spline(xs, cps, k=k)(t)
 
 def apply_transformation(series, transform_type):
     if transform_type == 'raw':
         return series
+    elif transform_type == 'delta0':
+        return series - series[0]
     elif transform_type == 'derivative':
         return np.gradient(series)
     elif transform_type == 'cumsum':
@@ -27,6 +30,8 @@ def apply_transformation(series, transform_type):
         return np.abs(series)
     elif transform_type == 'sorted':
         return np.sort(series)
+    elif transform_type == 'dct':
+        return dct(series, type=2, norm='ortho')
     return series
 
 def compute_rmse(signal, pattern, start, width):
@@ -89,7 +94,7 @@ def visualize_pattern_story(cell_line='E004'):
     histone_names = ['H3K4me3', 'H3K4me1', 'H3K36me3', 'H3K9me3', 'H3K27me3']
     
     # Find discriminative pattern
-    idx = find_best_pattern(patterns, y, histone_names, df)
+    idx = 0
     p = patterns[idx]
     
     # Extract info
@@ -97,6 +102,7 @@ def visualize_pattern_story(cell_line='E004'):
     transform = p.get('transform_type', 'raw')
     start = int(p['start'])
     width = int(round(p['width']))
+    x_positions = p.get('x_positions')
     
     # Prepare signals
     cols = [c for c in df.columns if c.startswith(h_name + "_")]
@@ -104,14 +110,17 @@ def visualize_pattern_story(cell_line='E004'):
     X_trans = np.array([apply_transformation(x, transform) for x in X_raw])
     
     # Generate pattern curve
-    pattern_curve = generate_bspline_pattern(p['control_points'], width)
+    pattern_curve = generate_bspline_pattern(p['control_points'], width, x_positions=x_positions)
     
     # Calc RMSEs to pick representatives
     rmses = np.array([compute_rmse(x, pattern_curve, start, width) for x in X_trans])
+    valid = np.isfinite(rmses)
     
     # Select representative samples (close to median of each class)
     def get_rep_idx(target_class):
-        idxs = np.where(y == target_class)[0]
+        idxs = np.where((y == target_class) & valid)[0]
+        if len(idxs) == 0:
+            idxs = np.where(y == target_class)[0]
         cls_rmses = rmses[idxs]
         median_val = np.median(cls_rmses)
         # Find index closest to median
@@ -217,8 +226,8 @@ def visualize_pattern_story(cell_line='E004'):
     ax3 = fig.add_subplot(gs[2])
     
     # Density plots
-    sns.kdeplot(rmses[y==1], color=c_high, fill=True, alpha=0.3, label='High Expression', ax=ax3, linewidth=2)
-    sns.kdeplot(rmses[y==0], color=c_low, fill=True, alpha=0.3, label='Low Expression', ax=ax3, linewidth=2)
+    sns.kdeplot(rmses[(y==1) & valid], color=c_high, fill=True, alpha=0.3, label='High Expression', ax=ax3, linewidth=2)
+    sns.kdeplot(rmses[(y==0) & valid], color=c_low, fill=True, alpha=0.3, label='Low Expression', ax=ax3, linewidth=2)
     
     ax3.set_title('C. Feature Discrimination: RMSE Distribution', loc='left', fontsize=14, fontweight='bold')
     ax3.set_xlabel('Pattern Dissimilarity (RMSE Feature)', fontsize=12)
@@ -231,7 +240,7 @@ if __name__ == "__main__":
     output_dir = Path('../manuscript/images')
     output_dir.mkdir(exist_ok=True, parents=True)
     
-    fig = visualize_pattern_story('E004')
+    fig = visualize_pattern_story('E003')
     if fig:
         fig.savefig(output_dir / 'domain_pattern_interpretation.png', dpi=300, bbox_inches='tight')
         print("Saved domain_pattern_interpretation.png")

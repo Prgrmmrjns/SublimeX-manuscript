@@ -10,7 +10,7 @@ import os
 
 def load_and_process_results(results_dir='results'):
     """Load and process all result CSV files."""
-    datasets = ['azt1d', 'emotions', 'mimic', 'mitbih', 'remc', 'pamap2', 'pancancer']
+    datasets = ['azt1d', 'emotions', 'mimic', 'mitbih', 'remc', 'pamap2', 'pancancer', 'svd']
     results = {}
     
     for dataset in datasets:
@@ -88,7 +88,8 @@ def generate_latex_table(results, output_file='../manuscript/tables/results_tabl
         'mitbih': {'name': 'MITBIH', 'metric': 'Accuracy', 'task': 'Arrhythmia Classification'},
         'remc': {'name': 'REMC', 'metric': 'AUC', 'task': 'Gene Expression Prediction'},
         'pamap2': {'name': 'PAMAP2', 'metric': 'Accuracy', 'task': 'Activity Recognition'},
-        'pancancer': {'name': 'Pan-Cancer', 'metric': 'AUC', 'task': 'Cancer Classification'}
+        'pancancer': {'name': 'Pan-Cancer', 'metric': 'AUC', 'task': 'Cancer Classification'},
+        'svd': {'name': 'SVD', 'metric': 'AUC', 'task': 'Voice Pathology Detection'}
     }
     
     approaches = ['PATX', 'TSFRESH', 'CATCH22', 'CNN']

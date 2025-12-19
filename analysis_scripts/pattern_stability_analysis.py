@@ -1,12 +1,12 @@
 import json
 import numpy as np
 import glob
-import sys
-sys.path.append('../eval_scripts')
-from core import generate_bspline_pattern
 from itertools import combinations
 import warnings
 warnings.filterwarnings('ignore')
+
+import matplotlib.pyplot as plt
+from scipy.interpolate import make_interp_spline
 
 HISTONE_NAMES = ['H3K4me3', 'H3K4me1', 'H3K36me3', 'H3K9me3', 'H3K27me3']
 
@@ -28,6 +28,83 @@ PAMAP2_CHANNELS = ['heart_rate',
     'ankle_temp', 'ankle_acc16_x', 'ankle_acc16_y', 'ankle_acc16_z', 'ankle_acc6_x', 'ankle_acc6_y', 'ankle_acc6_z',
     'ankle_gyro_x', 'ankle_gyro_y', 'ankle_gyro_z', 'ankle_mag_x', 'ankle_mag_y', 'ankle_mag_z',
     'ankle_ori_x', 'ankle_ori_y', 'ankle_ori_z', 'ankle_ori_w']
+
+VOWELS = ["a_n", "i_n", "u_n"]
+SVD_CHANNELS = [f"{v}_mfcc{i}" for v in VOWELS for i in range(13)]
+
+def generate_bspline_pattern(control_points, width, x_positions=None):
+    cps = np.asarray(control_points)
+    xs = np.asarray(x_positions) if x_positions is not None else np.linspace(0, 1, len(cps))
+    k = min(3, len(cps) - 1)
+    t = np.linspace(xs.min(), xs.max(), int(round(width)))
+    return make_interp_spline(xs, cps, k=k)(t)
+
+def plot_patterns(dataset_name, patterns_dict, top_only=False, channel_names=None):
+    plt.figure(figsize=(10, 6))
+    
+    # Get all patterns
+    all_patterns = []
+    if isinstance(patterns_dict, dict):
+        # Handle nested dict structure from json (fold_name -> patterns)
+        for fold in patterns_dict:
+            if isinstance(patterns_dict[fold], list):
+                if top_only and len(patterns_dict[fold]) > 0:
+                    all_patterns.append(patterns_dict[fold][0])
+                else:
+                    all_patterns.extend(patterns_dict[fold])
+    elif isinstance(patterns_dict, list):
+        # Handle list structure
+        if top_only and len(patterns_dict) > 0:
+            all_patterns = [patterns_dict[0]]
+        else:
+            all_patterns = patterns_dict
+        
+    annotations = []
+    
+    # Define a color cycle manually to ensure consistency
+    colors = plt.cm.tab10(np.linspace(0, 1, max(10, len(all_patterns))))
+    
+    for i, p in enumerate(all_patterns):
+        width = p['width']
+        start = p['start']
+        cps = p['control_points']
+        x_positions = p.get('x_positions')
+        
+        # Generate shape
+        shape = generate_bspline_pattern(cps, width, x_positions=x_positions)
+        
+        # Create x-axis (position)
+        x = np.linspace(start, start + width, len(shape))
+        
+        color = colors[i % len(colors)]
+        plt.plot(x, shape, alpha=0.8, linewidth=2, color=color)
+        
+        # Collect annotation info
+        transform = p['transform_type']
+        s_idx = p['series_idx']
+        if channel_names and s_idx < len(channel_names):
+            c_name = channel_names[s_idx]
+        else:
+            c_name = f"Ch{s_idx}"
+            
+        annot_text = f"{c_name} ({transform})"
+        
+        # Place text near the start of the pattern with matching color
+        # Adding a small random y-offset to avoid overlap if starts are identical
+        y_pos = shape[0] + np.random.uniform(-0.1, 0.1) 
+        plt.text(start, y_pos, annot_text, color=color, fontsize=10, fontweight='bold',
+                 bbox=dict(boxstyle='round,pad=0.2', facecolor='white', alpha=0.7, edgecolor=color))
+
+    # plt.title(f'Pattern Stability: {dataset_name.upper()}')
+    plt.xlabel('Time')
+    plt.ylabel('Pattern Value')
+    plt.grid(True, alpha=0.3)
+    
+    # Save
+    import os
+    os.makedirs('../manuscript/images', exist_ok=True)
+    plt.savefig(f'../manuscript/images/stability_{dataset_name}.png', dpi=300, bbox_inches='tight')
+    plt.close()
 
 def compute_overlap(patterns):
     if len(patterns) < 2:
@@ -57,30 +134,35 @@ def analyze_fold_dataset(dataset, channel_names=None):
     channels = [p['series_idx'] for p in first_patterns]
     dominant_channel_idx = max(set(channels), key=channels.count)
     if channel_names:
-        dominant_channel = channel_names[dominant_channel_idx]
+        dominant_channel = channel_names[dominant_channel_idx] if dominant_channel_idx < len(channel_names) else str(dominant_channel_idx)
     else:
         dominant_channel = str(dominant_channel_idx)
     
-    overlap_mean, overlap_std = compute_overlap(first_patterns)
+    n_patterns_list = [len(data[f]) for f in fold_names]
+    
+    # Single channel datasets: mark as N/A
+    n_channels = len(set(channels))
+    if n_channels == 1:
+        channel_consistency = None
+    else:
+        channel_consistency = channels.count(dominant_channel_idx) / n_folds
     
     return {
         'dataset': dataset.upper(),
         'n_folds': n_folds,
-        'n_patterns_mean': np.mean([len(data[f]) for f in fold_names]),
-        'n_patterns_std': np.std([len(data[f]) for f in fold_names]),
+        'n_patterns_mean': np.mean(n_patterns_list),
+        'n_patterns_std': np.std(n_patterns_list),
         'dominant_transform': dominant_transform,
         'transform_consistency': transforms.count(dominant_transform) / n_folds,
         'dominant_channel': dominant_channel,
-        'channel_consistency': channels.count(dominant_channel_idx) / n_folds,
-        'overlap_mean': overlap_mean,
-        'overlap_std': overlap_std
+        'channel_consistency': channel_consistency,
     }
 
-def analyze_remc():
-    files = sorted(glob.glob('../json_files/remc/pattern_parameters_*.json'))
-    first_cell = files[0]
-    with open(first_cell, 'r') as f:
+def analyze_remc(cell_line='E003'):
+    with open(f'../json_files/remc/pattern_parameters_{cell_line}.json', 'r') as f:
         data = json.load(f)
+    
+    plot_patterns('remc', data, top_only=True, channel_names=HISTONE_NAMES)
     
     fold_names = sorted(data.keys())
     n_folds = len(fold_names)
@@ -92,83 +174,78 @@ def analyze_remc():
     dominant_transform = max(set(transforms), key=transforms.count)
     dominant_histone = max(set(histones), key=histones.count)
     
-    overlap_mean, overlap_std = compute_overlap(first_patterns)
+    n_patterns_list = [len(data[f]) for f in fold_names]
     
     return {
-        'dataset': 'REMC',
+        'dataset': f'REMC ({cell_line})',
         'n_folds': n_folds,
-        'n_patterns_mean': np.mean([len(data[f]) for f in fold_names]),
-        'n_patterns_std': np.std([len(data[f]) for f in fold_names]),
+        'n_patterns_mean': np.mean(n_patterns_list),
+        'n_patterns_std': np.std(n_patterns_list),
         'dominant_transform': dominant_transform,
         'transform_consistency': transforms.count(dominant_transform) / n_folds,
         'dominant_channel': dominant_histone,
         'channel_consistency': histones.count(dominant_histone) / n_folds,
-        'overlap_mean': overlap_mean,
-        'overlap_std': overlap_std
     }
 
 def analyze_azt1d():
     files = sorted(glob.glob('../json_files/azt1d/pattern_parameters_*.json'))
-    first_subject = files[0]
-    with open(first_subject, 'r') as f:
-        patterns = json.load(f)
     
-    transforms = [p['transform_type'] for p in patterns]
-    dominant = max(set(transforms), key=transforms.count)
+    all_n_patterns = []
+    all_transforms = []
+    all_channels = []
     
-    channels = [p['series_idx'] for p in patterns]
-    dominant_channel_idx = max(set(channels), key=channels.count)
+    for f in files:
+        with open(f, 'r') as fp:
+            patterns = json.load(fp)
+        all_n_patterns.append(len(patterns))
+        if patterns:
+            all_transforms.append(patterns[0]['transform_type'])
+            all_channels.append(patterns[0]['series_idx'])
+    
+    dominant_transform = max(set(all_transforms), key=all_transforms.count) if all_transforms else 'raw'
+    dominant_channel_idx = max(set(all_channels), key=all_channels.count) if all_channels else 0
     dominant_channel = AZT1D_CHANNELS[dominant_channel_idx]
-    
-    overlap_mean, overlap_std = compute_overlap(patterns)
     
     return {
         'dataset': 'AZT1D',
-        'n_folds': 1,
-        'n_patterns_mean': len(patterns),
-        'n_patterns_std': 0,
-        'dominant_transform': dominant,
-        'transform_consistency': transforms.count(dominant) / len(transforms),
+        'n_folds': len(files),
+        'n_patterns_mean': np.mean(all_n_patterns),
+        'n_patterns_std': np.std(all_n_patterns),
+        'dominant_transform': dominant_transform,
+        'transform_consistency': all_transforms.count(dominant_transform) / len(all_transforms) if all_transforms else 0,
         'dominant_channel': dominant_channel,
-        'channel_consistency': channels.count(dominant_channel_idx) / len(channels),
-        'overlap_mean': overlap_mean,
-        'overlap_std': overlap_std
+        'channel_consistency': all_channels.count(dominant_channel_idx) / len(all_channels) if all_channels else 0,
     }
 
 def generate_latex_table(results):
     lines = [
         r"\begin{table}[H]",
         r"\centering",
-        r"\caption{Pattern discovery characteristics across datasets. We report the dominant",
-        r"signal transformation, dominant channel, their consistency across folds, and",
-        r"pattern area overlap (IoU) between primary patterns across folds.}",
+        r"\caption{Pattern discovery characteristics across datasets. For each dataset, we report",
+        r"the number of selected patterns (mean $\pm$ std across folds/subjects), and the dominant",
+        r"transformation and channel of the most important pattern with consistency percentages.",
+        r"Single-channel datasets show ``---'' for channel consistency.}",
         r"\label{tab:pattern_stability}",
         r"\footnotesize",
-        r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}",
+        r"\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc@{}}",
         r"\toprule",
-        r"\textbf{Dataset} & \textbf{Patterns} & \textbf{Transform} & \textbf{Trans. \%} & ",
-        r"\textbf{Channel} & \textbf{Chan. \%} & \textbf{Overlap} \\",
+        r"\textbf{Dataset} & \textbf{Patterns} & \textbf{Transform (consistency)} & \textbf{Channel (consistency)} \\",
         r"\midrule"
     ]
     
     for r in results:
         transform = r['dominant_transform'].replace('_', r'\_')
-        trans_pct = f"{r['transform_consistency']*100:.0f}\\%"
-        patterns = f"{r['n_patterns_mean']:.1f}"
-        if r['n_patterns_std'] > 0:
-            patterns += f" $\\pm$ {r['n_patterns_std']:.1f}"
+        trans_combined = f"{transform} ({r['transform_consistency']*100:.0f}\\%)"
+        
+        patterns = f"{r['n_patterns_mean']:.1f} $\\pm$ {r['n_patterns_std']:.1f}"
         
         channel = str(r['dominant_channel']).replace('_', r'\_')
-        chan_pct = f"{r['channel_consistency']*100:.0f}\\%"
-        
-        if np.isnan(r['overlap_mean']):
-            overlap = "---"
+        if r['channel_consistency'] is None:
+            chan_combined = f"{channel} (---)"
         else:
-            overlap = f"{r['overlap_mean']:.2f}"
-            if r['overlap_std'] > 0:
-                overlap += f" $\\pm$ {r['overlap_std']:.2f}"
+            chan_combined = f"{channel} ({r['channel_consistency']*100:.0f}\\%)"
         
-        line = f"{r['dataset']} & {patterns} & {transform} & {trans_pct} & {channel} & {chan_pct} & {overlap} \\\\"
+        line = f"{r['dataset']} & {patterns} & {trans_combined} & {chan_combined} \\\\"
         lines.append(line)
     
     lines.extend([r"\bottomrule", r"\end{tabular*}", r"\end{table}"])
@@ -181,53 +258,40 @@ def main():
     
     results = []
     
-    print(f"\nMITBIH")
+    def print_result(name, r):
+        print(f"\n{name}")
+        print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
+        print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
+        ch_pct = "---" if r['channel_consistency'] is None else f"{r['channel_consistency']*100:.0f}%"
+        print(f"  Channel: {r['dominant_channel']} ({ch_pct})")
+    
     r = analyze_fold_dataset('mitbih', channel_names=['ECG'])
     results.append(r)
-    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
-    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print_result("MITBIH", r)
     
-    print(f"\nEMOTIONS")
     r = analyze_fold_dataset('emotions', channel_names=['EEG'])
     results.append(r)
-    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
-    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print_result("EMOTIONS", r)
     
-    print(f"\nMIMIC")
     r = analyze_fold_dataset('mimic', channel_names=MIMIC_CHANNELS)
     results.append(r)
-    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
-    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print_result("MIMIC", r)
     
-    print(f"\nPAMAP2")
     r = analyze_fold_dataset('pamap2', channel_names=PAMAP2_CHANNELS)
     results.append(r)
-    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
-    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print_result("PAMAP2", r)
     
-    print(f"\nREMC")
-    r = analyze_remc()
+    r = analyze_fold_dataset('svd', channel_names=SVD_CHANNELS)
     results.append(r)
-    print(f"  Patterns: {r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}")
-    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print_result("SVD", r)
     
-    print(f"\nAZT1D")
+    r = analyze_remc(cell_line='E003')
+    results.append(r)
+    print_result("REMC (E003)", r)
+    
     r = analyze_azt1d()
     results.append(r)
-    print(f"  Patterns: {r['n_patterns_mean']:.0f}")
-    print(f"  Transform: {r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)")
-    print(f"  Channel: {r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)")
-    print(f"  Overlap: {r['overlap_mean']:.2f}±{r['overlap_std']:.2f}")
+    print_result("AZT1D", r)
     
     latex = generate_latex_table(results)
     with open('../manuscript/tables/pattern_stability_table.tex', 'w') as f:
@@ -235,14 +299,16 @@ def main():
     print(f"\nSaved pattern_stability_table.tex")
     
     print("\n" + "=" * 80)
-    print(f"{'Dataset':<10} {'Patterns':<10} {'Transform':<12} {'T%':<5} {'Channel':<15} {'C%':<5} {'Overlap':<8}")
+    print(f"{'Dataset':<15} {'Patterns':<15} {'Transform':<20} {'Channel':<20}")
     print("-" * 80)
     for r in results:
-        pat = f"{r['n_patterns_mean']:.1f}"
-        ch = r['dominant_channel']
-        ch_pct = f"{r['channel_consistency']*100:.0f}%"
-        ovl = f"{r['overlap_mean']:.2f}" if not np.isnan(r['overlap_mean']) else "---"
-        print(f"{r['dataset']:<10} {pat:<10} {r['dominant_transform']:<12} {r['transform_consistency']*100:.0f}%   {ch:<15} {ch_pct:<5} {ovl:<8}")
+        pat = f"{r['n_patterns_mean']:.1f}±{r['n_patterns_std']:.1f}"
+        trans = f"{r['dominant_transform']} ({r['transform_consistency']*100:.0f}%)"
+        if r['channel_consistency'] is None:
+            ch = f"{r['dominant_channel']} (---)"
+        else:
+            ch = f"{r['dominant_channel']} ({r['channel_consistency']*100:.0f}%)"
+        print(f"{r['dataset']:<15} {pat:<15} {trans:<20} {ch:<20}")
 
 if __name__ == "__main__":
     main()

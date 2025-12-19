@@ -1,0 +1,22 @@
+\begin{table}[H]
+\centering
+\caption{Pattern discovery characteristics across datasets. For each dataset, we report
+the number of selected patterns (mean $\pm$ std across folds/subjects), and the dominant
+transformation and channel of the most important pattern with consistency percentages.
+Single-channel datasets show ``---'' for channel consistency.}
+\label{tab:pattern_stability}
+\footnotesize
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccc@{}}
+\toprule
+\textbf{Dataset} & \textbf{Patterns} & \textbf{Transform (consistency)} & \textbf{Channel (consistency)} \\
+\midrule
+MITBIH & 11.8 $\pm$ 2.7 & pct\_change (60\%) & ECG (---) \\
+EMOTIONS & 5.6 $\pm$ 1.5 & preemph97 (60\%) & EEG (60\%) \\
+MIMIC & 6.0 $\pm$ 1.9 & dct (100\%) & pao2 (40\%) \\
+PAMAP2 & 8.4 $\pm$ 1.6 & sorted (40\%) & heart\_rate (20\%) \\
+SVD & 2.4 $\pm$ 1.5 & ecg\_resp (20\%) & a\_n\_mfcc1 (60\%) \\
+REMC (E003) & 11.6 $\pm$ 1.4 & delta0 (40\%) & H3K4me3 (100\%) \\
+AZT1D & 6.4 $\pm$ 1.3 & raw (29\%) & CGM (62\%) \\
+\bottomrule
+\end{tabular*}
+\end{table}

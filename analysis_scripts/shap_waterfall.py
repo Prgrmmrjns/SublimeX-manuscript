@@ -200,7 +200,7 @@ def process_remc(cell_line='E004'):
     if len(shap_vals.shape) == 3: shap_vals = shap_vals[:, :, -1]
     
     feature_names = [
-        f"P{i+1}: {histone_names[patterns[i]['series_idx']]} ({patterns[i].get('transform_type', 'raw')})"
+        f"{histone_names[patterns[i]['series_idx']]} ({patterns[i].get('transform_type', 'raw')})"
         for i in range(len(patterns))
     ]
     base_value = explainer.expected_value[1] if isinstance(explainer.expected_value, (list, np.ndarray)) else explainer.expected_value
@@ -366,7 +366,7 @@ def plot_custom_shap(explanation, ax, task_type='classification'):
             bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.8, edgecolor='gray'))
     
     ax.set_xticks(x_pos)
-    ax.set_xticklabels(all_labels, rotation=45, ha='right', fontsize=9)
+    ax.set_xticklabels(all_labels, rotation=45, ha='center', fontsize=9)
     ax.tick_params(axis='x', which='major', pad=5)
     
     # Decision boundary line at 0 for classification
@@ -397,8 +397,6 @@ def plot_custom_shap(explanation, ax, task_type='classification'):
                  loc='upper left', fontsize=10, framealpha=0.9, frameon=True)
 
 def main():
-    
-    # Process REMC
     remc_exp = process_remc(cell_line='E004')
     
     shap_data = {
@@ -413,7 +411,12 @@ def main():
     with open('../manuscript/tables/shap_values.json', 'w') as f:
         json.dump(shap_data, f, indent=2)
     
-    fig, ax = plt.subplots(1, 1, figsize=(14, 7))
+    print("Top SHAP contributors:")
+    indices = np.argsort(np.abs(remc_exp.values))[::-1]
+    for i in indices[:8]:
+        print(f"  {remc_exp.feature_names[i]}: {remc_exp.values[i]:.3f}")
+    
+    fig, ax = plt.subplots(1, 1, figsize=(12, 6))
     plot_custom_shap(remc_exp, ax, task_type='classification')
     plt.tight_layout()
     plt.savefig('../manuscript/images/shap_waterfall.png', dpi=300, bbox_inches='tight')

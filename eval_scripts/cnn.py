@@ -1,10 +1,17 @@
+import time
 import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.model_selection import train_test_split
-from params import VAL_SIZE
+from sklearn.metrics import accuracy_score, roc_auc_score, mean_squared_error
 
 torch.set_num_threads(1)
+
+
+# CNN params
+CNN_EPOCHS = 300
+CNN_LEARNING_RATE = 1e-3
+VAL_SIZE = 0.2
 
 class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=None, dropout=0.0):
@@ -78,9 +85,9 @@ def run_cnn(
     input_series_test,
     task_type='regression',
     metric='accuracy',
-    epochs=60,
+    epochs=CNN_EPOCHS,
     batch_size=128,
-    lr=3e-3,
+    lr=CNN_LEARNING_RATE,
     num_classes=None,
     weight_decay=1e-4,
     patience=10,
@@ -129,7 +136,7 @@ def run_cnn(
         y_train_split = torch.tensor(y_train_split, dtype=torch.long).to(device)
         y_valid = torch.tensor(y_valid, dtype=torch.long).to(device)
         if out_dim == 2:
-            loss_fn = nn.CrossEntropyLoss(weight=_compute_class_weights(y_train_split.cpu().numpy()).to(device))
+            loss_fn = nn.CrossEntropyLoss()
         else:
             loss_fn = nn.CrossEntropyLoss()
     else:
@@ -200,3 +207,17 @@ def run_cnn(
     del model, optimizer, scheduler, train_features, val_features, test_features
     torch.cuda.empty_cache() if torch.cuda.is_available() else None
     return test_pred
+
+
+def eval_cnn(train_array, test_array, y_train, y_test, task_type, metric, num_classes=None):
+    t0 = time.time()
+    preds = run_cnn(train_array, y_train, test_array, task_type=task_type, metric=metric, num_classes=num_classes, epochs=CNN_EPOCHS, lr=CNN_LEARNING_RATE)
+    if metric == 'rmse':
+        score = np.sqrt(mean_squared_error(y_test, preds))
+    elif metric == 'auc':
+        proba1 = preds if preds.ndim == 1 else preds[:, 1] if preds.shape[1] > 1 else preds
+        score = roc_auc_score(y_test, proba1)
+    else:
+        score = accuracy_score(y_test, preds)
+    elapsed = time.time() - t0
+    return score, elapsed, train_array.shape[1]

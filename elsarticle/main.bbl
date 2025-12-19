@@ -1,0 +1,187 @@
+\begin{thebibliography}{10}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{morid2023time}
+M.~A. Morid, O.~R.~L. Sheng, J.~Dunbar, Time series prediction using deep learning methods in healthcare, ACM Transactions on Management Information Systems 14~(1) (2023) 1--29.
+
+\bibitem{rood2022impact}
+J.~E. Rood, A.~Maartens, A.~Hupalowska, S.~A. Teichmann, A.~Regev, Impact of the human cell atlas on medicine, Nature medicine 28~(12) (2022) 2486--2496.
+
+\bibitem{patharkar2024predictive}
+A.~Patharkar, F.~Cai, F.~Al-Hindawi, T.~Wu, Predictive modeling of biomedical temporal data in healthcare applications: review and future directions, Frontiers in Physiology 15 (2024) 1386760.
+
+\bibitem{chaddad2023electroencephalography}
+A.~Chaddad, Y.~Wu, R.~Kateb, A.~Bouridane, Electroencephalography signal processing: A comprehensive review and analysis of methods and techniques, Sensors 23~(14) (2023) 6434.
+
+\bibitem{anbalagan2023analysis}
+T.~Anbalagan, M.~K. Nath, D.~Vijayalakshmi, A.~Anbalagan, Analysis of various techniques for ecg signal in healthcare, past, present, and future, Biomedical Engineering Advances 6 (2023) 100089.
+
+\bibitem{yadav2022systems}
+A.~K. Yadav, S.~K. Banerjee, B.~Das, K.~Chaudhary, systems biology and omics approaches for understanding complex disease biology, Frontiers in Genetics 13 (2022) 896818.
+
+\bibitem{fulcher2018feature}
+B.~D. Fulcher, Feature-based time-series analysis, in: Feature engineering for machine learning and data analytics, CRC press, 2018, pp. 87--116.
+
+\bibitem{gelen2025novel}
+M.~A. Gelen, P.~D. Barua, I.~Tasci, G.~Tasci, E.~Aydemir, S.~Dogan, T.~Tuncer, U.~Acharya, Novel accurate classification system developed using order transition pattern feature engineering technique with physiological signals, Scientific Reports 15~(1) (2025) 15278.
+
+\bibitem{ansari2023deep}
+Y.~Ansari, O.~Mourad, K.~Qaraqe, E.~Serpedin, Deep learning for ecg arrhythmia detection and classification: an overview of progress for period 2017--2023, Frontiers in Physiology 14 (2023) 1246746.
+
+\bibitem{moutonnet2025augmentation}
+N.~Moutonnet, G.~Scott, D.~P. Mandic, Augmentation of eeg and ecg time series for deep learning applications: Integrating changepoint detection into the iaaft surrogates, arXiv preprint arXiv:2504.03761 (2025).
+
+\bibitem{miotto2018deep}
+R.~Miotto, F.~Wang, S.~Wang, X.~Jiang, J.~T. Dudley, Deep learning for healthcare: review, opportunities and challenges, Briefings in bioinformatics 19~(6) (2018) 1236--1246.
+
+\bibitem{christ2018tsfresh}
+M.~Christ, N.~Braun, J.~Neuffer, A.~W. Kempa-Liehr, Time series feature extraction on basis of scalable hypothesis tests (tsfresh--a python package), Neurocomputing 307 (2018) 72--77.
+
+\bibitem{lubba2019catch22}
+C.~H. Lubba, S.~S. Sethi, P.~Knaute, S.~R. Schultz, B.~D. Fulcher, N.~S. Jones, catch22: Canonical time-series characteristics: Selected through highly comparative time-series analysis, Data mining and knowledge discovery 33~(6) (2019) 1821--1852.
+
+\bibitem{henderson2021empirical}
+T.~Henderson, B.~D. Fulcher, An empirical evaluation of time-series feature sets, in: 2021 International Conference on Data Mining Workshops (ICDMW), IEEE, 2021, pp. 1032--1038.
+
+\bibitem{petelin2023towards}
+G.~Petelin, G.~Cenikj, T.~Eftimov, Towards understanding the importance of time-series features in automated algorithm performance prediction, Expert systems with applications 213 (2023) 119023.
+
+\bibitem{wang2022systematic}
+W.~K. Wang, I.~Chen, L.~Hershkovich, J.~Yang, A.~Shetty, G.~Singh, Y.~Jiang, A.~Kotla, J.~Z. Shang, R.~Yerrabelli, et~al., A systematic review of time series classification techniques used in biomedical applications, Sensors 22~(20) (2022) 8016.
+
+\bibitem{lee2021modeling}
+J.~M. Lee, M.~Hauskrecht, Modeling multivariate clinical event time-series with recurrent temporal mechanisms, Artificial intelligence in medicine 112 (2021) 102021.
+
+\bibitem{rudin2019stop}
+C.~Rudin, Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead, Nature machine intelligence 1~(5) (2019) 206--215.
+
+\bibitem{ennab2024enhancing}
+M.~Ennab, H.~Mcheick, Enhancing interpretability and accuracy of ai models in healthcare: a comprehensive review on challenges and future directions, Frontiers in Robotics and AI 11 (2024) 1444763.
+
+\bibitem{balestriero2018spline}
+R.~Balestriero, R.~G. Baraniuk, \href{https://proceedings.mlr.press/v80/balestriero18b/balestriero18b.pdf}{A spline theory of deep networks}, in: Proceedings of the 35th International Conference on Machine Learning, Vol.~80 of PMLR, Stockholm, Sweden, 2018, pp. 383--392.
+\newline\urlprefix\url{https://proceedings.mlr.press/v80/balestriero18b/balestriero18b.pdf}
+
+\bibitem{MoodyMark1992}
+G.~B. Moody, R.~G. Mark, The impact of the mit-bih arrhythmia database, IEEE Engineering in Medicine and Biology Magazine 20~(3) (2001) 45--50.
+
+\bibitem{Goldberger2000}
+A.~L. Goldberger, L.~A. Amaral, L.~Glass, J.~M. Hausdorff, P.~C. Ivanov, R.~G. Mark, J.~E. Mietus, G.~B. Moody, C.-K. Peng, H.~E. Stanley, Physiobank, physiotoolkit, and physionet: components of a new research resource for complex physiologic signals, Circulation 101~(23) (2000) e215--e220.
+
+\bibitem{Roadmap2015}
+R.~E. Consortium, et~al., Integrative analysis of 111 reference human epigenomes, Nature 518~(7539) (2015) 317--330.
+
+\bibitem{Johnson2023MIMICIV}
+A.~E. Johnson, L.~Bulgarelli, L.~Shen, A.~Gayles, A.~Shammout, S.~Horng, T.~J. Pollard, S.~Hao, B.~Moody, B.~Gow, et~al., Mimic-iv, a freely accessible electronic health record dataset, Scientific data 10~(1) (2023) 1.
+
+\bibitem{Reiss2012PAMAP2}
+A.~Reiss, D.~Stricker, Introducing a new benchmarked dataset for activity monitoring, in: 2012 16th International Symposium on Wearable Computers, IEEE, 2012, pp. 108--109, dataset available at: \url{https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring}.
+\newblock \href {https://doi.org/10.1109/ISWC.2012.13} {\path{doi:10.1109/ISWC.2012.13}}.
+
+\bibitem{hannun2019cardiologist}
+A.~Y. Hannun, P.~Rajpurkar, M.~Haghpanahi, G.~H. Tison, C.~Bourn, M.~P. Turakhia, A.~Y. Ng, Cardiologist-level arrhythmia detection and classification in ambulatory electrocardiograms using a deep neural network, Nature medicine 25~(1) (2019) 65--69.
+
+\bibitem{acharya2017deep}
+U.~R. Acharya, S.~L. Oh, Y.~Hagiwara, J.~H. Tan, M.~Adam, A.~Gertych, R.~San~Tan, A deep convolutional neural network model to classify heartbeats, Computers in biology and medicine 89 (2017) 389--396.
+
+\bibitem{sannino2018deep}
+G.~Sannino, G.~De~Pietro, A deep learning approach for ecg-based heartbeat classification for arrhythmia detection, Future Generation Computer Systems 86 (2018) 446--455.
+
+\bibitem{liu2022arrhythmia}
+P.~Liu, X.~Sun, Y.~Han, Z.~He, W.~Zhang, C.~Wu, Arrhythmia classification of lstm autoencoder based on time series anomaly detection, Biomedical Signal Processing and Control 71 (2022) 103228.
+
+\bibitem{li2020glucose}
+K.~Li, C.~Liu, T.~Zhu, P.~Herrero, P.~Georgiou, Convolutional recurrent neural networks for glucose prediction, IEEE journal of biomedical and health informatics 24~(2) (2020) 603--613.
+
+\bibitem{xie2020benchmarking}
+J.~Xie, Q.~Wang, Benchmarking machine learning algorithms on blood glucose prediction for type i diabetes in comparison with classical time-series models, IEEE Transactions on Biomedical Engineering 67~(11) (2020) 3101--3124.
+
+\bibitem{van2021machine}
+W.~P. Van~Doorn, Y.~D. Foreman, N.~C. Schaper, et~al., Machine learning-based glucose prediction with use of continuous glucose and physical activity monitoring data: The maastricht study, PloS one 16~(6) (2021) e0253125.
+
+\bibitem{woldaregay2019data}
+A.~Z. Woldaregay, E.~{\AA}rsand, S.~Walderhaug, D.~Albers, L.~Mamykina, T.~Botsis, G.~Hartvigsen, Data-driven modeling and prediction of blood glucose dynamics: Machine learning applications in type 1 diabetes, Artificial Intelligence in Medicine 98 (2019) 109--134.
+
+\bibitem{singh2020deep}
+R.~Singh, J.~Lanchantin, G.~Robins, Y.~Qi, Deepchrome: deep-learning for predicting gene expression from histone modifications, Bioinformatics 32~(17) (2016) i639--i648.
+
+\bibitem{sekhon2018deepdiff}
+A.~Sekhon, R.~Singh, Y.~Qi, Deepdiff: Deep-learning for predicting differential gene expression from histone modifications, Bioinformatics 34~(17) (2018) i891--i900.
+
+\bibitem{frasca2022interpretable}
+F.~Frasca, M.~Matteucci, M.~Leone, M.~J. Morelli, Accurate and highly interpretable prediction of gene expression from histone modifications, BMC bioinformatics 23~(1) (2022) 151.
+
+\bibitem{paul2025prediction}
+N.~B. Paul, J.~C. Wolber, M.~L. Sahrhage, T.~Bei{\ss}barth, M.~Haubrock, Prediction of gene expression using histone modification patterns extracted by particle swarm optimization, Bioinformatics 41~(2) (2025) btaf033.
+
+\bibitem{ordoez2016deep}
+F.~J. Ord{\'o}{\~n}ez, D.~Roggen, Deep convolutional and lstm recurrent neural networks for multimodal wearable activity recognition, Sensors 16~(1) (2016) 115.
+
+\bibitem{tan2023cnn}
+T.-H. Tan, Y.-L. Chang, J.-R. Wu, Y.-F. Chen, Convolutional neural network with multihead attention for human activity recognition, IEEE Sensors Journal 23~(14) (2023) 16041--16051.
+
+\bibitem{hammerla2016deep}
+N.~Y. Hammerla, S.~Halloran, T.~Pl{\"o}tz, Deep, convolutional, and recurrent models for human activity recognition using wearables, arXiv preprint arXiv:1604.08880 (2016).
+
+\bibitem{bollampally2024optimizing}
+A.~Bollampally, J.~Kavitha, P.~Sumanya, D.~Rajesh, A.~Y. Jaffar, W.~N. Eid, H.~M. Albarakati, F.~M. Aldosari, A.~A. Alharbi, Optimizing edge computing for activity recognition: A bidirectional lstm approach on the pamap2 dataset, Engineering, Technology \& Applied Science Research 14~(5) (2024) 17091--17099.
+
+\bibitem{villar2023predicting}
+J.~Villar, J.~M. González-Martín, et~al., Predicting icu mortality in acute respiratory distress syndrome patients using machine learning: the postcards study, Critical care medicine 51~(12) (2023) 1638--1649.
+
+\bibitem{le2020supervised}
+S.~Le, E.~Pellegrini, A.~Green-Saxena, C.~Summers, et~al., Supervised machine learning for the early prediction of acute respiratory distress syndrome (ards), Journal of Critical Care 60 (2020) 96--102.
+
+\bibitem{zhang2021ards}
+Z.~Zhang, K.~M. Ho, Y.~Hong, Machine learning for the prediction of acute respiratory distress syndrome onset in critically ill patients, Frontiers in medicine 8 (2021) 638795.
+
+\bibitem{martinez2012voice}
+D.~Mart{\'\i}nez, E.~Lleida, A.~Ortega, A.~Miguel, J.~Villalba, Voice pathology detection on the saarbr{\"u}cken voice database with calibration and fusion of scores using multifocal toolkit, in: Advances in Speech and Language Technologies for Iberian Languages: IberSPEECH 2012 Conference, Madrid, Spain, November 21-23, 2012. Proceedings, Springer, 2012, pp. 99--109.
+
+\bibitem{huckvale2021automated}
+M.~Huckvale, C.~Buciuleac, Automated detection of voice disorder in the saarbrücken voice database: Effects of pathology subset and audio materials (2021) 4829--4833\href {https://doi.org/10.21437/Interspeech.2021-1507} {\path{doi:10.21437/Interspeech.2021-1507}}.
+
+\bibitem{verde2018voice}
+L.~Verde, G.~De~Pietro, G.~Sannino, Voice disorder identification by using machine learning techniques, IEEE Access 6 (2018) 16246--16255.
+
+\bibitem{muhammad2018pathological}
+G.~Muhammad, M.~Alsulaiman, A.~Mahmood, Z.~Ali, Pathological voice detection and classification using deep learning, Applied Soft Computing 83 (2019) 105643.
+
+\bibitem{islam2022voice}
+R.~Islam, M.~S. Rahman, M.~S. Azam, Voice pathology detection using machine learning techniques: a systematic review, IEEE Access 10 (2022) 96689--96729.
+
+\bibitem{bhattacharjee2022voice}
+A.~Bhattacharjee, S.~Saha, S.~Dandapat, A deep learning approach to voice pathology detection, Speech Communication 137 (2022) 111--120.
+
+\bibitem{zhang2020investigation}
+Y.~Zhang, J.~Chen, J.~H. Tan, Y.~Chen, Y.~Chen, An investigation of deep learning models for eeg-based emotion recognition, Frontiers in neuroscience 14 (2020) 622759.
+
+\bibitem{islam2021emotion}
+M.~R. Islam, M.~A. Moni, M.~M. Islam, et~al., Emotion recognition from eeg signal focusing on deep learning and shallow learning techniques, IEEE Access 9 (2021) 94601--94624.
+
+\bibitem{lee2021experimental}
+J.-Y. Lee, Experimental evaluation of deep learning methods for an intelligent pathological voice detection system using the saarbruecken voice database, Applied Sciences 11~(15) (2021) 7149.
+\newblock \href {https://doi.org/10.3390/app11157149} {\path{doi:10.3390/app11157149}}.
+
+\bibitem{chen2016xgboost}
+T.~Chen, C.~Guestrin, \href{https://doi.org/10.1145/2939672.2939785}{Xgboost: A scalable tree boosting system}, in: Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining, ACM, 2016, pp. 785--794.
+\newblock \href {https://doi.org/10.1145/2939672.2939785} {\path{doi:10.1145/2939672.2939785}}.
+\newline\urlprefix\url{https://doi.org/10.1145/2939672.2939785}
+
+\bibitem{lundberg2017unified}
+S.~M. Lundberg, S.-I. Lee, A unified approach to interpreting model predictions, Advances in neural information processing systems 30 (2017).
+
+\bibitem{mosca2022shap}
+E.~Mosca, F.~Szigeti, S.~Tragianni, D.~Gallagher, G.~Groh, Shap-based explanation methods: a review for nlp interpretability, in: Proceedings of the 29th international conference on computational linguistics, 2022, pp. 4593--4603.
+
+\bibitem{heintzman2007distinct}
+N.~D. Heintzman, R.~K. Stuart, G.~Hon, Y.~Fu, C.~W. Ching, R.~D. Hawkins, L.~O. Barrera, S.~Van~Calcar, C.~Qu, K.~A. Ching, et~al., Distinct and predictive chromatin signatures of transcriptional promoters and enhancers in the human genome, Nature genetics 39~(3) (2007) 311--318.
+
+\bibitem{barski2007high}
+A.~Barski, S.~Cuddapah, K.~Cui, T.-Y. Roh, D.~E. Schones, Z.~Wang, G.~Wei, I.~Chepelev, K.~Zhao, High-resolution profiling of histone methylations in the human genome, Cell 129~(4) (2007) 823--837.
+
+\end{thebibliography}
