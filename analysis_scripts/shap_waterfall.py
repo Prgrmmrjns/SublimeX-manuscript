@@ -144,7 +144,7 @@ def load_remc_data(cell_line='E004'):
     return X_list, y, histone_names
 
 def process_remc(cell_line='E004'):
-    from core import apply_transformation, generate_bspline_pattern
+    from core import apply_transformation
     
     X_list, y, histone_names = load_remc_data(cell_line)
     
@@ -176,8 +176,8 @@ def process_remc(cell_line='E004'):
         train_series = train_transformed[:, series_idx, :]
         test_series = test_transformed[:, series_idx, :]
         
-        # Generate pattern
-        pattern_curve = generate_bspline_pattern(pattern['control_points'], width)
+        cp = np.array(pattern['control_points'])
+        pattern_curve = np.full(int(round(width)), float(cp[0])) if len(cp) == 1 else generate_bspline_pattern(cp, width)
         
         # Extract features
         train_feat = pattern_to_features(train_series, pattern_curve, width, start)

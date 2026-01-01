@@ -37,7 +37,7 @@ def bin_time_series(data, bin_size):
     return data[:, :n_bins * bin_size].reshape(n_samples, n_bins, bin_size).mean(axis=2)
 
 def load_pamap2_data(bin_size=10):
-    df = pd.read_parquet('../processed_datasets/pamap2/pamap2.parquet')
+    df = pd.read_parquet('../processed_datasets/pamap2/pamap2.parquet', engine='pyarrow')
     windows, y, subjects, feature_names = create_windows(df, window_size=100, step_size=50)
     windows_array = np.array(windows)
     
@@ -83,7 +83,20 @@ for fold, (train_idx, test_idx) in enumerate(skf.split(np.zeros(len(y_mapped)), 
     print(f"PATX: Accuracy={accuracy:.4f}, Time={elapsed:.1f}s, Features={len(res['patterns'])}")
     results.append({'fold': fold, 'approach': 'PATX', 'score': accuracy, 'processing_time': elapsed, 'n_features': len(res['patterns'])})
     
-    pattern_data = [{k: v.tolist() if isinstance(v, np.ndarray) else float(v) if isinstance(v, (np.floating, np.integer)) else v for k, v in p.items() if k != 'pattern'} for p in res['patterns']]
+    pattern_data = []
+    for p in res['patterns']:
+        p_dict = {}
+        for k, v in p.items():
+            if k == 'pattern': continue
+            if isinstance(v, list):
+                p_dict[k] = [x.item() if hasattr(x, 'item') else x for x in v]
+            elif isinstance(v, np.ndarray):
+                p_dict[k] = v.tolist()
+            elif isinstance(v, (np.integer, np.floating)):
+                p_dict[k] = v.item()
+            else:
+                p_dict[k] = v
+        pattern_data.append(p_dict)
     all_fold_patterns[f'fold_{fold}'] = pattern_data
     
     acc, elapsed, n_feat = eval_tsfresh(train_concat, test_concat, y_train, y_test, metric='accuracy', val_size=VAL_SIZE, n_classes=n_classes)

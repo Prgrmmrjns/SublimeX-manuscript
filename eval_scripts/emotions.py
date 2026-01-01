@@ -99,7 +99,17 @@ serializable_all_patterns = {}
 for fold_key, patterns in all_patterns.items():
     serializable_patterns = []
     for i, pattern in enumerate(patterns):
-        p_dict = {k: v.tolist() if isinstance(v, np.ndarray) else float(v) if isinstance(v, (np.floating, np.integer)) else v for k, v in pattern.items() if k != 'pattern'}
+        p_dict = {}
+        for k, v in pattern.items():
+            if k == 'pattern': continue
+            if isinstance(v, list):
+                p_dict[k] = [x.item() if hasattr(x, 'item') else x for x in v]
+            elif isinstance(v, np.ndarray):
+                p_dict[k] = v.tolist()
+            elif isinstance(v, (np.integer, np.floating)):
+                p_dict[k] = v.item()
+            else:
+                p_dict[k] = v
         p_dict['pattern_id'] = i + 1
         serializable_patterns.append(p_dict)
     serializable_all_patterns[fold_key] = serializable_patterns

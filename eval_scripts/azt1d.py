@@ -61,7 +61,17 @@ for subject_id in subject_ids:
     os.makedirs('../json_files/azt1d', exist_ok=True)
     pattern_data = []
     for i, p in enumerate(res['patterns']):
-        p_dict = {k: v.tolist() if isinstance(v, np.ndarray) else float(v) if isinstance(v, (np.floating, np.integer)) else v for k, v in p.items() if k != 'pattern'}
+        p_dict = {}
+        for k, v in p.items():
+            if k == 'pattern': continue
+            if isinstance(v, list):
+                p_dict[k] = [x.item() if hasattr(x, 'item') else x for x in v]
+            elif isinstance(v, np.ndarray):
+                p_dict[k] = v.tolist()
+            elif isinstance(v, (np.integer, np.floating)):
+                p_dict[k] = v.item()
+            else:
+                p_dict[k] = v
         p_dict['pattern_id'] = i + 1
         pattern_data.append(p_dict)
     with open(f'../json_files/azt1d/pattern_parameters_{subject_id}.json', 'w') as f:
@@ -80,17 +90,6 @@ for subject_id in subject_ids:
     rmse, elapsed, n_feat = eval_cnn(train_concat_with_init, test_concat_with_init, y_train.values, y_test.values, task_type='regression', metric='rmse')
     print(f"CNN: RMSE={rmse:.4f}, Time={elapsed:.1f}s, Features={n_feat}")
     results.append({'subject_id': subject_id, 'approach': 'CNN', 'score': rmse, 'processing_time': elapsed, 'n_features': n_feat})
-
-    # Print summary for this subject
-    print(f"\n{'='*60}")
-    print(f"Summary for Subject {subject_id}")
-    print(f"{'='*60}")
-    subj_res = pd.DataFrame([r for r in results if str(r['subject_id']) == subject_id])
-    for app in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']:
-        app_res = subj_res[subj_res['approach'] == app]
-        r = app_res.iloc[0]
-        print(f"{app:8}: RMSE={r['score']:.4f}, Time={r['processing_time']:.1f}s, Features={r['n_features']:.0f}")
-
     pd.DataFrame(results).to_csv('../results/azt1d.csv', index=False)
 
 pd.DataFrame(results).to_csv('../results/azt1d.csv', index=False)

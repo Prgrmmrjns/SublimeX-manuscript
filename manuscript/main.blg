@@ -1,0 +1,52 @@
+This is BibTeX, Version 0.99d (TeX Live 2024)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: elsarticle-num.bst
+Database file #1: bibliography.bib
+Warning--empty pages in balasubramanian2016motifs
+Warning--empty pages in dempster2021minirocket
+Warning--can't use both volume and number fields in hou2016efficient_shapelets
+Warning--empty pages in hou2016efficient_shapelets
+Warning--empty journal in huckvale2021automated
+You've used 44 entries,
+            2952 wiz_defined-function locations,
+            976 strings with 16696 characters,
+and the built_in function-call counts, 16569 in all, are:
+= -- 1566
+> -- 590
+< -- 15
++ -- 226
+- -- 182
+* -- 1280
+:= -- 2198
+add.period$ -- 56
+call.type$ -- 44
+change.case$ -- 46
+chr.to.int$ -- 0
+cite$ -- 49
+duplicate$ -- 557
+empty$ -- 1833
+format.name$ -- 222
+if$ -- 4257
+int.to.chr$ -- 0
+int.to.str$ -- 44
+missing$ -- 44
+newline$ -- 168
+num.names$ -- 44
+pop$ -- 324
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 1010
+stack$ -- 0
+substring$ -- 1013
+swap$ -- 193
+text.length$ -- 15
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 5
+while$ -- 126
+width$ -- 46
+write$ -- 415
+(There were 5 warnings)

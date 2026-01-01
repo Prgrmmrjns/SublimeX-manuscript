@@ -84,7 +84,9 @@ for cell_line in cell_lines:
             serializable_pattern = {}
             for key, value in pattern.items():
                 if key == 'pattern': continue
-                if isinstance(value, np.ndarray):
+                if isinstance(value, list):
+                    serializable_pattern[key] = [v.item() if hasattr(v, 'item') else v for v in value]
+                elif isinstance(value, np.ndarray):
                     serializable_pattern[key] = value.tolist()
                 elif isinstance(value, (np.integer, np.floating)):
                     serializable_pattern[key] = value.item()

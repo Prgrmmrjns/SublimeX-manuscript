@@ -34,6 +34,8 @@ SVD_CHANNELS = [f"{v}_mfcc{i}" for v in VOWELS for i in range(13)]
 
 def generate_bspline_pattern(control_points, width, x_positions=None):
     cps = np.asarray(control_points)
+    if len(cps) == 1:
+        return np.full(int(round(width)), float(cps[0]))
     xs = np.asarray(x_positions) if x_positions is not None else np.linspace(0, 1, len(cps))
     k = min(3, len(cps) - 1)
     t = np.linspace(xs.min(), xs.max(), int(round(width)))

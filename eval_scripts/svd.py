@@ -94,7 +94,9 @@ for fold_key, patterns in all_patterns.items():
         for k, v in pattern.items():
             if k == "pattern":
                 continue
-            if isinstance(v, np.ndarray):
+            if isinstance(v, list):
+                sp[k] = [x.item() if hasattr(x, 'item') else x for x in v]
+            elif isinstance(v, np.ndarray):
                 sp[k] = v.tolist()
             elif isinstance(v, (np.integer, np.floating)):
                 sp[k] = v.item()

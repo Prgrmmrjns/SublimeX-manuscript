@@ -7,7 +7,5 @@ optuna
 lightgbm
 imblearn
 fastparquet
-seaborn
 PyWavelets
 pycatch22
-numba 

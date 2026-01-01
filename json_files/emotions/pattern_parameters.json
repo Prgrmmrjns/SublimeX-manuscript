@@ -1,544 +1,620 @@
 {
   "fold_1": [
     {
-      "start": 381,
-      "width": 33.29981317460799,
-      "series_idx": 1,
-      "control_points": [
-        0.0,
-        146.6178616278613,
-        31.512102662105747
-      ],
-      "x_positions": [
-        0.0,
-        0.655703444676291,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.05874499332443257,
-      "end_frac": 0.9305740987983978,
+      "width": 175,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": 0.8470313174634618,
+        "c1": 0.15631164713166626,
+        "c2": -0.3315582663504972
+      },
+      "pattern_type": "bezier",
+      "transform_type": "diff",
+      "start": 0,
+      "end": 552,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 1
     },
     {
-      "start": 574,
-      "width": 34.543226674613194,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        101.83771010864487,
-        182.04907796316652
-      ],
-      "x_positions": [
-        0.0,
-        0.9984893546158452,
-        1.0
-      ],
-      "transform_type": "sorted",
-      "start_frac": 0.6208277703604806,
-      "end_frac": 0.7730307076101469,
+      "width": 233,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.5888713566391651,
+        "c1": -0.6051829112006732,
+        "c2": 0.7150531321860406
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 54,
+      "end": 239,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 2
     },
     {
-      "start": 605,
-      "width": 37.27906853195905,
-      "series_idx": 1,
-      "control_points": [
-        0.0,
-        -123.57454326029881,
-        56.61348647746218
-      ],
-      "x_positions": [
-        0.0,
-        0.17802138030787154,
-        1.0
-      ],
-      "transform_type": "sorted",
-      "start_frac": 0.7570093457943925,
-      "end_frac": 0.8958611481975968,
+      "width": 61,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": 0.09422700888286795,
+        "c1": 0.833816425599141,
+        "c2": 0.8993741332274777
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 589,
+      "end": 689,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 3
     },
     {
-      "start": 651,
-      "width": 36.27879870652526,
+      "width": 28,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        67.8468862095919,
-        140.73609731078935
-      ],
-      "x_positions": [
-        0.0,
-        0.3202748490450174,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.7850467289719626,
-      "end_frac": 0.9506008010680908,
+      "pattern_params": {
+        "c0": 0.9946059091980725,
+        "c1": 0.06626077240102991,
+        "c2": -0.2183180033561968
+      },
+      "pattern_type": "bezier",
+      "transform_type": "hjorth_mobility",
+      "start": 168,
+      "end": 722,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 4
     },
     {
-      "start": 35,
-      "width": 24.720847263821092,
+      "width": 63,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        124.73049015737229,
-        -31.91169085053083
-      ],
-      "x_positions": [
-        0.0,
-        0.4994063058779162,
-        1.0
-      ],
-      "transform_type": "wavelet_db4",
-      "start_frac": 0.03337783711615487,
-      "end_frac": 0.05740987983978638,
+      "pattern_params": {
+        "c0": 0.10007314381459335,
+        "c1": 0.6859148062151751,
+        "c2": 0.5310280068457843
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 283,
+      "end": 302,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 5
     },
     {
-      "start": 587,
-      "width": 16.029880622505754,
+      "width": 29,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        91.19450528516671,
-        19.67550780627053
-      ],
-      "x_positions": [
-        0.0,
-        0.5842948612001299,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.6702269692923899,
-      "end_frac": 0.8891855807743658,
+      "pattern_params": {
+        "c0": -0.7421197837257654,
+        "c1": 0.9521954282628139,
+        "c2": 0.8277764825984943
+      },
+      "pattern_type": "bezier",
+      "transform_type": "sorted",
+      "start": 47,
+      "end": 364,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 6
     },
     {
-      "start": 517,
-      "width": 34.97241327188014,
-      "series_idx": 1,
-      "control_points": [
-        0.0,
-        -93.25267721926478,
-        160.9368355097278
-      ],
-      "x_positions": [
-        0.0,
-        0.09616617435367922,
-        1.0
-      ],
+      "width": 435,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": -0.964592002511063,
+        "c1": -0.6714535875254534,
+        "c2": -0.7017185007706289
+      },
+      "pattern_type": "bezier",
       "transform_type": "raw",
-      "start_frac": 0.48598130841121495,
-      "end_frac": 0.8865153538050734,
+      "start": 140,
+      "end": 220,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 7
     }
   ],
   "fold_2": [
     {
-      "start": 484,
-      "width": 46.94120957674051,
+      "width": 230,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        -6.490134021265544,
-        162.74882971701115
-      ],
-      "x_positions": [
-        0.0,
-        0.8062495209763353,
-        1.0
-      ],
-      "transform_type": "wavelet_db4",
-      "start_frac": 0.5834445927903872,
-      "end_frac": 0.8184245660881175,
+      "pattern_params": {
+        "c0": -0.5015847608903033,
+        "c1": -0.12276498766331911,
+        "c2": -0.1609628142301745
+      },
+      "pattern_type": "bezier",
+      "transform_type": "diff",
+      "start": 96,
+      "end": 520,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 1
     },
     {
-      "start": 66,
-      "width": 40.59406872579017,
+      "width": 84,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        72.30827132501692,
-        -238.56185345113576
-      ],
-      "x_positions": [
-        0.0,
-        0.4234449391458177,
-        1.0
-      ],
-      "transform_type": "wavelet_db4",
-      "start_frac": 0.049399198931909215,
-      "end_frac": 0.31108144192256343,
+      "pattern_params": {
+        "c0": 0.22671411856531415,
+        "c1": 0.5859577837113834,
+        "c2": -0.42349754988968163
+      },
+      "pattern_type": "bezier",
+      "transform_type": "fft_power",
+      "start": 501,
+      "end": 596,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 2
     },
     {
-      "start": 681,
-      "width": 7.195768474462888,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        -29.116541102295745,
-        -179.12382284994627
-      ],
-      "x_positions": [
-        0.0,
-        0.9904511174420734,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.9065420560747663,
-      "end_frac": 0.910547396528705,
+      "width": 136,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.7245080465288489,
+        "c1": 0.26809129636635753,
+        "c2": -0.5125730042025965
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 146,
+      "end": 167,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 3
     },
     {
-      "start": 610,
-      "width": 28.399929054398086,
-      "series_idx": 1,
-      "control_points": [
-        0.0,
-        -27.052613636199368,
-        220.52245285340072
-      ],
-      "x_positions": [
-        0.0,
-        0.22319337505326156,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.7263017356475301,
-      "end_frac": 0.8918558077436582,
+      "width": 382,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": -0.4111772522726723,
+        "c1": -0.541884939122085,
+        "c2": -0.4647236459060377
+      },
+      "pattern_type": "bezier",
+      "transform_type": "sorted",
+      "start": 14,
+      "end": 14,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 4
     },
     {
-      "start": 561,
-      "width": 22.956689129842918,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        243.89952315501185,
-        96.1174943149065
-      ],
-      "x_positions": [
-        0.0,
-        0.5937671727786142,
-        1.0
-      ],
-      "transform_type": "sorted",
-      "start_frac": 0.48598130841121495,
-      "end_frac": 0.7730307076101469,
+      "width": 725,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.9506876134804906,
+        "c1": -0.00948521071101964,
+        "c2": -0.6886350929720532
+      },
+      "pattern_type": "bezier",
+      "transform_type": "hjorth_mobility",
+      "start": 25,
+      "end": 25,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 5
+    },
+    {
+      "width": 146,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.6576682725056336,
+        "c1": -0.9162468153557795,
+        "c2": -0.005087952087025022
+      },
+      "pattern_type": "bezier",
+      "transform_type": "fft_power",
+      "start": 242,
+      "end": 381,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 6
+    },
+    {
+      "width": 183,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": -0.5833036429611131,
+        "c1": -0.06298926454614551,
+        "c2": -0.13149420777432044
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 347,
+      "end": 567,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 7
+    },
+    {
+      "width": 172,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.999138780228152,
+        "c1": -0.36206311243208905,
+        "c2": -0.42204366513348335
+      },
+      "pattern_type": "bezier",
+      "transform_type": "detrend",
+      "start": 447,
+      "end": 507,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 8
+    },
+    {
+      "width": 547,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": -0.8963802143829178,
+        "c1": 0.4624319419238284,
+        "c2": -0.8856795545489375
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 136,
+      "end": 203,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 9
+    },
+    {
+      "width": 87,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": -0.37123073536631873,
+        "c1": 0.030487901092376528,
+        "c2": -0.7971249989963703
+      },
+      "pattern_type": "bezier",
+      "transform_type": "fft_power",
+      "start": 484,
+      "end": 663,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 10
     }
   ],
   "fold_3": [
     {
-      "start": 167,
-      "width": 38.09695545266202,
+      "width": 229,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        207.80812446402683,
-        -227.962663990439
-      ],
-      "x_positions": [
-        0.0,
-        0.18951839348702829,
-        1.0
-      ],
+      "pattern_params": {
+        "c0": -0.9716443796227133,
+        "c1": 0.20445584395028168,
+        "c2": -0.5746390938653595
+      },
+      "pattern_type": "bezier",
       "transform_type": "diff",
-      "start_frac": 0.05473965287049399,
-      "end_frac": 0.40186915887850466,
+      "start": 91,
+      "end": 521,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 1
     },
     {
-      "start": 593,
-      "width": 14.816912784103893,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        207.70052160629527,
-        280.9526318944468
-      ],
-      "x_positions": [
-        0.0,
-        0.10694942310446795,
-        1.0
-      ],
-      "transform_type": "sorted",
-      "start_frac": 0.7783711615487316,
-      "end_frac": 0.7957276368491322,
+      "width": 551,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.5131233281867519,
+        "c1": 0.15861665554173102,
+        "c2": 0.46631120058609493
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 104,
+      "end": 199,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 2
     },
     {
-      "start": 299,
-      "width": 14.804540940607524,
+      "width": 322,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        -30.83688535419989,
-        -97.6721167869347
-      ],
-      "x_positions": [
-        0.0,
-        0.9338269373024045,
-        1.0
-      ],
-      "transform_type": "center",
-      "start_frac": 0.2109479305740988,
-      "end_frac": 0.5794392523364486,
+      "pattern_params": {
+        "c0": 0.8831332901440295,
+        "c1": -0.5864337406114712,
+        "c2": 0.4153974864523041
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 428,
+      "end": 428,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 3
     },
     {
-      "start": 646,
-      "width": 4.794331367795014,
+      "width": 207,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        -205.90557040416846,
-        196.48273632500002
-      ],
-      "x_positions": [
-        0.0,
-        0.7746862065093765,
-        1.0
-      ],
-      "transform_type": "center",
-      "start_frac": 0.7436582109479306,
-      "end_frac": 0.9813084112149533,
+      "pattern_params": {
+        "c0": 0.2844999270729029,
+        "c1": -0.9949811086853673,
+        "c2": -0.8099544169781261
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 65,
+      "end": 182,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 4
     },
     {
-      "start": 576,
-      "width": 26.593503729966688,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        214.39314904153025,
-        -100.75597392820158
-      ],
-      "x_positions": [
-        0.0,
-        0.30620614145440256,
-        1.0
-      ],
-      "transform_type": "diff",
-      "start_frac": 0.5807743658210948,
-      "end_frac": 0.9586114819759679,
+      "width": 68,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.9966949775219512,
+        "c1": -0.951161930676586,
+        "c2": 0.4242667376957869
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 261,
+      "end": 302,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 5
     },
     {
-      "start": 452,
-      "width": 48.21255925294991,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        -33.78858676685728,
-        40.7336111983496
-      ],
-      "x_positions": [
-        0.0,
-        0.5166534436392703,
-        1.0
-      ],
-      "transform_type": "sorted",
-      "start_frac": 0.5994659546061415,
-      "end_frac": 0.6061415220293725,
+      "width": 308,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.6651574375867827,
+        "c1": 0.8136627909956644,
+        "c2": 0.7935109581028228
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 33,
+      "end": 383,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 6
     },
     {
-      "start": 674,
-      "width": 43.29698747535929,
+      "width": 530,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        -108.30514043786165,
-        98.12885329646402
-      ],
-      "x_positions": [
-        0.0,
-        0.9813030622261009,
-        1.0
-      ],
-      "transform_type": "raw",
-      "start_frac": 0.897196261682243,
-      "end_frac": 0.9025367156208278,
+      "pattern_params": {
+        "c0": 0.2786488903786182,
+        "c1": -0.8058672202108935,
+        "c2": -0.25730427327667194
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 168,
+      "end": 220,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 7
     }
   ],
   "fold_4": [
     {
-      "start": 233,
-      "width": 28.18266122556193,
+      "width": 73,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        -115.08583532040541,
-        145.72360108673973
-      ],
-      "x_positions": [
-        0.0,
-        0.7741569209585517,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.004005340453938585,
-      "end_frac": 0.6088117489986649,
+      "pattern_params": {
+        "c0": 0.7689152083670958,
+        "c1": 0.14447687780677176,
+        "c2": 0.9424294785682128
+      },
+      "pattern_type": "bezier",
+      "transform_type": "preemph99",
+      "start": 55,
+      "end": 677,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 1
     },
     {
-      "start": 388,
-      "width": 16.38891243740544,
+      "width": 67,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        211.55938618170015,
-        -162.80107913476823
-      ],
-      "x_positions": [
-        0.0,
-        0.2504865338377695,
-        1.0
-      ],
-      "transform_type": "raw",
-      "start_frac": 0.18691588785046728,
-      "end_frac": 0.8197596795727636,
+      "pattern_params": {
+        "c0": 0.9461520348931317,
+        "c1": -0.2766353100931326,
+        "c2": -0.35713410032333726
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 479,
+      "end": 683,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 2
     },
     {
-      "start": 395,
-      "width": 47.41177190959664,
+      "width": 177,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        110.01772658850612,
-        -232.92423238297016
-      ],
-      "x_positions": [
-        0.0,
-        0.4450533701903919,
-        1.0
-      ],
-      "transform_type": "center",
-      "start_frac": 0.4766355140186916,
-      "end_frac": 0.5781041388518025,
+      "pattern_params": {
+        "c0": 0.059519196581900635,
+        "c1": -0.09513619836343423,
+        "c2": -0.5347841121938778
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 53,
+      "end": 173,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 3
+    },
+    {
+      "width": 14,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.29463220998267947,
+        "c1": -0.160474510440547,
+        "c2": -0.7992983053839584
+      },
+      "pattern_type": "bezier",
+      "transform_type": "abs",
+      "start": 414,
+      "end": 698,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 4
+    },
+    {
+      "width": 286,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.6365568332559864,
+        "c1": -0.21037079147991625,
+        "c2": -0.005766151650881915
+      },
+      "pattern_type": "bezier",
+      "transform_type": "wavelet_coif1",
+      "start": 50,
+      "end": 464,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 5
+    },
+    {
+      "width": 599,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.1317415087899214,
+        "c1": 0.9180249986123259,
+        "c2": -0.7428235928516224
+      },
+      "pattern_type": "bezier",
+      "transform_type": "hjorth_mobility",
+      "start": 107,
+      "end": 151,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 6
+    },
+    {
+      "width": 706,
+      "series_idx": 0,
+      "pattern_params": {
+        "c0": 0.8791561716202166,
+        "c1": -0.5246751522762327,
+        "c2": -0.07912511202938086
+      },
+      "pattern_type": "bezier",
+      "transform_type": "diff",
+      "start": 44,
+      "end": 44,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 7
     }
   ],
   "fold_5": [
     {
-      "start": 235,
-      "width": 45.08423436478818,
+      "width": 115,
       "series_idx": 0,
-      "control_points": [
-        0.0,
-        16.388372383368758,
-        120.60824353070959
-      ],
-      "x_positions": [
-        0.0,
-        0.44443062727199417,
-        1.0
-      ],
-      "transform_type": "preemph97",
-      "start_frac": 0.022696929238985315,
-      "end_frac": 0.5874499332443258,
+      "pattern_params": {
+        "c0": -0.4521515045553186,
+        "c1": -0.02597788691423591,
+        "c2": -0.03070698490196057
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 44,
+      "end": 109,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 1
     },
     {
-      "start": 337,
-      "width": 13.315158676496672,
+      "width": 21,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        180.511833444381,
-        -147.6390151140716
-      ],
-      "x_positions": [
-        0.0,
-        0.5706100303714577,
-        1.0
-      ],
-      "transform_type": "center",
-      "start_frac": 0.09746328437917223,
-      "end_frac": 0.774365821094793,
+      "pattern_params": {
+        "c0": -0.9305994283135832,
+        "c1": 0.7810652996355234,
+        "c2": 0.18732366877429588
+      },
+      "pattern_type": "bezier",
+      "transform_type": "abs",
+      "start": 0,
+      "end": 577,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 2
     },
     {
-      "start": 505,
-      "width": 20.94154445334589,
+      "width": 598,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        146.89447669478022,
-        -171.89275304420192
-      ],
-      "x_positions": [
-        0.0,
-        0.33980753646447587,
-        1.0
-      ],
-      "transform_type": "wavelet_db4",
-      "start_frac": 0.5660881174899867,
-      "end_frac": 0.8477970627503337,
+      "pattern_params": {
+        "c0": -0.287897524503845,
+        "c1": 0.3138877202688814,
+        "c2": 0.48879144278499354
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 152,
+      "end": 152,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 3
     },
     {
-      "start": 635,
-      "width": 3.717769952132084,
+      "width": 686,
       "series_idx": 1,
-      "control_points": [
-        0.0,
-        -180.62616592631815,
-        -122.47996840822127
-      ],
-      "x_positions": [
-        0.0,
-        0.620699389868554,
-        1.0
-      ],
-      "transform_type": "center",
-      "start_frac": 0.7783711615487316,
-      "end_frac": 0.9132176234979973,
+      "pattern_params": {
+        "c0": 0.05502281024444147,
+        "c1": 0.853538810361148,
+        "c2": -0.24991084266863883
+      },
+      "pattern_type": "bezier",
+      "transform_type": "detrend",
+      "start": 64,
+      "end": 64,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 4
     },
     {
-      "start": 305,
-      "width": 46.595629727395774,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        -199.56937522619472,
-        -31.01440331836497
-      ],
-      "x_positions": [
-        0.0,
-        0.5090022493706063,
-        1.0
-      ],
-      "transform_type": "sorted",
-      "start_frac": 0.2656875834445928,
-      "end_frac": 0.8798397863818425,
+      "width": 73,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.628470877676103,
+        "c1": -0.8927896625983448,
+        "c2": -0.41089871931435845
+      },
+      "pattern_type": "bezier",
+      "transform_type": "dct",
+      "start": 451,
+      "end": 642,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 5
     },
     {
-      "start": 545,
-      "width": 2.208300397885562,
-      "series_idx": 0,
-      "control_points": [
-        0.0,
-        -95.3210551252487,
-        -125.2593693139854
-      ],
-      "x_positions": [
-        0.0,
-        0.2129127032355921,
-        1.0
-      ],
-      "transform_type": "center",
-      "start_frac": 0.7102803738317757,
-      "end_frac": 0.7449933244325768,
+      "width": 355,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": -0.08624295430906925,
+        "c1": 0.4868783718711754,
+        "c2": -0.37426475308897605
+      },
+      "pattern_type": "bezier",
+      "transform_type": "sorted",
+      "start": 313,
+      "end": 395,
+      "distance_metric": "mse",
+      "sliding_window": true,
       "pattern_id": 6
+    },
+    {
+      "width": 285,
+      "series_idx": 1,
+      "pattern_params": {
+        "c0": 0.6900360962410604,
+        "c1": 0.6075263837741239,
+        "c2": 0.7687676919562884
+      },
+      "pattern_type": "bezier",
+      "transform_type": "sorted",
+      "start": 441,
+      "end": 465,
+      "distance_metric": "mse",
+      "sliding_window": true,
+      "pattern_id": 7
     }
   ]
 }
