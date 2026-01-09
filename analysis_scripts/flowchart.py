@@ -27,12 +27,15 @@ def create_input_icon():
 def create_transforms_icon():
     fig, axes = plt.subplots(1, 4, figsize=(5, 1.2))
     t = np.linspace(0, 2*np.pi, 100)
-    signal = np.sin(t)
+    signal = np.sin(t) + 0.3 * np.sin(3*t)
+    zscore = (signal - signal.mean()) / signal.std()
+    derivative = np.gradient(signal)
+    fft_pow = np.abs(np.fft.rfft(signal)) ** 2
     transforms = [
         ("Raw", signal, "#4CAF50"),
-        ("Delta0", signal - signal[0], "#2196F3"),
-        ("FFT pow", np.abs(np.fft.rfft(signal)) ** 2, "#FF9800"),
-        ("Wavelet", np.convolve(signal, np.ones(10) / 10, mode="same"), "#9C27B0"),
+        ("Zscore", zscore, "#2196F3"),
+        ("Deriv.", derivative, "#FF9800"),
+        ("FFT pow", fft_pow, "#9C27B0"),
     ]
     for ax, (name, data, color) in zip(axes, transforms):
         ax.plot(data, color=color, linewidth=1.5)
@@ -44,24 +47,6 @@ def create_transforms_icon():
                 facecolor='white')
     plt.close()
 
-def create_transform_selection_icon():
-    fig, ax = plt.subplots(figsize=(4, 2.5))
-    transforms = ['raw', 'cumsum', 'dct', 'fft_pow', 'coif1', 'log1p', '...']
-    scores = [0.82, 0.78, 0.85, 0.80, 0.65, 0.60, 0.55]
-    colors = ['#4CAF50' if s >= 0.75 else '#ccc' for s in scores]
-    ax.bar(transforms, scores, color=colors, edgecolor='#333', linewidth=0.5)
-    ax.axhline(y=0.75, color='red', linestyle='--', linewidth=1.5)
-    ax.set_ylim(0, 1)
-    ax.set_ylabel('CV Score', fontsize=9)
-    ax.set_title('Select Top-K Transforms', fontsize=10, fontweight='bold')
-    ax.tick_params(axis='x', rotation=45, labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    plt.tight_layout()
-    plt.savefig(TEMP_ICON_DIR / "transform_selection_icon.png", dpi=150,
-                bbox_inches='tight', facecolor='white')
-    plt.close()
 
 def create_bspline_icon():
     fig, ax = plt.subplots(figsize=(3, 2))
@@ -249,7 +234,6 @@ print("Generating icons...")
 TEMP_ICON_DIR.mkdir(parents=True, exist_ok=True)
 create_input_icon()
 create_transforms_icon()
-create_transform_selection_icon()
 create_bspline_icon()
 create_sliding_mse_icon()
 create_optimization_icon()
@@ -319,19 +303,12 @@ def draw_flowchart(output_path):
     # 2. Precompute Transforms
     y = 98
     add_box(cx, y, 52, 8, "Precompute Transformations", c_process, fontsize=13,
-            subtext="Apply transformations per channel:\nraw, cumsum, DCT, FFT power, wavelet, log1p, ...",
+            subtext="Apply transformations per channel:\nraw, zscore, derivative, FFT power, ...",
             img_path=str(TEMP_ICON_DIR / "transforms_icon.png"))
     add_arrow(cx, y-4, cx, y-7)
 
-    # 3. Transform Selection
-    y = 86
-    add_box(cx, y, 52, 8, "Select Top-K Transforms", c_process, fontsize=13,
-            subtext="Train LightGBM on aggregate stats per transform\nKeep best K transforms by CV score",
-            img_path=str(TEMP_ICON_DIR / "transform_selection_icon.png"))
-    add_arrow(cx, y-4, cx, y-7)
-
     # Pattern Characteristics Optimization container
-    fe_top, fe_bottom = 77, 24
+    fe_top, fe_bottom = 89, 24
     fe_box = FancyBboxPatch((4, fe_bottom), 92, fe_top - fe_bottom,
                             boxstyle="round,pad=0.5,rounding_size=1.5",
                             facecolor=c_feature, edgecolor='#2E7D32', 
@@ -343,10 +320,10 @@ def draw_flowchart(output_path):
             fontsize=9, color='#555', ha='center', va='top')
     
     # Optimization image (standalone, no box)
-    add_img(str(TEMP_ICON_DIR / "optimization_icon.png"), 50, 66, 28, 10)
+    add_img(str(TEMP_ICON_DIR / "optimization_icon.png"), 50, 76, 28, 10)
 
     # Inner boxes - 2x2 grid
-    row1_y, row2_y = 52, 33
+    row1_y, row2_y = 60, 38
     col1_x, col2_x = 25, 75
     box_w, box_h = 38, 12
 

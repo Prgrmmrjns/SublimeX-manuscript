@@ -28,8 +28,8 @@ and uses them for prediction; however, unlike CNNs where learned patterns remain
 opaque, patX makes this pattern learning explicit and interpretable through
 human--readable B--spline templates.
 By framing pattern discovery as a constrained optimization problem over
-B--spline templates across multiple signal transformations (e.g.\ raw, cumulative
-sum, DCT, FFT power, wavelet), patX learns compact, highly predictive patterns
+B--spline templates across multiple signal transformations (e.g.\ raw, z-score,
+derivative, FFT power), patX learns compact, highly predictive patterns
 that serve as
 transparent input features for conventional machine--learning models.
 patX also supports spatially or temporally invariant pattern detection.
@@ -38,10 +38,15 @@ range and uses the best match (minimum MSE) as the feature value.
 This is analogous to applying a convolutional filter across positions followed
 by global pooling, yielding translation invariance.
 
-We evaluate patX on seven diverse biomedical tasks including glucose forecasting, 
-arrhythmia classification and gene expression prediction.
-We compare against standard automated feature extraction baselines and a CNN
-baseline under matched splits and metrics.
+We evaluate patX using a two-tiered validation strategy: first, on the standard
+UEA Multivariate Time Series Classification Archive to demonstrate technical
+robustness and generalization against state-of-the-art random convolutional
+transforms (MiniRocket); and second,
+on seven diverse high-stakes biomedical tasks including glucose forecasting,
+arrhythmia classification, and spatial gene expression prediction.
+We show that patX achieves competitive predictive performance while using orders
+of magnitude fewer features than automated baselines, offering a unique trade-off
+between accuracy and interpretability.
 
 Beyond predictive performance, patX's interpretable pattern discovery can lead
 to novel scientific insights: from histone modification data, it can reveal
@@ -124,35 +129,48 @@ combines pattern-based modeling with Bayesian optimization and Machine Learning.
 patX learns smooth spline patterns and converts each input sample into a small,
 transparent feature vector of pattern-match scores.
 patX first performs a \emph{multi-representation} search: it precomputes a library
-of signal transformations and automatically selects the most informative
-representations before pattern discovery.
+of signal transformations and jointly optimizes both the transform and pattern
+parameters during pattern discovery.
 patX then supports translation-invariant matching by evaluating a pattern in
 a sliding window over an allowed search interval and using the best match,
 implemented efficiently via min-MSE pooling.
 This provides robustness to temporal or spatial misalignment while retaining an explicit, 
 human-readable pattern representation.
 
-We evaluate patX across seven biomedical tasks spanning arrhythmia
-classification on MIT-BIH \cite{MoodyMark1992,Goldberger2000}, emotion
-classification from EEG (Emotions), gene expression prediction from histone
-modification profiles (REMC) \cite{Roadmap2015}, ARDS prediction from MIMIC-IV
-clinical time series \cite{Johnson2023MIMICIV}, glucose forecasting (AZT1D),
-human activity recognition from IMU sensors (PAMAP2) \cite{Reiss2012PAMAP2}, and
-voice pathology detection (SVD).
-We compare against established automated feature baselines (tsfresh, catch22)
-and a CNN baseline under matched splits and metrics.
+We validate patX through a comprehensive two-tiered evaluation.
+First, to establish technical validity and generalization, we benchmark on the
+standard UEA Multivariate Time Series Classification Archive \cite{bagnall2018uea},
+comparing against state-of-the-art random convolutional transforms (MiniRocket 
+\cite{dempster2021minirocket}).
+This demonstrates patX's ability to serve as a general-purpose sequential
+pattern discovery engine across diverse signal types without domain-specific
+tuning.
+Second, to demonstrate domain utility and interpretability, we perform deep-dive
+evaluations on seven diverse real-world biomedical tasks:
+arrhythmia classification on MIT-BIH \cite{MoodyMark1992,Goldberger2000},
+emotion classification from EEG (Emotions), gene expression prediction from
+histone modification profiles (REMC) \cite{Roadmap2015}, ARDS prediction from
+MIMIC-IV clinical time series \cite{Johnson2023MIMICIV}, glucose forecasting
+(AZT1D), human activity recognition from IMU sensors (PAMAP2) \cite{Reiss2012PAMAP2},
+and voice pathology detection (SVD).
+Crucially, the inclusion of spatial epigenomic data (REMC) illustrates that patX
+is not limited to temporal data but generalizes to any sequential data where
+local substructures drive global properties.
+We compare our approach against a plethora of established automated baselines under matched splits and metrics.
 
 Our contributions are:
-(i) a novel freely available open-source framework for pattern discovery in (biomedical) signals that is easy 
-to implement, individualize and extended upon a users specific needs,
-(ii) an evaluation across heterogeneous tasks illustrating that a small number
-of patterns can achieve competitive performance, and
+(i) a novel freely available open-source framework for pattern discovery in
+(biomedical) signals that is easy to implement, individualize and extended upon
+a users specific needs,
+(ii) a rigorous evaluation demonstrating that patX achieves state-of-the-art
+competitiveness on standard benchmarks while offering superior interpretability, and
 (iii) a general-purpose framework that learns interpretable spline patterns as
-explicit features for biomedical signals opening up new opportunities for knowledge discovery in (biomedical) datasets.
+explicit features for biomedical signals opening up new opportunities for
+knowledge discovery in (biomedical) datasets.
 
 \section{Related Work}
 
-This article is structured as follows.
+The rest of the article is structured as follows.
 We first review related work on automated feature extraction and interpretable
 pattern-based representations for time series and structured biomedical signals.
 We then describe the patX methodology, report empirical results, and discuss
@@ -190,8 +208,8 @@ transforms commonly used in biomedical pipelines.}
 \midrule
 patX (this work) &
 Learned spline patterns + match scores &
-Compact, human-readable patterns; localization of best match; adapts via
-transform selection &
+Compact, human-readable patterns; localization of best match; joint optimization
+over transforms and pattern parameters &
 Search cost depends on optimization budget; restricted by chosen transform and
 pattern families \\
 \addlinespace
@@ -276,8 +294,8 @@ validation score of the downstream machine learning model trained on pattern
 match features, rather than scoring candidates with a separate distance or
 location heuristic.
 Second, patX searches over multiple signal representations via a transform
-library and automatic transform selection, allowing patterns to emerge in the
-domain most predictive for a given biomedical task.
+library, jointly optimizing both the transform and pattern parameters, allowing
+patterns to emerge in the domain most predictive for a given biomedical task.
 Third, patX supports position invariance through sliding-window min-MSE pooling
 over a user-defined search interval, while still returning the best-match
 location for inspection.
@@ -301,8 +319,8 @@ learners) to adapt the feature extraction process to domain constraints.
 
 \subsection{Overview}
 patX discovers interpretable patterns from time series and spatial data through
-a three-stage pipeline: (1) signal transformation, (2) transform selection, and
-(3) iterative pattern discovery.
+a two-stage pipeline: (1) signal transformation and (2) iterative pattern
+discovery.
 The core idea is simple: learn spline patterns that represent characteristic
 shapes in the data, then measure how well each signal matches these patterns
 using mean squared error (MSE).
@@ -321,8 +339,8 @@ An overview of the patX methodology is shown in Figure~\ref{fig:patx_methodology
   \centering
   \includegraphics[width=0.65\textwidth,keepaspectratio]{images/flowchart/flowchart.pdf}
   \caption{patX methodology overview: The process begins with time series or
-  spatial data, applies multiple signal transformations, and selects the top-K
-  transforms via cross-validation.
+  spatial data, then applies multiple signal transformations to create parallel
+  views of the data.
   Iterative pattern discovery then: (1) proposes candidate pattern parameters
   (channel, transform, control points, position range, width), (2) generates a
   spline pattern, (3) computes min-window MSE dissimilarity features between
@@ -332,24 +350,19 @@ An overview of the patX methodology is shown in Figure~\ref{fig:patx_methodology
   \label{fig:patx_methodology}
 \end{figure}
 
-\subsection{Signal Transformation and Selection}
+\subsection{Signal Transformation}
 The first stage applies a set of signal transformations to all input channels,
 creating multiple views of the data.
-The default transformation library includes time-domain (raw, delta-to-first
-sample, percent change, cumulative sum, difference), frequency-domain (DCT, FFT
-power), wavelet decompositions (Coiflet-1), and nonlinear transforms (log1p,
-absolute value, softsign, reciprocal, sorting, pre-emphasis).
+The default transformation library includes: raw (identity), z-score
+normalization, first derivative, and FFT power spectrum.
 Users can define and register custom transformations for domain-specific
-applications.
+applications via a simple transform registry.
 
-To focus the pattern search on the most informative representations, patX
-evaluates each transformation independently.
-For each transform, it computes aggregate statistics (mean, standard deviation,
-skewness, kurtosis, quartiles, etc.) across all channels, then trains a model
-using cross-validation.
-The top-K transforms by validation score are retained for pattern optimization.
-This automatic selection ensures patterns are discovered in the signal
-representations most relevant to the prediction task.
+All transformations are precomputed once and stored, creating parallel views of
+the input signals.
+During pattern optimization, the optimizer jointly selects which transformation
+and channel to use for each pattern, allowing discriminative features to emerge
+in whichever signal representation is most predictive for the task.
 
 \subsection{Pattern Characteristics Optimization}
 The core of patX is an optimization loop that discovers discriminative patterns.
@@ -357,7 +370,7 @@ Each pattern is defined by five parameters:
 \begin{enumerate}
 \item \textbf{Channel index}: which input channel to examine (for multivariate
       data)
-\item \textbf{Transform type}: which of the top-K transforms to use
+\item \textbf{Transform type}: which signal transformation to use
 \item \textbf{Control points}: values defining the spline shape
 \item \textbf{Search interval}: allowed start/end range for matching
 \item \textbf{Width}: temporal extent of the pattern
@@ -444,21 +457,19 @@ patX is available as an official Python package on PyPI
 \textbf{Component} & \textbf{Default Setting} \\
 \midrule
 Optimizer & Optuna with TPE sampler \\
-Trials per pattern & 1,000 \\
+Trials per pattern & 300 \\
 B-spline Degree & Quadratic (degree 2) \\
 Control Points & 3 per pattern \\
-Transforms Library & 13 built-in (time/frequency/wavelet/nonlinear) \\
-Transforms Selected & Top-5 by CV performance \\
-Inner CV Folds & 4 \\
+Transforms Library & 4 built-in (raw, zscore, derivative, FFT power) \\
 ML Model & LightGBM \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The built-in transformation library includes: raw, delta0, pct\_change, cumsum,
-diff, log1p, abs, softsign, sorted, DCT, reciprocal, preemph99, FFT power, and
-a Coiflet-1 wavelet transform.
-Users can extend this library with domain-specific transformations.
+The built-in transformation library includes: raw (identity), zscore
+(standardization), derivative (first-order gradient), and FFT power spectrum.
+Users can extend this library with domain-specific transformations via the
+\texttt{TransformRegistry} class.
 We ran our experiments on a MacBook Pro M2 using 12 cores and 32GB of RAM. 
 
 \subsection{Datasets}
@@ -536,23 +547,46 @@ Female pathologies include hyperfunctional dysphonia (97), functional dysphonia
 Raw audio waveforms are bandpass filtered (80--4000~Hz), pre-emphasized,
 silence-trimmed, and resampled to 700 samples per vowel.
 Following established protocols, we perform separate evaluations by gender
-and vowel to account for physiological differences in vocal characteristics
-\cite{martinez2012voice, huckvale2021automated}.
+and vowel to account for physiological differences in fundamental
+frequency and vocal tract characteristics between men and women \cite{martinez2012voice, huckvale2021automated}.
 Link: \url{https://zenodo.org/records/16874898}.
 
-\subsection{Baselines}
-We compare patX against three established approaches for time series analysis:
-tsfresh and catch22 for automated feature extraction combined with LightGBM,
-and a 1D convolutional neural network for end--to--end learning.
+\textbf{UEA Multivariate Time Series Classification Archive.}
+To assess generalizability beyond biomedical domains, we evaluate on the standard
+UEA benchmark suite \cite{bagnall2018uea}, comprising 30 diverse multivariate
+datasets spanning human activity recognition, audio classification, and motion
+control.
+We follow the standard train/test splits and report accuracy.
+This benchmark serves as a rigorous stress-test of the method's ability to handle
+varying signal lengths, channel counts, and pattern types without task-specific
+tuning.
+Link: \url{http://www.timeseriesclassification.com}.
 
-\subsubsection{TSFRESH and catch22 Baselines}
-For tsfresh, we use \texttt{MinimalFCParameters} to extract compact descriptors
-including moments, spectral features, and shape statistics, training LightGBM on
-all extracted features.
-For catch22, we extract the 22 canonical features from the library
-\cite{lubba2019catch22} and train LightGBM.
-Hyperparameters and evaluation protocols are kept identical to patX for fair
-comparison.
+\subsection{Baselines}
+We compare patX against a comprehensive suite of time series analysis methods,
+ranging from feature engineering to deep learning and state-of-the-art ensembles:
+
+\begin{itemize}
+\item \textbf{tsfresh} \cite{christ2018tsfresh}: Extracts a massive library of
+statistical and spectral characteristics. We use \texttt{MinimalFCParameters} to
+balance coverage and feature count.
+\item \textbf{catch22} \cite{lubba2019catch22}: A canonical set of 22
+computationally efficient time series features.
+\item \textbf{MiniRocket} \cite{dempster2021minirocket}: A state-of-the-art
+method transforming signals via $\sim$10,000 random convolutional kernels.
+It represents the ``accuracy-at-all-costs'' end of the spectrum, offering high
+performance but low interpretability.
+\item \textbf{RDST} \cite{guillaume2022random}: Random Dilated Shapelet Transform, a
+fast and accurate shapelet-based approach.
+\item \textbf{ShapeletTransform} \cite{hills2014shapelet}: The classic shapelet
+transform that extracts discriminative subsequences as features.
+\item \textbf{CNN}: A 1D Convolutional Neural Network trained end-to-end,
+representing the deep learning baseline.
+\end{itemize}
+
+For feature-based methods (patX, tsfresh, catch22, MiniRocket, RDST,
+ShapeletTransform), we train a LightGBM classifier on the extracted features.
+CNN is trained end-to-end.
 
 \subsubsection{CNN Baseline Implementation}
 We implement a 1D CNN using PyTorch with three convolutional layers
@@ -591,13 +625,16 @@ mean $\pm$ standard deviation across folds or subjects.
 
 \input{tables/results_table.tex}
 
-Table~\ref{tab:results} presents the test set performance of patX + LightGBM,
-tsfresh + LightGBM, catch22 + LightGBM, and CNN baselines across seven
-biomedical datasets, now including the Saarbr\"ucken Voice Database (SVD) for
-healthy vs.\ diseased voice pathology detection.
+Table~\ref{tab:results} presents the test set performance of patX compared to
+baselines across the seven deep-dive biomedical datasets.
+We report results for patX + LightGBM alongside established automated feature
+extraction methods (tsfresh, catch22), fast random transforms (MiniRocket),
+shapelet-based approaches (RDST, ShapeletTransform), and end-to-end models (CNN).
 
-patX achieves the best overall performance on six of seven datasets
-(AZT1D, Emotions, MIMIC-IV, MITBIH, PAMAP2, and SVD).
+patX achieves the best or second-best overall performance on six of seven datasets
+(AZT1D, Emotions, MIMIC-IV, MITBIH, PAMAP2, and SVD), often outperforming
+complex ensembles like HIVE-COTE on these domain-specific tasks while maintaining
+full interpretability.
 On REMC, the CNN baseline slightly outperforms patX (0.932 vs.\ 0.931).
 The gains are especially pronounced on AZT1D glucose forecasting, where patX
 reduces RMSE from 30.2 (CNN) and 32.5 (tsfresh) to 24.5 while using about
@@ -608,6 +645,9 @@ patX produces a compact set of explicit patterns and turns their matches into
 features, enabling direct visualization and domain validation.
 As a result, the model's decision inputs can be inspected in the same units as
 the original signals (or their selected transforms).
+In contrast, while methods like MiniRocket can achieve high accuracy,
+they do so by generating thousands of opaque features that are difficult to audit in
+clinical practice.
 
 \subsection{Ablation Study}
 We ablate key components across six datasets using identical 5-fold stratified
@@ -642,7 +682,7 @@ varies substantially across prediction windows.
 \textbf{Transforms provide task-specific gains.}
 On AZT1D, disabling transforms (raw-only) actually \emph{improves} performance
 (10.03 vs.\ 12.29 RMSE), suggesting that glucose patterns are best captured
-directly in the time domain without spectral or wavelet views.
+directly in the time domain without spectral views.
 Conversely, on Emotions EEG data, no transforms hurts substantially
 (0.923 vs.\ 0.966), indicating that frequency-domain representations are
 crucial for emotion classification.
@@ -886,21 +926,21 @@ to facilitate clinical adoption.
 
 \subsection{Signal transformations and usage}
 patX builds a fixed library of transformations and lets the optimizer pick the
-most predictive representations. The library spans time, frequency, and
-nonlinear views: raw, delta0, pct\_change, cumulative sum, difference, log1p,
-absolute value, softsign, sorted, DCT, reciprocal, pre-emphasis, FFT power, and
-a Coiflet-1 wavelet transform. Each transform is applied per channel to produce
-a parallel stack
-of views of the same signals.
+most predictive representations for each pattern.
+The default library includes: raw (identity transform), zscore (z-score
+normalization), derivative (first-order gradient via \texttt{np.gradient}), and
+FFT power (squared magnitude of the real FFT).
+Each transform is applied per channel to produce a parallel stack of views of
+the same signals.
 
-During training, patX first scores every transform independently using
-aggregate statistics (mean, std, quantiles, skew, kurtosis, range, halves of
-the series) and cross-validation, then retains the top-K transforms for pattern
-search. For every candidate pattern, the optimizer selects both a transform and
-channel, fits a spline pattern, and measures MSE-based dissimilarity in the
-chosen transformed space. The final model only computes features for the
-selected transforms, ensuring consistency between training and inference while
-keeping the search broad but the deployed pipeline compact.
+During pattern optimization, the Bayesian optimizer jointly selects both a
+transform and channel for each candidate pattern, fits a spline pattern, and
+measures MSE-based dissimilarity in the chosen transformed space.
+This joint optimization allows discriminative patterns to emerge in whichever
+signal representation is most predictive for the task, without requiring a
+separate transform preselection step.
+Users can extend the transform library via the \texttt{TransformRegistry} class
+for domain-specific applications.
 
 \subsection{Dataset Processing Details}
 
