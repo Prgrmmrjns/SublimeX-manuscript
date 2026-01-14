@@ -1,0 +1,26 @@
+\begin{table}[H]
+\centering
+\caption{Performance comparison across biomedical datasets. Results show mean $\pm$ standard deviation across subjects/folds. Best performance per dataset highlighted in bold.}
+\label{tab:results}
+\tiny
+\renewcommand{\arraystretch}{0.75}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcccccc@{}}
+\toprule
+\textbf{Dataset} & \textbf{PATX} & \textbf{TSFRESH} & \textbf{CATCH22} & \textbf{CNN} & \textbf{MiniRocket} & \textbf{RDST} \\
+\midrule
+AZT1D & \makecell{31.093 \\ 22.0} & \makecell{31.936 \\ 11.0} & \makecell{31.661 \\ 23.0} & \makecell{31.089 \\ 72.0} & \makecell{31.259 \\ 9997.0} & \makecell{\textbf{30.988} \\ 6001.0} \\
+\midrule
+Emotions & \makecell{0.986 $\pm$ 0.005 \\ 7.4 $\pm$ 1.3} & \makecell{0.941 $\pm$ 0.012 \\ 10.0} & \makecell{0.957 $\pm$ 0.012 \\ 22.0} & \makecell{0.959 $\pm$ 0.012 \\ 1500.0} & \makecell{\textbf{0.998 $\pm$ 0.003} \\ 9996.0} & \makecell{0.990 $\pm$ 0.007 \\ 6000.0} \\
+\midrule
+MIMIC-IV & \makecell{0.767 $\pm$ 0.010 \\ 6.2 $\pm$ 2.6} & \makecell{0.745 $\pm$ 0.007 \\ 10.0} & \makecell{0.730 $\pm$ 0.006 \\ 22.0} & \makecell{\textbf{0.779 $\pm$ 0.007} \\ 696.0} & \makecell{0.751 $\pm$ 0.009 \\ 9996.0} & \makecell{0.770 $\pm$ 0.012 \\ 6000.0} \\
+\midrule
+MITBIH & \makecell{0.947 $\pm$ 0.004 \\ 14.8 $\pm$ 2.2} & \makecell{0.843 $\pm$ 0.006 \\ 10.0} & \makecell{0.926 $\pm$ 0.005 \\ 22.0} & \makecell{0.941 $\pm$ 0.007 \\ 100.0} & \makecell{\textbf{0.960 $\pm$ 0.002} \\ 9996.0} & \makecell{0.956 $\pm$ 0.004 \\ 6000.0} \\
+\midrule
+REMC & \makecell{0.925 $\pm$ 0.004 \\ 14.0 $\pm$ 2.3} & \makecell{0.869 $\pm$ 0.006 \\ 10.0} & \makecell{0.912 $\pm$ 0.005 \\ 22.0} & \makecell{\textbf{0.933 $\pm$ 0.004} \\ 1000.0} & \makecell{0.915 $\pm$ 0.005 \\ 9996.0} & \makecell{0.909 $\pm$ 0.004 \\ 6000.0} \\
+\midrule
+PAMAP2 & \makecell{\textbf{0.996 $\pm$ 0.001} \\ 9.0 $\pm$ 1.0} & \makecell{0.749 $\pm$ 0.008 \\ 10.0} & \makecell{0.852 $\pm$ 0.002 \\ 22.0} & \makecell{0.946 $\pm$ 0.011 \\ 520.0} & \makecell{0.966 $\pm$ 0.001 \\ 9996.0} & \makecell{0.979 $\pm$ 0.002 \\ 6000.0} \\
+\midrule
+SVD & \makecell{0.597 $\pm$ 0.026 \\ 3.0 $\pm$ 1.2} & \makecell{0.551 $\pm$ 0.026 \\ 10.0} & \makecell{0.550 $\pm$ 0.037 \\ 22.0} & \makecell{0.562 $\pm$ 0.020 \\ 6300.0} & \makecell{\textbf{0.614 $\pm$ 0.022} \\ 9996.0} & \makecell{0.589 $\pm$ 0.037 \\ 6000.0} \\
+\bottomrule
+\end{tabular*}
+\end{table}

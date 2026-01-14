@@ -48,64 +48,29 @@ def run_tsfresh(input_series_train, input_series_test):
     test_long = test_long.dropna(subset=['value'])
     
     fc = MinimalFCParameters()
-    
-    try:
-        train_features = extract_features(
-            train_long, 
-            column_id='id', 
-            column_sort='time', 
-            column_value='value', 
-            impute_function=impute, 
-            n_jobs=1, 
-            default_fc_parameters=fc, 
-            show_warnings=False, 
-            disable_progressbar=True
-        )
-    except ValueError as e:
-        if "NaN" in str(e):
-             train_long['value'] = train_long['value'].fillna(0)
-             train_features = extract_features(
-                train_long, 
-                column_id='id', 
-                column_sort='time', 
-                column_value='value', 
-                impute_function=impute, 
-                n_jobs=1, 
-                default_fc_parameters=fc, 
-                show_warnings=False, 
-                disable_progressbar=True
-            )
-        else:
-            raise e
+    train_features = extract_features(
+        train_long, 
+        column_id='id', 
+        column_sort='time', 
+        column_value='value', 
+        impute_function=impute, 
+        n_jobs=1, 
+        default_fc_parameters=fc, 
+        show_warnings=False, 
+        disable_progressbar=True
+    )
 
-    try:
-        test_features = extract_features(
-            test_long, 
-            column_id='id', 
-            column_sort='time', 
-            column_value='value', 
-            impute_function=impute, 
-            n_jobs=1, 
-            default_fc_parameters=fc, 
-            show_warnings=False, 
-            disable_progressbar=True
-        )
-    except ValueError as e:
-        if "NaN" in str(e):
-             test_long['value'] = test_long['value'].fillna(0)
-             test_features = extract_features(
-                test_long, 
-                column_id='id', 
-                column_sort='time', 
-                column_value='value', 
-                impute_function=impute, 
-                n_jobs=1, 
-                default_fc_parameters=fc, 
-                show_warnings=False, 
-                disable_progressbar=True
-            )
-        else:
-            raise e
+    test_features = extract_features(
+        test_long, 
+        column_id='id', 
+        column_sort='time', 
+        column_value='value', 
+        impute_function=impute, 
+        n_jobs=1, 
+        default_fc_parameters=fc, 
+        show_warnings=False, 
+        disable_progressbar=True
+    )
             
     return test_features, train_features
 
@@ -129,14 +94,21 @@ def eval_tsfresh(train_array, test_array, y_train, y_test, metric, val_size=0.2,
         print(f"tsfresh failed: {e}")
         return 0.0, 0.0, 0
         
-    if initial_train is not None and initial_test is not None:
-        train_feat = np.hstack([initial_train, train_feat])
-        test_feat = np.hstack([initial_test, test_feat])
-        
     # Handle case where feature extraction failed or returned different columns
     common_cols = train_feat.columns.intersection(test_feat.columns)
     train_feat = train_feat[common_cols]
     test_feat = test_feat[common_cols]
+    
+    # Add initial features if provided
+    if initial_train is not None and initial_test is not None:
+        # Convert initial features to DataFrame if needed
+        if not isinstance(initial_train, pd.DataFrame):
+            initial_train = pd.DataFrame(initial_train, columns=[f'initial_{i}' for i in range(initial_train.shape[1])])
+        if not isinstance(initial_test, pd.DataFrame):
+            initial_test = pd.DataFrame(initial_test, columns=[f'initial_{i}' for i in range(initial_test.shape[1])])
+        
+        train_feat = pd.concat([initial_train.reset_index(drop=True), train_feat.reset_index(drop=True)], axis=1)
+        test_feat = pd.concat([initial_test.reset_index(drop=True), test_feat.reset_index(drop=True)], axis=1)
     
     X_tr = train_feat.values
     X_te = test_feat.values

@@ -1,0 +1,210 @@
+\begin{thebibliography}{10}
+
+\bibitem{morid2023time}
+Mohammad~Amin Morid, Olivia R~Liu Sheng, and Joseph Dunbar.
+\newblock Time series prediction using deep learning methods in healthcare.
+\newblock {\em ACM Transactions on Management Information Systems}, 14(1):1--29, 2023.
+
+\bibitem{rood2022impact}
+Jennifer~E Rood, Aidan Maartens, Anna Hupalowska, Sarah~A Teichmann, and Aviv Regev.
+\newblock Impact of the human cell atlas on medicine.
+\newblock {\em Nature medicine}, 28(12):2486--2496, 2022.
+
+\bibitem{patharkar2024predictive}
+Abhidnya Patharkar, Fulin Cai, Firas Al-Hindawi, and Teresa Wu.
+\newblock Predictive modeling of biomedical temporal data in healthcare applications: review and future directions.
+\newblock {\em Frontiers in Physiology}, 15:1386760, 2024.
+
+\bibitem{tonekaboni2019clinicians}
+Sana Tonekaboni, Shalmali Joshi, Melissa~D McCradden, and Anna Goldenberg.
+\newblock What clinicians want: contextualizing explainable machine learning for clinical end use.
+\newblock {\em Machine learning for healthcare conference}, pages 359--380, 2019.
+
+\bibitem{rudin2019stop}
+Cynthia Rudin.
+\newblock Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead.
+\newblock {\em Nature machine intelligence}, 1(5):206--215, 2019.
+
+\bibitem{fulcher2018feature}
+Ben~D Fulcher.
+\newblock Feature-based time-series analysis.
+\newblock In {\em Feature engineering for machine learning and data analytics}, pages 87--116. CRC press, 2018.
+
+\bibitem{miotto2018deep}
+Riccardo Miotto, Fei Wang, Shuang Wang, Xiaoqian Jiang, and Joel~T Dudley.
+\newblock Deep learning for healthcare: review, opportunities and challenges.
+\newblock {\em Briefings in bioinformatics}, 19(6):1236--1246, 2018.
+
+\bibitem{christ2018tsfresh}
+Maximilian Christ, Nils Braun, Julius Neuffer, and Alexander~W Kempa-Liehr.
+\newblock Time series feature extraction on basis of scalable hypothesis tests (tsfresh--a python package).
+\newblock {\em Neurocomputing}, 307:72--77, 2018.
+
+\bibitem{lubba2019catch22}
+Carl~H Lubba, Sarab~S Sethi, Philip Knaute, Simon~R Schultz, Ben~D Fulcher, and Nick~S Jones.
+\newblock catch22: Canonical time-series characteristics: Selected through highly comparative time-series analysis.
+\newblock {\em Data mining and knowledge discovery}, 33(6):1821--1852, 2019.
+
+\bibitem{henderson2021empirical}
+Trent Henderson and Ben~D Fulcher.
+\newblock An empirical evaluation of time-series feature sets.
+\newblock In {\em 2021 International Conference on Data Mining Workshops (ICDMW)}, pages 1032--1038. IEEE, 2021.
+
+\bibitem{wang2022systematic}
+Will~Ke Wang, Ina Chen, Leeor Hershkovich, Jiamu Yang, Ayush Shetty, Geetika Singh, Yihang Jiang, Aditya Kotla, Jason~Zisheng Shang, Rushil Yerrabelli, et~al.
+\newblock A systematic review of time series classification techniques used in biomedical applications.
+\newblock {\em Sensors}, 22(20):8016, 2022.
+
+\bibitem{ennab2024enhancing}
+Mohammad Ennab and Hamid Mcheick.
+\newblock Enhancing interpretability and accuracy of ai models in healthcare: a comprehensive review on challenges and future directions.
+\newblock {\em Frontiers in Robotics and AI}, 11:1444763, 2024.
+
+\bibitem{ye2009shapelets}
+Lexiang Ye and Eamonn Keogh.
+\newblock Time series shapelets: a new primitive for data mining.
+\newblock In {\em Proceedings of the 15th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}, pages 947--956. ACM, 2009.
+
+\bibitem{lines2012shapelet}
+Jason Lines, Luke~M Davis, Jon Hills, and Anthony Bagnall.
+\newblock A shapelet transform for time series classification.
+\newblock In {\em Proceedings of the 18th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}, pages 289--297. ACM, 2012.
+
+\bibitem{hills2014shapelet}
+Jon Hills, Jason Lines, Edgaras Baranauskas, James Mapp, and Anthony Bagnall.
+\newblock Classification of time series by shapelet transformation.
+\newblock {\em Data Mining and Knowledge Discovery}, 28(4):851--881, 2014.
+
+\bibitem{grabocka2014learning}
+Josif Grabocka, Nicolas Schilling, Martin Wistuba, and Lars Schmidt-Thieme.
+\newblock Learning time-series shapelets.
+\newblock In {\em Proceedings of the 20th ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}, pages 392--401. ACM, 2014.
+
+\bibitem{syed2010motif}
+Zainulabedin Syed, Collin Stultz, Manolis Kellis, Piotr Indyk, and John Guttag.
+\newblock Motif discovery in physiological datasets: a methodology for inferring predictive elements.
+\newblock In {\em Proceedings of the 2nd ACM International Conference on Bioinformatics and Computational Biology}, pages 341--350. ACM, 2010.
+
+\bibitem{mueen2014motif}
+Abdullah Mueen.
+\newblock Time series motif discovery: dimensions and applications.
+\newblock {\em Wiley Interdisciplinary Reviews: Data Mining and Knowledge Discovery}, 4(2):152--159, 2014.
+
+\bibitem{balasubramanian2016motifs}
+Arvind Balasubramanian and Jun Wang.
+\newblock Discovering multidimensional motifs in physiological signals for personalized healthcare.
+\newblock In {\em 2016 IEEE International Conference on Big Data (Big Data)}. IEEE, 2016.
+
+\bibitem{bagnall2018uea}
+Anthony Bagnall, Hoang~Anh Dau, Jason Lines, Michael Flynn, James Large, Aaron Bostrom, Paul Southam, and Eamonn Keogh.
+\newblock The uea multivariate time series classification archive, 2018.
+\newblock {\em arXiv preprint arXiv:1811.00075}, 2018.
+
+\bibitem{dempster2021minirocket}
+Angus Dempster, Daniel~F Schmidt, and Geoffrey~I Webb.
+\newblock Minirocket: A very fast (almost) deterministic transform for time series classification.
+\newblock In {\em Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining}. ACM, 2021.
+
+\bibitem{MoodyMark1992}
+George~B Moody and Roger~G Mark.
+\newblock The impact of the mit-bih arrhythmia database.
+\newblock {\em IEEE Engineering in Medicine and Biology Magazine}, 20(3):45--50, 2001.
+
+\bibitem{Goldberger2000}
+Ary~L Goldberger, Luis~AN Amaral, Leon Glass, Jeffrey~M Hausdorff, Plamen~Ch Ivanov, Roger~G Mark, Joseph~E Mietus, George~B Moody, Chung-Kang Peng, and H~Eugene Stanley.
+\newblock Physiobank, physiotoolkit, and physionet: components of a new research resource for complex physiologic signals.
+\newblock {\em Circulation}, 101(23):e215--e220, 2000.
+
+\bibitem{Roadmap2015}
+Roadmap~Epigenomics Consortium et~al.
+\newblock Integrative analysis of 111 reference human epigenomes.
+\newblock {\em Nature}, 518(7539):317--330, 2015.
+
+\bibitem{Johnson2023MIMICIV}
+Alistair~EW Johnson, Lucas Bulgarelli, Lu~Shen, Alvin Gayles, Ayad Shammout, Steven Horng, Tom~J Pollard, Sicheng Hao, Benjamin Moody, Brian Gow, et~al.
+\newblock Mimic-iv, a freely accessible electronic health record dataset.
+\newblock {\em Scientific data}, 10(1):1, 2023.
+
+\bibitem{Reiss2012PAMAP2}
+Attila Reiss and Didier Stricker.
+\newblock Introducing a new benchmarked dataset for activity monitoring.
+\newblock In {\em 2012 16th International Symposium on Wearable Computers}, pages 108--109. IEEE, 2012.
+\newblock Dataset available at: \url{https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring}.
+
+\bibitem{woldaregay2019data}
+Ashenafi~Zebene Woldaregay, Eirik {\AA}rsand, St{\aa}le Walderhaug, David Albers, Lena Mamykina, Taxiarchis Botsis, and Gunnar Hartvigsen.
+\newblock Data-driven modeling and prediction of blood glucose dynamics: Machine learning applications in type 1 diabetes.
+\newblock {\em Artificial Intelligence in Medicine}, 98:109--134, 2019.
+
+\bibitem{ghalati2023cmda}
+Pejman~Farhadi Ghalati and Andreas Schuppert.
+\newblock Cmda: a tool for continuous monitoring data analysis.
+\newblock {\em arXiv preprint arXiv:2310.14427}, 2023.
+
+\bibitem{guillaume2022random}
+Antoine Guillaume, Christel Vrain, and Wael Elloumi.
+\newblock Random dilated shapelet transform: A new approach for time series shapelets.
+\newblock In {\em Pattern Recognition and Artificial Intelligence: Third International Conference, ICPRAI 2022}, pages 653--664. Springer, 2022.
+
+\bibitem{dempster2020rocket}
+Angus Dempster, Fran{\c{c}}ois Petitjean, and Geoffrey~I Webb.
+\newblock Rocket: exceptionally fast and accurate time series classification using random convolutional kernels.
+\newblock {\em Data Mining and Knowledge Discovery}, 2020.
+\newblock arXiv preprint: \url{https://arxiv.org/abs/1910.13051}.
+
+\bibitem{fulcher2017hctsa}
+Ben~D Fulcher and Nick~S Jones.
+\newblock hctsa: A computational framework for automated time-series phenotyping using massive feature extraction.
+\newblock {\em Cell systems}, 5(5):527--531, 2017.
+
+\bibitem{barandas2020tsfel}
+Mar{\'\i}lia Barandas, Duarte Folgado, Let{\'\i}cia Fernandes, Sara Santos, Mariana Abreu, Patr{\'\i}cia Bota, Hui Liu, Tanja Schultz, and Hugo Gamboa.
+\newblock Tsfel: Time series feature extraction library.
+\newblock {\em SoftwareX}, 11:100456, 2020.
+
+\bibitem{rakthanmanon2013fast_shapelets}
+Thanawin Rakthanmanon and Eamonn Keogh.
+\newblock Fast shapelets: A scalable algorithm for discovering time series shapelets.
+\newblock In {\em Proceedings of the 2013 SIAM International Conference on Data Mining}, pages 668--676. SIAM, 2013.
+
+\bibitem{hou2016efficient_shapelets}
+Liang Hou, James Kwok, and Jacek Zurada.
+\newblock Efficient learning of timeseries shapelets.
+\newblock In {\em Proceedings of the AAAI Conference on Artificial Intelligence}, volume~30, 2016.
+
+\bibitem{fang2018interpretable_shapelets}
+Zicheng Fang, Peng Wang, and Wei Wang.
+\newblock Efficient learning interpretable shapelets for accurate time series classification.
+\newblock In {\em 2018 IEEE 34th International Conference on Data Engineering (ICDE)}, pages 497--508. IEEE, 2018.
+
+\bibitem{chen2023localized_shapelets}
+Jiahui Chen and Yuan Wan.
+\newblock Localized shapelets selection for interpretable time series classification.
+\newblock {\em Applied Intelligence}, 53:17985--18001, 2023.
+
+\bibitem{balestriero2018spline}
+Randall Balestriero and Richard~G. Baraniuk.
+\newblock A spline theory of deep networks.
+\newblock In {\em Proceedings of the 35th International Conference on Machine Learning}, volume~80 of {\em PMLR}, pages 383--392, Stockholm, Sweden, 2018.
+
+\bibitem{lee2021experimental}
+Ji-Yeoun Lee.
+\newblock Experimental evaluation of deep learning methods for an intelligent pathological voice detection system using the saarbruecken voice database.
+\newblock {\em Applied Sciences}, 11(15):7149, 2021.
+
+\bibitem{martinez2012voice}
+David Mart{\'\i}nez, Eduardo Lleida, Alfonso Ortega, Antonio Miguel, and Jes{\'u}s Villalba.
+\newblock Voice pathology detection on the saarbr{\"u}cken voice database with calibration and fusion of scores using multifocal toolkit.
+\newblock In {\em Advances in Speech and Language Technologies for Iberian Languages: IberSPEECH 2012 Conference, Madrid, Spain, November 21-23, 2012. Proceedings}, pages 99--109. Springer, 2012.
+
+\bibitem{huckvale2021automated}
+Mark Huckvale and Cosmin Buciuleac.
+\newblock Automated detection of voice disorder in the saarbrücken voice database: Effects of pathology subset and audio materials.
+\newblock pages 4829--4833, 2021.
+
+\bibitem{caruana2015intelligible}
+Rich Caruana, Yin Lou, Johannes Gehrke, Paul Koch, Marc Sturm, and Noemie Elhadad.
+\newblock Intelligible models for healthcare: Predicting pneumonia risk and hospital 30-day readmission.
+\newblock In {\em Proceedings of the 21st ACM SIGKDD International Conference on Knowledge Discovery and Data Mining}, pages 1721--1730. ACM, 2015.
+
+\end{thebibliography}

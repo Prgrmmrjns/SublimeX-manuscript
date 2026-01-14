@@ -91,6 +91,8 @@ def run_cnn(
     num_classes=None,
     weight_decay=1e-4,
     patience=10,
+    initial_train=None,
+    initial_test=None,
 ):
     device = torch.device('mps' if torch.backends.mps.is_available() else ('cuda' if torch.cuda.is_available() else 'cpu'))
 
@@ -101,6 +103,16 @@ def run_cnn(
         random_state=42,
         stratify=y_train if task_type == 'classification' else None,
     )
+    
+    # Split initial features if provided
+    if initial_train is not None:
+        init_train_split, init_val_split = train_test_split(
+            initial_train,
+            test_size=VAL_SIZE,
+            random_state=42,
+        )
+    else:
+        init_train_split, init_val_split = None, None
 
     # Simple normalization instead of per-sample normalization
     train_mean = train_features.mean()
@@ -108,7 +120,28 @@ def run_cnn(
     train_features = (train_features - train_mean) / (train_std + 1e-8)
     val_features = (val_features - train_mean) / (train_std + 1e-8)
     test_features = (input_series_test - train_mean) / (train_std + 1e-8)
+    
+    # Normalize initial features if provided
+    if initial_train is not None:
+        init_train_mean = init_train_split.mean()
+        init_train_std = init_train_split.std()
+        init_train_split = (init_train_split - init_train_mean) / (init_train_std + 1e-8)
+        init_val_split = (init_val_split - init_train_mean) / (init_train_std + 1e-8)
+        init_test = (initial_test - init_train_mean) / (init_train_std + 1e-8) if initial_test is not None else None
 
+    # Handle initial features: we'll add them as additional channels
+    # Ensure initial features are 2D (samples, n_features)
+    if init_train_split is not None:
+        if init_train_split.ndim == 1:
+            init_train_split = init_train_split.reshape(-1, 1)
+        if init_val_split.ndim == 1:
+            init_val_split = init_val_split.reshape(-1, 1)
+        if init_test is not None and init_test.ndim == 1:
+            init_test = init_test.reshape(-1, 1)
+        n_init_features = init_train_split.shape[1]
+    else:
+        n_init_features = 0
+    
     # Reshape if input is 2D (samples, total_features)
     if train_features.ndim == 2:
         total_features = train_features.shape[1]
@@ -125,12 +158,44 @@ def run_cnn(
         train_features = torch.tensor(train_features, dtype=torch.float32).reshape(train_features.shape[0], n_channels, -1).to(device)
         val_features = torch.tensor(val_features, dtype=torch.float32).reshape(val_features.shape[0], n_channels, -1).to(device)
         test_features = torch.tensor(test_features, dtype=torch.float32).reshape(test_features.shape[0], n_channels, -1).to(device)
+        
+        # Append initial features as additional channels
+        if n_init_features > 0:
+            # Get time dimension from train_features
+            n_time = train_features.shape[2]
+            # Reshape initial features to (samples, n_init_features, n_time) by repeating across time
+            init_train_tensor = torch.tensor(init_train_split, dtype=torch.float32).unsqueeze(2).expand(-1, -1, n_time).to(device)  # (samples, n_init_features, n_time)
+            init_val_tensor = torch.tensor(init_val_split, dtype=torch.float32).unsqueeze(2).expand(-1, -1, n_time).to(device)
+            init_test_tensor = torch.tensor(init_test, dtype=torch.float32).unsqueeze(2).expand(-1, -1, n_time).to(device) if init_test is not None else None
+            
+            # Concatenate along channel dimension (dim=1)
+            train_features = torch.cat([train_features, init_train_tensor], dim=1)
+            val_features = torch.cat([val_features, init_val_tensor], dim=1)
+            if init_test_tensor is not None:
+                test_features = torch.cat([test_features, init_test_tensor], dim=1)
+            n_channels += n_init_features
     else:
         # Input is already 3D (samples, channels, time)
         n_channels = train_features.shape[1]
         train_features = torch.tensor(train_features, dtype=torch.float32).to(device)
         val_features = torch.tensor(val_features, dtype=torch.float32).to(device)
         test_features = torch.tensor(test_features, dtype=torch.float32).to(device)
+        
+        # Append initial features as additional channels
+        if n_init_features > 0:
+            # Get time dimension from train_features
+            n_time = train_features.shape[2]
+            # Reshape initial features to (samples, n_init_features, n_time) by repeating across time
+            init_train_tensor = torch.tensor(init_train_split, dtype=torch.float32).unsqueeze(2).expand(-1, -1, n_time).to(device)  # (samples, n_init_features, n_time)
+            init_val_tensor = torch.tensor(init_val_split, dtype=torch.float32).unsqueeze(2).expand(-1, -1, n_time).to(device)
+            init_test_tensor = torch.tensor(init_test, dtype=torch.float32).unsqueeze(2).expand(-1, -1, n_time).to(device) if init_test is not None else None
+            
+            # Concatenate along channel dimension (dim=1)
+            train_features = torch.cat([train_features, init_train_tensor], dim=1)
+            val_features = torch.cat([val_features, init_val_tensor], dim=1)
+            if init_test_tensor is not None:
+                test_features = torch.cat([test_features, init_test_tensor], dim=1)
+            n_channels += n_init_features
 
     if task_type == 'classification':
         out_dim = num_classes if num_classes is not None else len(np.unique(y_train))
@@ -207,9 +272,9 @@ def run_cnn(
     return test_pred
 
 
-def eval_cnn(train_array, test_array, y_train, y_test, task_type, metric, num_classes=None):
+def eval_cnn(train_array, test_array, y_train, y_test, task_type, metric, num_classes=None, initial_train=None, initial_test=None):
     t0 = time.time()
-    preds = run_cnn(train_array, y_train, test_array, task_type=task_type, metric=metric, num_classes=num_classes, epochs=CNN_EPOCHS, lr=CNN_LEARNING_RATE)
+    preds = run_cnn(train_array, y_train, test_array, task_type=task_type, metric=metric, num_classes=num_classes, epochs=CNN_EPOCHS, lr=CNN_LEARNING_RATE, initial_train=initial_train, initial_test=initial_test)
     if metric == 'rmse':
         score = np.sqrt(mean_squared_error(y_test, preds))
     elif metric == 'auc':

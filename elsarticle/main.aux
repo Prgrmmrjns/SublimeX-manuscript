@@ -1,0 +1,138 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\providecommand\HyField@AuxAddToFields[1]{}
+\providecommand\HyField@AuxAddToCoFields[2]{}
+\emailauthor{jwolber@ukaachen.de}{J.C. Wolber}
+\emailauthor{npaul@uni-goettingen.de}{N.B. Paul}
+\emailauthor{jsellin@ukaachen.de}{J. Sellin}
+\emailauthor{aschuppert@ukaachen.de}{A. Schuppert}
+\Newlabel{1}{a}
+\Newlabel{2}{b}
+\Newlabel{3}{c}
+\Newlabel{1}{d}
+\citation{morid2023time,rood2022impact,patharkar2024predictive}
+\citation{tonekaboni2019clinicians,rudin2019stop}
+\citation{fulcher2018feature,miotto2018deep}
+\citation{christ2018tsfresh,lubba2019catch22,henderson2021empirical}
+\citation{miotto2018deep,wang2022systematic,ennab2024enhancing}
+\@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
+\citation{ye2009shapelets,lines2012shapelet,hills2014shapelet,grabocka2014learning}
+\citation{syed2010motif,mueen2014motif,balasubramanian2016motifs}
+\citation{bagnall2018uea}
+\citation{dempster2021minirocket}
+\citation{MoodyMark1992,Goldberger2000}
+\citation{Roadmap2015}
+\citation{Johnson2023MIMICIV}
+\citation{Reiss2012PAMAP2}
+\citation{woldaregay2019data}
+\citation{fulcher2018feature,miotto2018deep}
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{4}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Manual feature engineering in biomedical studies}{4}{subsection.2.1}\protected@file@percent }
+\citation{ghalati2023cmda}
+\citation{christ2018tsfresh}
+\citation{lubba2019catch22}
+\citation{guillaume2022random}
+\citation{dempster2020rocket,dempster2021minirocket}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Feature engineering packages and pipelines}{5}{subsection.2.2}\protected@file@percent }
+\citation{christ2018tsfresh,lubba2019catch22}
+\citation{fulcher2017hctsa,barandas2020tsfel}
+\citation{ghalati2023cmda}
+\citation{henderson2021empirical}
+\citation{dempster2020rocket,dempster2021minirocket}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces High-level comparison of time series feature engineering toolkits and transforms commonly used in biomedical pipelines.}}{6}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:feature_toolkits}{{1}{6}{High-level comparison of time series feature engineering toolkits and transforms commonly used in biomedical pipelines}{table.caption.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Automated feature extraction and fast transforms}{6}{subsection.2.3}\protected@file@percent }
+\citation{ye2009shapelets,lines2012shapelet,hills2014shapelet}
+\citation{rakthanmanon2013fast_shapelets}
+\citation{grabocka2014learning,hou2016efficient_shapelets}
+\citation{fang2018interpretable_shapelets}
+\citation{hills2014shapelet}
+\citation{guillaume2022random}
+\citation{chen2023localized_shapelets}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Shapelets and shapelet selection for feature engineering}{7}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Methods}{8}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview}{8}{subsection.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces patX methodology overview: The process begins with time series or spatial data, then applies multiple signal transformations to create parallel views of the data. Iterative pattern discovery then: (1) proposes candidate pattern parameters (channel, transform, control points, position range, width), (2) generates a spline pattern, (3) computes min-window MSE dissimilarity features between pattern and transformed signal segments, and (4) evaluates model performance via cross-validation. The best pattern is appended to the feature set and the procedure repeats until adding a new pattern no longer improves performance.}}{9}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:patx_methodology}{{1}{9}{patX methodology overview: The process begins with time series or spatial data, then applies multiple signal transformations to create parallel views of the data. Iterative pattern discovery then: (1) proposes candidate pattern parameters (channel, transform, control points, position range, width), (2) generates a spline pattern, (3) computes min-window MSE dissimilarity features between pattern and transformed signal segments, and (4) evaluates model performance via cross-validation. The best pattern is appended to the feature set and the procedure repeats until adding a new pattern no longer improves performance}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Signal Transformation}{9}{subsection.3.2}\protected@file@percent }
+\citation{balestriero2018spline}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Pattern Characteristics Optimization}{10}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Implementation Details}{11}{subsection.3.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Datasets}{12}{subsection.3.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Dataset Characteristics and Evaluation Metrics}}{12}{table.caption.3}\protected@file@percent }
+\newlabel{tab:datasets}{{2}{12}{Dataset Characteristics and Evaluation Metrics}{table.caption.3}{}}
+\citation{Johnson2023MIMICIV}
+\citation{Reiss2012PAMAP2}
+\citation{lee2021experimental}
+\citation{martinez2012voice,huckvale2021automated}
+\citation{bagnall2018uea}
+\citation{christ2018tsfresh}
+\citation{lubba2019catch22}
+\citation{dempster2021minirocket}
+\citation{guillaume2022random}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Baselines}{13}{subsection.3.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Evaluation}{14}{subsection.3.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {4}Results}{14}{section.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Performance Comparison}{14}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Performance comparison across biomedical datasets. Results show mean $\pm $ standard deviation across subjects/folds. Best performance per dataset highlighted in bold.}}{14}{table.caption.4}\protected@file@percent }
+\newlabel{tab:results}{{3}{14}{Performance comparison across biomedical datasets. Results show mean $\pm $ standard deviation across subjects/folds. Best performance per dataset highlighted in bold}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Ablation Study}{15}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Ablation study across six datasets. Bold indicates best score per dataset. Arrows indicate optimization direction ($\uparrow $ higher better, $\downarrow $ lower better).}}{16}{table.caption.5}\protected@file@percent }
+\newlabel{tab:ablation}{{4}{16}{Ablation study across six datasets. Bold indicates best score per dataset. Arrows indicate optimization direction ($\uparrow $ higher better, $\downarrow $ lower better)}{table.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Domain-Specific Pattern Interpretation}{18}{subsection.4.3}\protected@file@percent }
+\citation{tonekaboni2019clinicians,caruana2015intelligible}
+\citation{ye2009shapelets,hills2014shapelet,syed2010motif,mueen2014motif}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Domain-specific pattern interpretation comparing REMC (left column) and MITBIH (right column) datasets. Each column illustrates the pattern extraction mechanism through three panels: (A) Biological Context showing average class profiles with the pattern search region highlighted (gray background), (B) Pattern Matching Mechanism in the transformed signal space with the learned B-spline pattern (green) overlaid at optimal positions and error regions (hatched) visualized, and (C) Feature Discrimination via RMSE distributions demonstrating class separation. REMC: H3K4me3 histone mark pattern (raw transform, width 98 bins) for gene expression prediction in cell line E003. MITBIH: ECG beat pattern (z-score transform, width 47 samples) for arrhythmia classification. The visualization demonstrates how patX automatically selects discriminative transformations and discovers interpretable patterns aligned with domain knowledge.}}{20}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:domain_pattern_interpretation}{{2}{20}{Domain-specific pattern interpretation comparing REMC (left column) and MITBIH (right column) datasets. Each column illustrates the pattern extraction mechanism through three panels: (A) Biological Context showing average class profiles with the pattern search region highlighted (gray background), (B) Pattern Matching Mechanism in the transformed signal space with the learned B-spline pattern (green) overlaid at optimal positions and error regions (hatched) visualized, and (C) Feature Discrimination via RMSE distributions demonstrating class separation. REMC: H3K4me3 histone mark pattern (raw transform, width 98 bins) for gene expression prediction in cell line E003. MITBIH: ECG beat pattern (z-score transform, width 47 samples) for arrhythmia classification. The visualization demonstrates how patX automatically selects discriminative transformations and discovers interpretable patterns aligned with domain knowledge}{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Pattern Stability and Reproducibility}{20}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{20}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Why patterns are a useful interface in biomedicine}{21}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Efficiency and deployability}{21}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Limitations and future work}{22}{subsection.5.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{22}{section.6}\protected@file@percent }
+\bibstyle{unsrt}
+\bibdata{bibliography}
+\bibcite{morid2023time}{{1}{}{{}}{{}}}
+\bibcite{rood2022impact}{{2}{}{{}}{{}}}
+\bibcite{patharkar2024predictive}{{3}{}{{}}{{}}}
+\bibcite{tonekaboni2019clinicians}{{4}{}{{}}{{}}}
+\bibcite{rudin2019stop}{{5}{}{{}}{{}}}
+\bibcite{fulcher2018feature}{{6}{}{{}}{{}}}
+\bibcite{miotto2018deep}{{7}{}{{}}{{}}}
+\bibcite{christ2018tsfresh}{{8}{}{{}}{{}}}
+\bibcite{lubba2019catch22}{{9}{}{{}}{{}}}
+\bibcite{henderson2021empirical}{{10}{}{{}}{{}}}
+\bibcite{wang2022systematic}{{11}{}{{}}{{}}}
+\bibcite{ennab2024enhancing}{{12}{}{{}}{{}}}
+\bibcite{ye2009shapelets}{{13}{}{{}}{{}}}
+\bibcite{lines2012shapelet}{{14}{}{{}}{{}}}
+\bibcite{hills2014shapelet}{{15}{}{{}}{{}}}
+\bibcite{grabocka2014learning}{{16}{}{{}}{{}}}
+\bibcite{syed2010motif}{{17}{}{{}}{{}}}
+\bibcite{mueen2014motif}{{18}{}{{}}{{}}}
+\bibcite{balasubramanian2016motifs}{{19}{}{{}}{{}}}
+\bibcite{bagnall2018uea}{{20}{}{{}}{{}}}
+\bibcite{dempster2021minirocket}{{21}{}{{}}{{}}}
+\bibcite{MoodyMark1992}{{22}{}{{}}{{}}}
+\bibcite{Goldberger2000}{{23}{}{{}}{{}}}
+\bibcite{Roadmap2015}{{24}{}{{}}{{}}}
+\bibcite{Johnson2023MIMICIV}{{25}{}{{}}{{}}}
+\bibcite{Reiss2012PAMAP2}{{26}{}{{}}{{}}}
+\bibcite{woldaregay2019data}{{27}{}{{}}{{}}}
+\bibcite{ghalati2023cmda}{{28}{}{{}}{{}}}
+\bibcite{guillaume2022random}{{29}{}{{}}{{}}}
+\bibcite{dempster2020rocket}{{30}{}{{}}{{}}}
+\bibcite{fulcher2017hctsa}{{31}{}{{}}{{}}}
+\bibcite{barandas2020tsfel}{{32}{}{{}}{{}}}
+\bibcite{rakthanmanon2013fast_shapelets}{{33}{}{{}}{{}}}
+\bibcite{hou2016efficient_shapelets}{{34}{}{{}}{{}}}
+\bibcite{fang2018interpretable_shapelets}{{35}{}{{}}{{}}}
+\bibcite{chen2023localized_shapelets}{{36}{}{{}}{{}}}
+\bibcite{balestriero2018spline}{{37}{}{{}}{{}}}
+\bibcite{lee2021experimental}{{38}{}{{}}{{}}}
+\bibcite{martinez2012voice}{{39}{}{{}}{{}}}
+\bibcite{huckvale2021automated}{{40}{}{{}}{{}}}
+\bibcite{caruana2015intelligible}{{41}{}{{}}{{}}}
+\providecommand\NAT@force@numbers{}\NAT@force@numbers
+\gdef \@abspage@last{31}
