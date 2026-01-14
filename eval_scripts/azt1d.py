@@ -3,93 +3,93 @@ import numpy as np
 import os
 import time
 import json
-import warnings
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from patx_runner import *
-from tsfresh_utils import eval_tsfresh
-from catch22_utils import eval_catch22
+from sklearn.metrics import accuracy_score, roc_auc_score, mean_squared_error
+
+# Import PATX and Baseline Utils
+from patx_runner import run_patx
 from cnn import eval_cnn
-warnings.filterwarnings('ignore')
+from minirocket_utils import eval_minirocket
+from catch22_utils import eval_catch22
+from tsfresh_utils import eval_tsfresh
 
-TIME_SERIES = ['CGM', 'Insulin', 'Carbs']
-TEST_SIZE = 0.2
+# ------------------------------------------------------------------------------
+# DATA LOADING FUNCTIONS
+# ------------------------------------------------------------------------------
 
-def load_azt1d_data(subject_id):
+def load_azt1d(subject_id):
     df = pd.read_parquet(f"../processed_datasets/azt1d/subject_{subject_id}.parquet")
-    ts_data = {s: df[[c for c in df.columns if c.startswith(f'{s}_') and c != 'CGM_current']] for s in TIME_SERIES}
-    return ts_data, df['target'], df['CGM_current']
+    time_series = ['CGM', 'Insulin', 'Carbs']
+    X_list = [df[[c for c in df.columns if c.startswith(f'{s}_') and c != 'CGM_current']] for s in time_series]
+    return X_list, df['target'], {'initial_features': df['CGM_current'].values.reshape(-1, 1), 'metric': 'rmse', 'task': 'regression'}
 
-subject_ids = sorted([f.replace('subject_', '').replace('.parquet', '') for f in os.listdir("../processed_datasets/azt1d/") if f.endswith('.parquet')])
+# ------------------------------------------------------------------------------
+# EVALUATION LOGIC
+# ------------------------------------------------------------------------------
 
-results, done = [], set()
-if os.path.exists('../results/azt1d.csv'):
-    existing = pd.read_csv('../results/azt1d.csv')
-    results = existing.to_dict('records')
-    done = set(zip(existing['subject_id'].astype(str), existing['approach']))
+def run_evaluation(dataset_name, X_list, y, info, results_path, patterns_path, sub_id=None):
+    metric, task = info['metric'], info['task']
+    initial_features = info.get('initial_features')
+    print(f"\n>>> {dataset_name} ({sub_id})")
 
-print("Running performance comparison on the AZT1D dataset")
-for subject_id in subject_ids:
-    subject_approaches_done = {(subject_id, approach) for approach in ['PATX', 'TSFRESH', 'CATCH22', 'CNN']}
-    if subject_approaches_done.issubset(done):
-        print(f"Skipping Subject {subject_id} (already complete)")
-        continue
+    # Check if this subject is already complete
+    if os.path.exists(results_path):
+        existing_df = pd.read_csv(results_path)
+        subset = existing_df[existing_df['subject_id'].astype(str) == str(sub_id)]
+        if len(subset) > 0:
+            done_approaches = set(subset['approach'].unique())
+            needed = {'PATX', 'CNN', 'MiniRocket', 'catch22', 'tsfresh'}
+            if needed.issubset(done_approaches):
+                print(f"  Already complete, skipping.")
+                return
     
-    print(f"\n{'='*60}")
-    print(f"Processing Subject {subject_id}")
-    print(f"{'='*60}")
-    time_series_data, y, cgm_current = load_azt1d_data(subject_id)
+    # Simple split for AZT1D
+    train_idx, test_idx = train_test_split(np.arange(len(y)), test_size=0.2, random_state=42)
     
-    train_idx, test_idx = train_test_split(np.arange(len(y)), test_size=TEST_SIZE, random_state=42)
     y_train, y_test = y.iloc[train_idx], y.iloc[test_idx]
+    input_train, input_test = [x.iloc[train_idx] for x in X_list], [x.iloc[test_idx] for x in X_list]
+    train_concat, test_concat = pd.concat(input_train, axis=1).values, pd.concat(input_test, axis=1).values
+    init_train = initial_features[train_idx] if initial_features is not None else None
+    init_test = initial_features[test_idx] if initial_features is not None else None
+    init_feat = (init_train, init_test) if init_train is not None else None
     
-    input_train = [time_series_data[s].iloc[train_idx] for s in TIME_SERIES]
-    input_test = [time_series_data[s].iloc[test_idx] for s in TIME_SERIES]
-    init_train = cgm_current.iloc[train_idx].values.reshape(-1, 1)
-    init_test = cgm_current.iloc[test_idx].values.reshape(-1, 1)
-    train_concat = pd.concat([time_series_data[s].iloc[train_idx] for s in TIME_SERIES], axis=1)
-    test_concat = pd.concat([time_series_data[s].iloc[test_idx] for s in TIME_SERIES], axis=1)
+    n_classes, n_channels, n_time = len(np.unique(y_train)), len(X_list), X_list[0].shape[1]
+    all_fold_patterns = {}
+    
+    existing_results = pd.read_csv(results_path).to_dict('records') if os.path.exists(results_path) else []
+    
+    for app in ['PATX', 'CNN', 'MiniRocket', 'catch22', 'tsfresh']:
+        t0 = time.time()
+        if app == 'PATX':
+            res = run_patx(input_train, y_train.values, input_test, metric=metric, initial_features=init_feat)
+            preds = res['model'].predict(res['test_features'])
+            score = np.sqrt(mean_squared_error(y_test, preds))
+            n_feat = len(res['patterns'])
+            
+            p_ser = []
+            for i, p in enumerate(res['patterns']):
+                p_d = {'pattern_id': i + 1}
+                for k, v in p.items():
+                    if k == 'pattern': continue
+                    p_d[k] = v.tolist() if isinstance(v, np.ndarray) else (v.item() if hasattr(v, 'item') else v)
+                p_ser.append(p_d)
+            all_fold_patterns['test_split'] = p_ser
+        elif app == 'CNN': score, _, n_feat = eval_cnn(train_concat, test_concat, y_train.values, y_test.values, task, metric, n_classes)
+        elif app == 'MiniRocket': score, _, n_feat = eval_minirocket(train_concat, test_concat, y_train.values, y_test.values, n_channels, n_time, task, metric, n_classes)
+        elif app == 'catch22': score, _, n_feat = eval_catch22(train_concat, test_concat, y_train.values, y_test.values, metric, n_classes, init_train, init_test)
+        elif app == 'tsfresh': score, _, n_feat = eval_tsfresh(train_concat, test_concat, y_train.values, y_test.values, metric, n_classes=n_classes, initial_train=init_train, initial_test=init_test)
+        
+        elapsed = time.time() - t0
+        print(f"  {app:10}: {score:.4f} ({elapsed:.1f}s)")
+        res_d = {'approach': app, 'subject_id': sub_id, 'score': score, 'processing_time': elapsed, 'n_features': n_feat}
+        existing_results.append(res_d)
+    
+    pd.DataFrame(existing_results).to_csv(results_path, index=False)
+    if all_fold_patterns:
+        os.makedirs(os.path.dirname(patterns_path), exist_ok=True)
+        with open(patterns_path, 'w') as f: json.dump(all_fold_patterns, f, indent=2)
 
-    t0 = time.time()
-    res = run_patx(input_train, y_train, input_test, metric='rmse', initial_features=(init_train, init_test))
-    preds = res['model'].predict(res['test_features'])
-    rmse = np.sqrt(mean_squared_error(y_test, preds))
-    elapsed = time.time()-t0
-    print(f"PATX: RMSE={rmse:.4f}, Time={elapsed:.1f}s, Features={len(res['patterns'])}")
-    results.append({'subject_id': subject_id, 'approach': 'PATX', 'score': rmse, 'processing_time': elapsed, 'n_features': len(res['patterns'])})
-    
-    os.makedirs('../json_files/azt1d', exist_ok=True)
-    pattern_data = []
-    for i, p in enumerate(res['patterns']):
-        p_dict = {}
-        for k, v in p.items():
-            if k == 'pattern': continue
-            if isinstance(v, list):
-                p_dict[k] = [x.item() if hasattr(x, 'item') else x for x in v]
-            elif isinstance(v, np.ndarray):
-                p_dict[k] = v.tolist()
-            elif isinstance(v, (np.integer, np.floating)):
-                p_dict[k] = v.item()
-            else:
-                p_dict[k] = v
-        p_dict['pattern_id'] = i + 1
-        pattern_data.append(p_dict)
-    with open(f'../json_files/azt1d/pattern_parameters_{subject_id}.json', 'w') as f:
-        json.dump(pattern_data, f, indent=2)
-
-    rmse, elapsed, n_feat = eval_tsfresh(train_concat.values, test_concat.values, y_train.values, y_test.values, metric='rmse', val_size=VAL_SIZE, initial_train=init_train, initial_test=init_test)
-    print(f"TSFRESH: RMSE={rmse:.4f}, Time={elapsed:.1f}s, Features={n_feat}")
-    results.append({'subject_id': subject_id, 'approach': 'TSFRESH', 'score': rmse, 'processing_time': elapsed, 'n_features': n_feat})
-    
-    rmse, elapsed, n_feat = eval_catch22(train_concat.values, test_concat.values, y_train.values, y_test.values, metric='rmse', initial_train=init_train, initial_test=init_test)
-    print(f"CATCH22: RMSE={rmse:.4f}, Time={elapsed:.1f}s, Features={n_feat}")
-    results.append({'subject_id': subject_id, 'approach': 'CATCH22', 'score': rmse, 'processing_time': elapsed, 'n_features': n_feat})
-    
-    train_concat_with_init = np.hstack([init_train, train_concat.values])
-    test_concat_with_init = np.hstack([init_test, test_concat.values])
-    rmse, elapsed, n_feat = eval_cnn(train_concat_with_init, test_concat_with_init, y_train.values, y_test.values, task_type='regression', metric='rmse')
-    print(f"CNN: RMSE={rmse:.4f}, Time={elapsed:.1f}s, Features={n_feat}")
-    results.append({'subject_id': subject_id, 'approach': 'CNN', 'score': rmse, 'processing_time': elapsed, 'n_features': n_feat})
-    pd.DataFrame(results).to_csv('../results/azt1d.csv', index=False)
-
-pd.DataFrame(results).to_csv('../results/azt1d.csv', index=False)
+if __name__ == "__main__":
+    for sid in sorted([f.replace('subject_', '').replace('.parquet', '') for f in os.listdir("../processed_datasets/azt1d/") if f.endswith('.parquet')]):
+        X, y, info = load_azt1d(sid)
+        run_evaluation('azt1d', X, y, info, '../results/azt1d.csv', f'../json_files/azt1d/pattern_parameters_{sid}.json', sid)

@@ -8,45 +8,45 @@ Warning--empty pages in dempster2021minirocket
 Warning--can't use both volume and number fields in hou2016efficient_shapelets
 Warning--empty pages in hou2016efficient_shapelets
 Warning--empty journal in huckvale2021automated
-You've used 44 entries,
+You've used 46 entries,
             2952 wiz_defined-function locations,
-            976 strings with 16696 characters,
-and the built_in function-call counts, 16569 in all, are:
-= -- 1566
-> -- 590
-< -- 15
-+ -- 226
-- -- 182
-* -- 1280
-:= -- 2198
-add.period$ -- 56
-call.type$ -- 44
-change.case$ -- 46
+            989 strings with 17342 characters,
+and the built_in function-call counts, 17433 in all, are:
+= -- 1648
+> -- 625
+< -- 16
++ -- 239
+- -- 193
+* -- 1348
+:= -- 2314
+add.period$ -- 60
+call.type$ -- 46
+change.case$ -- 48
 chr.to.int$ -- 0
-cite$ -- 49
-duplicate$ -- 557
-empty$ -- 1833
-format.name$ -- 222
-if$ -- 4257
+cite$ -- 51
+duplicate$ -- 589
+empty$ -- 1926
+format.name$ -- 235
+if$ -- 4482
 int.to.chr$ -- 0
-int.to.str$ -- 44
-missing$ -- 44
-newline$ -- 168
-num.names$ -- 44
-pop$ -- 324
+int.to.str$ -- 46
+missing$ -- 46
+newline$ -- 178
+num.names$ -- 46
+pop$ -- 342
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 1010
+skip$ -- 1062
 stack$ -- 0
-substring$ -- 1013
-swap$ -- 193
-text.length$ -- 15
+substring$ -- 1045
+swap$ -- 209
+text.length$ -- 16
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 5
-while$ -- 126
-width$ -- 46
-write$ -- 415
+while$ -- 131
+width$ -- 48
+write$ -- 438
 (There were 5 warnings)

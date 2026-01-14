@@ -74,6 +74,16 @@ A.~Mueen, \href{https://wires.onlinelibrary.wiley.com/doi/abs/10.1002/widm.1119}
 A.~Balasubramanian, J.~Wang, \href{https://ieeexplore.ieee.org/abstract/document/7435244/}{Discovering multidimensional motifs in physiological signals for personalized healthcare}, in: 2016 IEEE International Conference on Big Data (Big Data), IEEE, 2016.
 \newline\urlprefix\url{https://ieeexplore.ieee.org/abstract/document/7435244/}
 
+\bibitem{bagnall2018uea}
+A.~Bagnall, H.~A. Dau, J.~Lines, M.~Flynn, J.~Large, A.~Bostrom, P.~Southam, E.~Keogh, \href{https://arxiv.org/abs/1811.00075}{The uea multivariate time series classification archive, 2018}, arXiv preprint arXiv:1811.00075 (2018).
+\newblock \href {https://doi.org/10.48550/arXiv.1811.00075} {\path{doi:10.48550/arXiv.1811.00075}}.
+\newline\urlprefix\url{https://arxiv.org/abs/1811.00075}
+
+\bibitem{dempster2021minirocket}
+A.~Dempster, D.~F. Schmidt, G.~I. Webb, \href{https://dl.acm.org/doi/abs/10.1145/3447548.3467231}{Minirocket: A very fast (almost) deterministic transform for time series classification}, in: Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining, ACM, 2021.
+\newblock \href {https://doi.org/10.1145/3447548.3467231} {\path{doi:10.1145/3447548.3467231}}.
+\newline\urlprefix\url{https://dl.acm.org/doi/abs/10.1145/3447548.3467231}
+
 \bibitem{MoodyMark1992}
 G.~B. Moody, R.~G. Mark, The impact of the mit-bih arrhythmia database, IEEE Engineering in Medicine and Biology Magazine 20~(3) (2001) 45--50.
 
@@ -107,11 +117,6 @@ M.~Barandas, D.~Folgado, L.~Fernandes, S.~Santos, M.~Abreu, P.~Bota, H.~Liu, T.~
 \bibitem{dempster2020rocket}
 A.~Dempster, F.~Petitjean, G.~I. Webb, \href{https://link.springer.com/article/10.1007/s10618-020-00701-z}{Rocket: exceptionally fast and accurate time series classification using random convolutional kernels}, Data Mining and Knowledge DiscoveryArXiv preprint: \url{https://arxiv.org/abs/1910.13051} (2020).
 \newline\urlprefix\url{https://link.springer.com/article/10.1007/s10618-020-00701-z}
-
-\bibitem{dempster2021minirocket}
-A.~Dempster, D.~F. Schmidt, G.~I. Webb, \href{https://dl.acm.org/doi/abs/10.1145/3447548.3467231}{Minirocket: A very fast (almost) deterministic transform for time series classification}, in: Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining, ACM, 2021.
-\newblock \href {https://doi.org/10.1145/3447548.3467231} {\path{doi:10.1145/3447548.3467231}}.
-\newline\urlprefix\url{https://dl.acm.org/doi/abs/10.1145/3447548.3467231}
 
 \bibitem{rakthanmanon2013fast_shapelets}
 T.~Rakthanmanon, E.~Keogh, \href{https://epubs.siam.org/doi/abs/10.1137/1.9781611972832.74}{Fast shapelets: A scalable algorithm for discovering time series shapelets}, in: Proceedings of the 2013 SIAM International Conference on Data Mining, SIAM, 2013, pp. 668--676.
@@ -149,6 +154,11 @@ D.~Mart{\'\i}nez, E.~Lleida, A.~Ortega, A.~Miguel, J.~Villalba, Voice pathology 
 
 \bibitem{huckvale2021automated}
 M.~Huckvale, C.~Buciuleac, Automated detection of voice disorder in the saarbrücken voice database: Effects of pathology subset and audio materials (2021) 4829--4833\href {https://doi.org/10.21437/Interspeech.2021-1507} {\path{doi:10.21437/Interspeech.2021-1507}}.
+
+\bibitem{guillaume2022random}
+A.~Guillaume, C.~Vrain, W.~Elloumi, \href{https://link.springer.com/chapter/10.1007/978-3-031-09037-0_53}{Random dilated shapelet transform: A new approach for time series shapelets}, in: Pattern Recognition and Artificial Intelligence: Third International Conference, ICPRAI 2022, Springer, 2022, pp. 653--664.
+\newblock \href {https://doi.org/10.1007/978-3-031-09037-0_53} {\path{doi:10.1007/978-3-031-09037-0_53}}.
+\newline\urlprefix\url{https://link.springer.com/chapter/10.1007/978-3-031-09037-0_53}
 
 \bibitem{lundberg2017unified}
 S.~M. Lundberg, S.-I. Lee, A unified approach to interpreting model predictions, Advances in neural information processing systems 30 (2017).

@@ -109,36 +109,34 @@ def run_cnn(
     val_features = (val_features - train_mean) / (train_std + 1e-8)
     test_features = (input_series_test - train_mean) / (train_std + 1e-8)
 
-    # Auto-detect number of channels from input shape
-    # Assumes input is concatenated time series: if we have N series of length T, input has N*T columns
-    # For REMC: 5 series * 100 timepoints = 500 columns → 5 channels
-    # For AZT1D: 3 series * 24 timepoints = 72 columns → 3 channels
-    # For Bonn EEG: 1 series * 4101 timepoints = 4101 columns → 1 channel
-    total_features = train_features.shape[1]
-    
-    # Determine number of channels (heuristic: find common divisors)
-    if total_features % 100 == 0:  # REMC case: 5 series of 100 timepoints
-        n_channels = total_features // 100
-    elif total_features % 24 == 0:  # AZT1D case: 3 series of 24 timepoints
-        n_channels = total_features // 24
-    elif total_features > 1000:  # Large univariate time series (like Bonn EEG)
-        n_channels = 1
-    else:  # Fallback: treat as single channel
-        n_channels = 1
-    
-    # Reshape for multi-channel input: (batch, n_channels, time_points)
-    train_features = torch.tensor(train_features, dtype=torch.float32).reshape(train_features.shape[0], n_channels, -1).to(device)
-    val_features = torch.tensor(val_features, dtype=torch.float32).reshape(val_features.shape[0], n_channels, -1).to(device)
-    test_features = torch.tensor(test_features, dtype=torch.float32).reshape(test_features.shape[0], n_channels, -1).to(device)
+    # Reshape if input is 2D (samples, total_features)
+    if train_features.ndim == 2:
+        total_features = train_features.shape[1]
+        # Determine number of channels (heuristic: find common divisors)
+        if total_features % 100 == 0:  # REMC case: 5 series of 100 timepoints
+            n_channels = total_features // 100
+        elif total_features % 24 == 0:  # AZT1D case: 3 series of 24 timepoints
+            n_channels = total_features // 24
+        elif total_features > 1000:  # Large univariate time series (like Bonn EEG)
+            n_channels = 1
+        else:  # Fallback: treat as single channel
+            n_channels = 1
+        
+        train_features = torch.tensor(train_features, dtype=torch.float32).reshape(train_features.shape[0], n_channels, -1).to(device)
+        val_features = torch.tensor(val_features, dtype=torch.float32).reshape(val_features.shape[0], n_channels, -1).to(device)
+        test_features = torch.tensor(test_features, dtype=torch.float32).reshape(test_features.shape[0], n_channels, -1).to(device)
+    else:
+        # Input is already 3D (samples, channels, time)
+        n_channels = train_features.shape[1]
+        train_features = torch.tensor(train_features, dtype=torch.float32).to(device)
+        val_features = torch.tensor(val_features, dtype=torch.float32).to(device)
+        test_features = torch.tensor(test_features, dtype=torch.float32).to(device)
 
     if task_type == 'classification':
         out_dim = num_classes if num_classes is not None else len(np.unique(y_train))
         y_train_split = torch.tensor(y_train_split, dtype=torch.long).to(device)
         y_valid = torch.tensor(y_valid, dtype=torch.long).to(device)
-        if out_dim == 2:
-            loss_fn = nn.CrossEntropyLoss()
-        else:
-            loss_fn = nn.CrossEntropyLoss()
+        loss_fn = nn.CrossEntropyLoss()
     else:
         out_dim = 1
         y_train_split = torch.tensor(y_train_split, dtype=torch.float32).to(device)
@@ -220,4 +218,6 @@ def eval_cnn(train_array, test_array, y_train, y_test, task_type, metric, num_cl
     else:
         score = accuracy_score(y_test, preds)
     elapsed = time.time() - t0
-    return score, elapsed, train_array.shape[1]
+    # Number of features is just the flattened input size
+    n_feat = train_array.shape[1] * train_array.shape[2] if train_array.ndim == 3 else train_array.shape[1]
+    return score, elapsed, n_feat
