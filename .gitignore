@@ -1,7 +1,9 @@
 /.DS_Store
 __pycache__
 datasets
-processed_datasets
+processed_datasets/pamap2
+processed_datasets/remc
+processed_datasets/azt1d
 Multivariate_arff
 manuscript/main.out
 manuscript/main.aux
