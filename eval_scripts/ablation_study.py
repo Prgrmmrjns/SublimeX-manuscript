@@ -181,6 +181,7 @@ variants = [
     ('linear_model', {'model_class': LinearRegressionWrapper}),
     ('no_sliding_window', {'sliding_window': False}),
     ('polynomial_pattern', {'pattern_fn': generate_polynomial_pattern, 'n_control_points': 4}),
+    ('control_points_1_no_sliding', {'n_control_points': 1, 'sliding_window': False}),
 ]
 
 # Main execution

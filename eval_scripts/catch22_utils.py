@@ -34,7 +34,7 @@ def eval_catch22(train_array, test_array, y_train, y_test, metric, n_classes=Non
         
     # Use LightGBM for fair comparison
     task = 'regression' if metric == 'rmse' else 'classification'
-    model = LightGBMWrapper(task_type=task, n_classes=n_classes, n_jobs=1, inner_cv=3)
+    model = LightGBMWrapper(task_type=task, n_classes=n_classes, n_jobs=-1)
     
     # Fit on full train and predict on test
     model.fit(train_feat, y_train_enc)

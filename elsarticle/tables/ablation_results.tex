@@ -1,53 +1,19 @@
-\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llccc@{}}
+\tiny
+\renewcommand{\arraystretch}{0.75}
+\begin{tabular*}{\textwidth}{@{\extracolsep{0.5pt}}l|c|c|c|c|c|c|c@{}}
 \toprule
-\textbf{Dataset} & \textbf{Variant} & \textbf{Score} & \textbf{Time (s)} & \textbf{Features} \\
+\textbf{Dataset} & \textbf{Baseline} & \textbf{Trials=100} & \textbf{No Transforms} & \textbf{CP=1} & \textbf{Linear Model} & \textbf{No Sliding} & \textbf{Polynomial} \\
 \midrule
-MITBIH & Default & $0.947 \pm 0.003$ & $615 \pm 112$ & $12 \pm 3$ \\
-(Accuracy $\uparrow$) & Inner CV=1 & $0.946 \pm 0.003$ & $207 \pm 48$ & $12 \pm 2$ \\
- & \textbf{No early stopping} & $\boldsymbol{0.949 \pm 0.005}$ & $1956 \pm 362$ & $14 \pm 3$ \\
- & 100 trials & $0.948 \pm 0.002$ & $254 \pm 57$ & $16 \pm 3$ \\
- & No transforms & $0.946 \pm 0.005$ & $1107 \pm 221$ & $16 \pm 3$ \\
- & No shifting & $0.900 \pm 0.018$ & $1130 \pm 264$ & $14 \pm 2$ \\
- & 1 control point & $0.931 \pm 0.004$ & $939 \pm 282$ & $15 \pm 4$ \\
+MITBIH & \makecell{0.947 $\pm$ 0.004 \\\\ Feat: 14.8 $\pm$ 2.2} & \makecell{0.944 $\pm$ 0.004 \\\\ Feat: 16.4 $\pm$ 3.0} & \makecell{0.907 $\pm$ 0.006 \\\\ Feat: 12.4 $\pm$ 3.0} & \makecell{0.948 $\pm$ 0.004 \\\\ Feat: 16.4 $\pm$ 1.8} & \makecell{0.828 $\pm$ 0.045 \\\\ Feat: 16.0 $\pm$ 3.5} & \makecell{0.946 $\pm$ 0.002 \\\\ Feat: 15.6 $\pm$ 3.2} & \makecell{\textbf{0.951 $\pm$ 0.003} \\\\ Feat: 18.0 $\pm$ 2.4} \\
 \midrule
-SVD & Default & $0.621 \pm 0.011$ & $48 \pm 17$ & $5 \pm 2$ \\
-(Accuracy $\uparrow$) & Inner CV=1 & $0.612 \pm 0.015$ & $24 \pm 5$ & $4 \pm 1$ \\
- & No early stopping & $0.614 \pm 0.007$ & $181 \pm 66$ & $6 \pm 3$ \\
- & \textbf{100 trials} & $\boldsymbol{0.630 \pm 0.032}$ & $16 \pm 6$ & $7 \pm 3$ \\
- & No transforms & $0.594 \pm 0.027$ & $48 \pm 18$ & $5 \pm 2$ \\
- & No shifting & $0.568 \pm 0.048$ & $41 \pm 8$ & $5 \pm 1$ \\
- & 1 control point & $0.611 \pm 0.011$ & $60 \pm 28$ & $5 \pm 2$ \\
+SVD & \makecell{0.597 $\pm$ 0.026 \\\\ Feat: 3.0 $\pm$ 1.2} & \makecell{0.578 $\pm$ 0.033 \\\\ Feat: 3.4 $\pm$ 1.9} & \makecell{0.574 $\pm$ 0.030 \\\\ Feat: 4.0 $\pm$ 1.0} & \makecell{0.574 $\pm$ 0.021 \\\\ Feat: 4.0 $\pm$ 0.7} & \makecell{0.581 $\pm$ 0.041 \\\\ Feat: 3.0 $\pm$ 0.7} & \makecell{\textbf{0.603 $\pm$ 0.023} \\\\ Feat: 3.2 $\pm$ 1.6} & \makecell{0.589 $\pm$ 0.029 \\\\ Feat: 3.8 $\pm$ 1.3} \\
 \midrule
-REMC (E003) & \textbf{Default} & $\boldsymbol{0.930 \pm 0.004}$ & $386 \pm 54$ & $17 \pm 1$ \\
-(AUC $\uparrow$) & Inner CV=1 & $0.927 \pm 0.005$ & $146 \pm 18$ & $12 \pm 1$ \\
- & No early stopping & $0.931 \pm 0.004$ & $1023 \pm 185$ & $18 \pm 3$ \\
- & 100 trials & $0.930 \pm 0.005$ & $106 \pm 31$ & $19 \pm 5$ \\
- & No transforms & $0.928 \pm 0.004$ & $386 \pm 59$ & $16 \pm 2$ \\
- & No shifting & $0.928 \pm 0.004$ & $315 \pm 35$ & $13 \pm 1$ \\
- & 1 control point & $0.930 \pm 0.006$ & $303 \pm 55$ & $15 \pm 2$ \\
+Emotions & \makecell{0.986 $\pm$ 0.005 \\\\ Feat: 7.4 $\pm$ 1.3} & \makecell{0.980 $\pm$ 0.004 \\\\ Feat: 7.6 $\pm$ 2.7} & \makecell{0.921 $\pm$ 0.017 \\\\ Feat: 6.8 $\pm$ 1.9} & \makecell{0.983 $\pm$ 0.005 \\\\ Feat: 8.8 $\pm$ 0.8} & \makecell{0.752 $\pm$ 0.035 \\\\ Feat: 7.8 $\pm$ 1.3} & \makecell{0.985 $\pm$ 0.005 \\\\ Feat: 8.8 $\pm$ 2.2} & \makecell{\textbf{0.987 $\pm$ 0.004} \\\\ Feat: 10.0 $\pm$ 2.3} \\
 \midrule
-Emotions & \textbf{Default} & $\boldsymbol{0.966 \pm 0.030}$ & $133 \pm 70$ & $9 \pm 5$ \\
-(Accuracy $\uparrow$) & Inner CV=1 & $0.960 \pm 0.009$ & $42 \pm 10$ & $6 \pm 2$ \\
- & No early stopping & $0.958 \pm 0.025$ & $370 \pm 130$ & $9 \pm 3$ \\
- & 100 trials & $0.959 \pm 0.024$ & $30 \pm 12$ & $9 \pm 3$ \\
- & No transforms & $0.923 \pm 0.014$ & $109 \pm 25$ & $7 \pm 2$ \\
- & No shifting & $0.912 \pm 0.020$ & $121 \pm 27$ & $9 \pm 2$ \\
- & 1 control point & $0.964 \pm 0.022$ & $135 \pm 24$ & $9 \pm 2$ \\
+MIMIC-IV & \makecell{\textbf{0.767 $\pm$ 0.010} \\\\ Feat: 6.2 $\pm$ 2.6} & \makecell{0.767 $\pm$ 0.013 \\\\ Feat: 6.6 $\pm$ 2.2} & \makecell{0.763 $\pm$ 0.008 \\\\ Feat: 3.2 $\pm$ 1.1} & \makecell{0.762 $\pm$ 0.016 \\\\ Feat: 5.8 $\pm$ 0.4} & \makecell{0.743 $\pm$ 0.001 \\\\ Feat: 4.2 $\pm$ 1.9} & \makecell{0.756 $\pm$ 0.013 \\\\ Feat: 2.8 $\pm$ 2.5} & \makecell{0.759 $\pm$ 0.014 \\\\ Feat: 3.6 $\pm$ 2.5} \\
 \midrule
-MIMIC & Default & $0.778 \pm 0.015$ & $81 \pm 35$ & $8 \pm 4$ \\
-(AUC $\uparrow$) & Inner CV=1 & $0.764 \pm 0.017$ & $24 \pm 5$ & $5 \pm 2$ \\
- & No early stopping & $0.777 \pm 0.019$ & $295 \pm 58$ & $11 \pm 2$ \\
- & 100 trials & $0.769 \pm 0.016$ & $21 \pm 2$ & $7 \pm 1$ \\
- & No transforms & $0.765 \pm 0.011$ & $80 \pm 33$ & $9 \pm 4$ \\
- & No shifting & $0.779 \pm 0.011$ & $95 \pm 37$ & $10 \pm 4$ \\
- & \textbf{1 control point} & $\boldsymbol{0.789 \pm 0.006}$ & $86 \pm 14$ & $10 \pm 1$ \\
+PAMAP2 & \makecell{0.996 $\pm$ 0.001 \\\\ Feat: 9.0 $\pm$ 1.0} & \makecell{0.991 $\pm$ 0.001 \\\\ Feat: 7.4 $\pm$ 1.7} & \makecell{0.997 $\pm$ 0.000 \\\\ Feat: 7.2 $\pm$ 0.8} & \makecell{0.997 $\pm$ 0.001 \\\\ Feat: 7.4 $\pm$ 0.5} & \makecell{0.996 $\pm$ 0.001 \\\\ Feat: 7.0 $\pm$ 1.0} & \makecell{0.996 $\pm$ 0.001 \\\\ Feat: 7.4 $\pm$ 0.9} & \makecell{\textbf{0.997 $\pm$ 0.001} \\\\ Feat: 7.4 $\pm$ 1.5} \\
 \midrule
-AZT1D & Default & $12.29 \pm 0.65$ & $1115 \pm 208$ & $15 \pm 3$ \\
-(RMSE $\downarrow$) & Inner CV=1 & $13.09 \pm 0.55$ & $234 \pm 49$ & $12 \pm 3$ \\
- & No early stopping & $12.10 \pm 0.31$ & $3386 \pm 1067$ & $19 \pm 5$ \\
- & 100 trials & $13.22 \pm 0.93$ & $327 \pm 61$ & $19 \pm 4$ \\
- & \textbf{No transforms} & $\boldsymbol{10.03 \pm 0.37}$ & $2390 \pm 287$ & $25 \pm 2$ \\
- & No shifting & $20.70 \pm 1.17$ & $337 \pm 107$ & $12 \pm 2$ \\
- & 1 control point & $11.59 \pm 0.28$ & $1727 \pm 250$ & $23 \pm 2$ \\
+REMC & \makecell{0.928 $\pm$ 0.003 \\\\ Feat: 13.2 $\pm$ 2.2} & \makecell{0.927 $\pm$ 0.005 \\\\ Feat: 14.6 $\pm$ 5.8} & \makecell{\textbf{0.930 $\pm$ 0.003} \\\\ Feat: 15.8 $\pm$ 3.8} & \makecell{0.929 $\pm$ 0.005 \\\\ Feat: 13.2 $\pm$ 4.6} & --- & --- & --- \\
 \bottomrule
 \end{tabular*}

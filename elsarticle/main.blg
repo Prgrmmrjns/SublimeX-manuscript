@@ -5,45 +5,45 @@ The style file: unsrt.bst
 Database file #1: bibliography.bib
 Warning--can't use both volume and number fields in hou2016efficient_shapelets
 Warning--empty journal in huckvale2021automated
-You've used 41 entries,
+You've used 39 entries,
             1791 wiz_defined-function locations,
-            705 strings with 13182 characters,
-and the built_in function-call counts, 12247 in all, are:
-= -- 1141
-> -- 561
+            697 strings with 12789 characters,
+and the built_in function-call counts, 11875 in all, are:
+= -- 1117
+> -- 527
 < -- 17
-+ -- 202
-- -- 161
-* -- 847
-:= -- 1836
-add.period$ -- 139
-call.type$ -- 41
-change.case$ -- 41
++ -- 190
+- -- 151
+* -- 824
+:= -- 1764
+add.period$ -- 133
+call.type$ -- 39
+change.case$ -- 39
 chr.to.int$ -- 0
-cite$ -- 43
-duplicate$ -- 553
-empty$ -- 1140
-format.name$ -- 161
-if$ -- 2807
+cite$ -- 41
+duplicate$ -- 537
+empty$ -- 1112
+format.name$ -- 151
+if$ -- 2731
 int.to.chr$ -- 0
-int.to.str$ -- 41
-missing$ -- 41
-newline$ -- 210
-num.names$ -- 41
-pop$ -- 124
+int.to.str$ -- 39
+missing$ -- 39
+newline$ -- 200
+num.names$ -- 39
+pop$ -- 118
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 309
+skip$ -- 302
 stack$ -- 0
 substring$ -- 946
-swap$ -- 195
+swap$ -- 193
 text.length$ -- 17
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 2
-while$ -- 120
-width$ -- 43
-write$ -- 467
+while$ -- 118
+width$ -- 41
+write$ -- 447
 (There were 2 warnings)

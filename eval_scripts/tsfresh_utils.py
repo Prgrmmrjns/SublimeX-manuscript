@@ -118,7 +118,7 @@ def eval_tsfresh(train_array, test_array, y_train, y_test, metric, val_size=0.2,
 
     # Use LightGBM for fair comparison
     task = 'regression' if metric == 'rmse' else 'classification'
-    model = LightGBMWrapper(task_type=task, n_classes=n_classes, n_jobs=1, inner_cv=3)
+    model = LightGBMWrapper(task_type=task, n_classes=n_classes, n_jobs=-1)
     
     model.fit(X_tr, y_train_enc)
     if metric == 'rmse':

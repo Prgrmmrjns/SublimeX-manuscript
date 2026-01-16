@@ -26,7 +26,6 @@ def eval_rdst(train_array, test_array, y_train, y_test, metric, n_classes=None, 
         # If initial features provided, fit a LightGBM model on top
         if initial_train is not None and initial_test is not None:
             # Get transformed features from regressor
-            from aeon.transformations.collection.shapelet_based import RandomDilatedShapeletTransform as RDST
             transformer = RDST(max_shapelets=2000, random_state=42)
             X_tr_feat = transformer.fit_transform(train_array, y_train.astype(np.float64))
             X_te_feat = transformer.transform(test_array)
@@ -38,7 +37,7 @@ def eval_rdst(train_array, test_array, y_train, y_test, metric, n_classes=None, 
             X_te_feat = np.hstack([initial_test, X_te_feat])
             
             # Fit LightGBM on combined features
-            model = LightGBMWrapper(task_type='regression', n_jobs=1, inner_cv=1)
+            model = LightGBMWrapper(task_type='regression', n_jobs=-1)
             model.fit(X_tr_feat, y_train.astype(np.float32))
             predictions = model.predict(X_te_feat)
             n_features = X_tr_feat.shape[1]
@@ -74,7 +73,7 @@ def eval_rdst(train_array, test_array, y_train, y_test, metric, n_classes=None, 
             X_tr_feat = np.hstack([initial_train, X_tr_feat])
             X_te_feat = np.hstack([initial_test, X_te_feat])
         
-        model = LightGBMWrapper(task_type='classification', n_classes=n_classes, n_jobs=1, inner_cv=1)
+        model = LightGBMWrapper(task_type='classification', n_classes=n_classes, n_jobs=-1)
         model.fit(X_tr_feat, y_train_enc)
         
         if metric == 'auc':

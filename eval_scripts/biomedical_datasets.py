@@ -134,7 +134,6 @@ def run_evaluation(dataset_name, X_list, y, info, results_path, patterns_path, s
         print(f"\n{app}:")
         for fold_idx, fold_info in enumerate(fold_data, 1):
             t0 = time.time()
-            
             if app == 'PATX':
                 res = run_patx(fold_info['input_train'], 
                     fold_info['y_train'].values, 
@@ -205,7 +204,7 @@ def run_evaluation(dataset_name, X_list, y, info, results_path, patterns_path, s
     with open(patterns_path, 'w') as f: json.dump(all_fold_patterns, f, indent=2)
 
 if __name__ == "__main__":
-    for ds in ['emotions', 'mimic', 'mitbih', 'remc', 'svd', 'pamap2']:
+    for ds in ['mitbih', 'emotions', 'mimic', 'remc', 'svd', 'pamap2']:
         if ds == 'remc':
             for cl in sorted([f.replace('.parquet', '') for f in os.listdir('../processed_datasets/remc') if f.endswith('.parquet')])[:2]:
                 X, y, info = load_remc(cl)

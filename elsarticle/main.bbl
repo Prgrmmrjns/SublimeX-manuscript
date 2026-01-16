@@ -95,16 +95,6 @@ Arvind Balasubramanian and Jun Wang.
 \newblock Discovering multidimensional motifs in physiological signals for personalized healthcare.
 \newblock In {\em 2016 IEEE International Conference on Big Data (Big Data)}. IEEE, 2016.
 
-\bibitem{bagnall2018uea}
-Anthony Bagnall, Hoang~Anh Dau, Jason Lines, Michael Flynn, James Large, Aaron Bostrom, Paul Southam, and Eamonn Keogh.
-\newblock The uea multivariate time series classification archive, 2018.
-\newblock {\em arXiv preprint arXiv:1811.00075}, 2018.
-
-\bibitem{dempster2021minirocket}
-Angus Dempster, Daniel~F Schmidt, and Geoffrey~I Webb.
-\newblock Minirocket: A very fast (almost) deterministic transform for time series classification.
-\newblock In {\em Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining}. ACM, 2021.
-
 \bibitem{MoodyMark1992}
 George~B Moody and Roger~G Mark.
 \newblock The impact of the mit-bih arrhythmia database.
@@ -136,11 +126,6 @@ Ashenafi~Zebene Woldaregay, Eirik {\AA}rsand, St{\aa}le Walderhaug, David Albers
 \newblock Data-driven modeling and prediction of blood glucose dynamics: Machine learning applications in type 1 diabetes.
 \newblock {\em Artificial Intelligence in Medicine}, 98:109--134, 2019.
 
-\bibitem{ghalati2023cmda}
-Pejman~Farhadi Ghalati and Andreas Schuppert.
-\newblock Cmda: a tool for continuous monitoring data analysis.
-\newblock {\em arXiv preprint arXiv:2310.14427}, 2023.
-
 \bibitem{guillaume2022random}
 Antoine Guillaume, Christel Vrain, and Wael Elloumi.
 \newblock Random dilated shapelet transform: A new approach for time series shapelets.
@@ -151,6 +136,11 @@ Angus Dempster, Fran{\c{c}}ois Petitjean, and Geoffrey~I Webb.
 \newblock Rocket: exceptionally fast and accurate time series classification using random convolutional kernels.
 \newblock {\em Data Mining and Knowledge Discovery}, 2020.
 \newblock arXiv preprint: \url{https://arxiv.org/abs/1910.13051}.
+
+\bibitem{dempster2021minirocket}
+Angus Dempster, Daniel~F Schmidt, and Geoffrey~I Webb.
+\newblock Minirocket: A very fast (almost) deterministic transform for time series classification.
+\newblock In {\em Proceedings of the 27th ACM SIGKDD Conference on Knowledge Discovery \& Data Mining}. ACM, 2021.
 
 \bibitem{fulcher2017hctsa}
 Ben~D Fulcher and Nick~S Jones.

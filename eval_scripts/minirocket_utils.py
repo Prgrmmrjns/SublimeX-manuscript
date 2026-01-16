@@ -53,7 +53,7 @@ def eval_minirocket(train_array, test_array, y_train, y_test, task_type='classif
         n_classes = None
 
     # 3. Fit Model using PATX's unified training pipeline (LightGBM)
-    model = LightGBMWrapper(task_type, n_classes=n_classes, n_jobs=1, inner_cv=1)
+    model = LightGBMWrapper(task_type, n_classes=n_classes, n_jobs=-1)
     model.fit(X_train_transform, y_train_enc)
     
     # 4. Predict

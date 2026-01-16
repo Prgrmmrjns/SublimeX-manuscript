@@ -13,17 +13,9 @@ def _fft_power(data: np.ndarray) -> np.ndarray:
     """Return FFT power spectrum as-is (length = n_time // 2 + 1)."""
     return np.abs(np.fft.rfft(data, axis=-1)) ** 2
 
-def _zscore(data: np.ndarray) -> np.ndarray:
-    """Z-score normalization: (x - mean) / std along time axis."""
-    mean = np.mean(data, axis=-1, keepdims=True)
-    std = np.std(data, axis=-1, keepdims=True)
-    std = np.where(std == 0, 1.0, std)
-    return (data - mean) / std
-
 TRANSFORMS: Dict[str, Callable[[np.ndarray], np.ndarray]] = {
     "raw": lambda d: d,
     "fft_power": _fft_power,
-    "zscore": _zscore,
 }
 
 def generate_bspline_pattern(control_points: List[float], width: int) -> np.ndarray:
@@ -42,7 +34,8 @@ def generate_bspline_pattern(control_points: List[float], width: int) -> np.ndar
 def _default_pattern_mapping(signal: np.ndarray, pattern: np.ndarray, start: int, end: int, 
                              sliding_window: bool = True) -> np.ndarray:
     """
-    Default pattern-to-feature mapping: min MSE distance in search range.
+    Default pattern-to-feature mapping: min cosine distance in search range.
+    Optimized version using efficient numpy operations.
     
     Parameters:
     -----------
@@ -60,22 +53,52 @@ def _default_pattern_mapping(signal: np.ndarray, pattern: np.ndarray, start: int
     Returns:
     --------
     np.ndarray
-        Feature array of shape (n_samples,)
+        Feature array of shape (n_samples,) - cosine distance (1 - cosine_similarity)
     """
     pat_len = len(pattern)
+    # Pre-compute pattern norm squared (avoid sqrt until final division)
+    pat_norm_sq = np.dot(pattern, pattern)
+    if pat_norm_sq < 1e-16:
+        pat_norm = 1.0
+    else:
+        pat_norm = np.sqrt(pat_norm_sq)
+    
     if not sliding_window:
         pos = (start + end) // 2
         window = signal[:, pos : pos + pat_len]
-        # MSE distance
-        diff = window[:, None, :] - pattern
-        distances = np.einsum('...i,...i->...', diff, diff) / diff.shape[-1]
-        return distances[:, 0].astype(np.float32)
+        # Use np.dot for faster computation
+        dot_product = np.dot(window, pattern)
+        # Use sum of squares instead of einsum
+        window_norm_sq = np.sum(window * window, axis=1)
+        window_norm = np.sqrt(window_norm_sq)
+        window_norm = np.where(window_norm < 1e-8, 1.0, window_norm)
+        cosine_sim = dot_product / (window_norm * pat_norm)
+        distances = 1.0 - cosine_sim
+        return distances.astype(np.float32)
     else:
         signal_subset = signal[:, start : end + pat_len]
+        n_samples, subset_len = signal_subset.shape
+        n_windows = subset_len - pat_len + 1
+        
+        if n_windows <= 0:
+            # Edge case: no valid windows
+            return np.full(n_samples, 1.0, dtype=np.float32)
+        
+        # Create sliding window view (creates a view, no copy)
         windows = sliding_window_view(signal_subset, pat_len, axis=1)
-        # MSE distance
-        diff = windows - pattern
-        distances = np.einsum('...i,...i->...', diff, diff) / diff.shape[-1]
+        # Shape: (n_samples, n_windows, pat_len)
+        
+        # Use tensordot for efficient dot product: (n_samples, n_windows, pat_len) @ (pat_len,) -> (n_samples, n_windows)
+        dot_product = np.tensordot(windows, pattern, axes=([2], [0]))
+        
+        # Compute window norms using sum of squares (faster than einsum)
+        window_norm_sq = np.sum(windows * windows, axis=2)
+        window_norm = np.sqrt(window_norm_sq)
+        window_norm = np.where(window_norm < 1e-8, 1.0, window_norm)
+        
+        # Cosine similarity and distance
+        cosine_sim = dot_product / (window_norm * pat_norm)
+        distances = 1.0 - cosine_sim
         return np.min(distances, axis=1).astype(np.float32)
 
 def _early_stopping_callback(n_trials_without_improvement: int):
@@ -240,7 +263,6 @@ class PatternExtractor:
         # Print verbose configuration information
         if self.verbose:
             print(f"Dataset shape: {n_samples} samples, {n_channels} channels, {n_time} time points")
-            print(f"Channels: {n_channels}")
             print(f"Optuna parameters: n_trials={self.n_trials}, n_trials_without_improvement={self.n_trials_without_improvement}")
             print(f"PATX config: metric={self.metric}, n_control_points={self.n_control_points}, transforms={self.transforms}")
 
@@ -293,10 +315,9 @@ class PatternExtractor:
                 cps = tuple(trial.suggest_float(f"c{i}", -1, 1) for i in range(self.n_control_points))
                 pat = self.pattern_fn(list(cps), w)
                 feat = self.pattern_mapping_fn(transformed[t_name][:, ch, :], pat, start, end)
-                # For objective function, hstack is fast enough for single column addition
                 Xf = np.hstack([self.train_features, feat[:, None]]) if self.train_features.size else feat[:, None]
                 
-                return self.model.evaluate(Xf, y, None, None, self.metric)
+                return self.model.evaluate(Xf, y, self.metric)
             study = optuna.create_study(
                 direction=direction,
                 sampler=optuna.samplers.TPESampler(consider_prior=False, multivariate=True, constant_liar=True)

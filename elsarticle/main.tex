@@ -116,11 +116,9 @@ range and uses the best match (minimum MSE) as the feature value.
 This is analogous to applying a convolutional filter across positions followed
 by global pooling, yielding translation invariance.
 
-We evaluate patX using a two-tiered validation strategy: first, on the standard
-UEA Multivariate Time Series Classification Archive to demonstrate technical
-robustness and generalization against state-of-the-art baselines; and second,
-on seven diverse high-stakes biomedical tasks including glucose forecasting,
-arrhythmia classification, and spatial gene expression prediction.
+We evaluate patX on seven diverse high-stakes biomedical tasks including
+glucose forecasting, arrhythmia classification, and spatial gene expression
+prediction.
 We show that patX achieves competitive predictive performance while using orders
 of magnitude fewer features than automated State-of-the-art baselines, offering a unique trade-off
 between accuracy, computational efficiency, and interpretability.
@@ -140,7 +138,7 @@ simple interface for extracting interpretable patterns from time series and spat
 
 %%Graphical abstract
 \begin{graphicalabstract}
-\includegraphics[width=\textwidth,keepaspectratio]{images/flowchart/flowchart.pdf}
+\includegraphics[width=\textwidth,keepaspectratio]{images/flowchart/flowchart.png}
 \end{graphicalabstract}
 
 %%Research highlights
@@ -207,14 +205,8 @@ patX then supports translation-invariant matching by evaluating a pattern in
 a sliding window over an allowed search interval and using the best match, implemented efficiently via min-MSE pooling.
 This provides robustness to temporal or spatial misalignment while retaining an explicit, human-readable pattern representation.
 
-We validate patX through a comprehensive two-tiered evaluation.
-First, to establish technical validity and generalization, we benchmark on the
-standard UEA Multivariate Time Series Classification Archive \cite{bagnall2018uea},
-comparing against state-of-the-art random convolutional transforms (MiniRocket \cite{dempster2021minirocket}).
-This demonstrates patX's ability to serve as a general-purpose sequential
-pattern discovery engine across diverse signal types without domain-specific tuning.
-Second, to demonstrate domain utility and interpretability, we perform deep-dive
-evaluations on seven diverse real-world biomedical tasks:
+We validate patX through comprehensive evaluations on seven diverse real-world
+biomedical tasks:
 arrhythmia classification on MIT-BIH \cite{MoodyMark1992,Goldberger2000},
 emotion classification from EEG (Emotions), gene expression prediction from
 histone modification profiles (REMC) \cite{Roadmap2015}, ARDS prediction from
@@ -277,12 +269,6 @@ Compact, human-readable patterns with localization of best match and joint
 optimization over transforms and pattern parameters. Search cost depends on
 optimization budget; restricted by chosen transform and pattern families. \\
 \addlinespace
-CMDA \cite{ghalati2023cmda} &
-Workflow + hand-crafted features &
-Convenient end-to-end workflow for importing, preprocessing, and feature
-extraction for monitoring data. Primarily library-driven descriptors;
-interpretability depends on selected features. \\
-\addlinespace
 tsfresh \cite{christ2018tsfresh} &
 Large library of hand-crafted features &
 Broad coverage of statistical/spectral descriptors; strong baseline for many
@@ -316,8 +302,6 @@ hand-crafted descriptors and train a conventional learner on the resulting featu
 This strategy underlies widely used libraries such as tsfresh and catch22
 \cite{christ2018tsfresh, lubba2019catch22}, as well as broader feature sets such
 as hctsa and TSFEL \cite{fulcher2017hctsa, barandas2020tsfel}.
-For monitoring data, CMDA provides a modular workflow spanning importing,
-preprocessing, and feature extraction \cite{ghalati2023cmda}.
 These packages are attractive baselines in biomedical pipelines due to their
 generality and ease of use, but they can trade interpretability for breadth,
 and high-dimensional feature sets often require feature selection and careful validation \cite{henderson2021empirical}.
@@ -382,7 +366,7 @@ An overview of the patX methodology is shown in Figure~\ref{fig:patx_methodology
 
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.65\textwidth,keepaspectratio]{images/flowchart/flowchart.pdf}
+  \includegraphics[width=0.65\textwidth,keepaspectratio]{images/flowchart/flowchart.png}
   \caption{patX methodology overview: The process begins with time series or
   spatial data, then applies multiple signal transformations to create parallel
   views of the data.
@@ -552,15 +536,6 @@ Following established protocols, we perform separate evaluations by gender
 and vowel to account for physiological differences in fundamental
 frequency and vocal tract characteristics between men and women \cite{martinez2012voice, huckvale2021automated}.
 Link: \url{https://zenodo.org/records/16874898}.
-
-\textbf{UEA Multivariate Time Series Classification Archive.}
-To assess generalizability beyond biomedical domains, we evaluate on the standard
-UEA benchmark suite \cite{bagnall2018uea}, comprising 30 diverse multivariate
-datasets spanning human activity recognition, audio classification, and motion control.
-We follow the standard train/test splits and report accuracy.
-This benchmark serves as a rigorous stress-test of the method's ability to handle
-varying signal lengths, channel counts, and pattern types without task-specific training.
-Link: \url{http://www.timeseriesclassification.com}.
 
 \subsection{Baselines}
 We compare patX against a comprehensive suite of time series analysis methods,
@@ -736,6 +711,45 @@ classes while remaining directly relatable to the original signal domain.
   The visualization demonstrates how patX automatically selects discriminative
   transformations and discovers interpretable patterns aligned with domain knowledge.}
   \label{fig:domain_pattern_interpretation}
+\end{figure}
+
+\subsection{Clinical Decision Making with patX: REMC Gene Expression}
+
+To demonstrate patX's utility for clinical decision support, we focus on the
+REMC gene expression task, where each sample corresponds to a gene and the
+label indicates high vs.\ low expression.
+We train a LightGBM classifier on patX pattern features and use SHAP values to
+stay close to the model's decision logic while keeping the output interpretable
+for clinicians.
+Figure~\ref{fig:remc_shap_patterns} combines two complementary views in a
+single figure.
+Panel A is a patient-level SHAP decision plot for one representative gene,
+showing how the most influential patterns move the prediction from baseline
+to final log-odds.
+Panels B--F show the top five contributing patterns for that gene, each with a
+pattern-matching visualization and the RMSE distribution across high vs.\ low
+expression genes.
+This presentation links model evidence to both the learned pattern and its
+class-separating behavior.
+
+This explanation format offers several advantages for clinical deployment.
+First, the SHAP plot provides a transparent, additive explanation for a
+specific prediction.
+Second, the pattern and RMSE panels show whether the same evidence generalizes
+across the cohort, enabling clinicians to assess robustness.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth,keepaspectratio]
+  {images/remc_shap_patterns.png}
+  \caption{Clinician-facing SHAP and pattern evidence for the REMC task.
+  A LightGBM model trained on patX pattern features predicts gene expression
+  (high vs.\ low).
+  Panel A shows a SHAP decision plot for one representative gene.
+  Panels B--F show the top five contributing patterns for that gene with a
+  pattern-matching view and the RMSE distribution across high vs.\ low
+  expression genes.}
+  \label{fig:remc_shap_patterns}
 \end{figure}
 
 \subsection{Pattern Stability and Reproducibility}
