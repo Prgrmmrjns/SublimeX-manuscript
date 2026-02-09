@@ -1,19 +1,38 @@
+\label{tab:ablation}
 \tiny
-\renewcommand{\arraystretch}{0.75}
-\begin{tabular*}{\textwidth}{@{\extracolsep{0.5pt}}l|c|c|c|c|c|c|c@{}}
+\setlength{\tabcolsep}{0.5pt}
+\renewcommand{\arraystretch}{0.85}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llcccccccc@{}}
 \toprule
-\textbf{Dataset} & \textbf{Baseline} & \textbf{Trials=100} & \textbf{No Transforms} & \textbf{CP=1} & \textbf{Linear Model} & \textbf{No Sliding} & \textbf{Polynomial} \\
+ &  & \textbf{Baseline} & \textbf{Optimize} & \textbf{Pattern} & \textbf{Decision} & \textbf{1000} & \textbf{Raw} & \textbf{NSGA-II} & \textbf{Parallel} \\
+ &  & \textbf{} & \textbf{Aggregates} & \textbf{Search} & \textbf{Tree} & \textbf{Trials} & \textbf{Only} & \textbf{} & \textbf{} \\
 \midrule
-MITBIH & \makecell{0.947 $\pm$ 0.004 \\\\ Feat: 14.8 $\pm$ 2.2} & \makecell{0.944 $\pm$ 0.004 \\\\ Feat: 16.4 $\pm$ 3.0} & \makecell{0.907 $\pm$ 0.006 \\\\ Feat: 12.4 $\pm$ 3.0} & \makecell{0.948 $\pm$ 0.004 \\\\ Feat: 16.4 $\pm$ 1.8} & \makecell{0.828 $\pm$ 0.045 \\\\ Feat: 16.0 $\pm$ 3.5} & \makecell{0.946 $\pm$ 0.002 \\\\ Feat: 15.6 $\pm$ 3.2} & \makecell{\textbf{0.951 $\pm$ 0.003} \\\\ Feat: 18.0 $\pm$ 2.4} \\
+\multirow{3}{*}{\textbf{AZT1D}} & RMSE (↓) & 31.11 & 30.88 & 31.21 & 31.60 & 30.94 & 31.25 & \textbf{30.81} & 31.01 \\
+ & \# Feat. & 16 & 18 & 17 & 16 & 17 & 12 & 21 & 16 \\
+ & Time (s) & 456 & 1110 & 1058 & 177 & 3179 & 601 & 768 & 44 \\
 \midrule
-SVD & \makecell{0.597 $\pm$ 0.026 \\\\ Feat: 3.0 $\pm$ 1.2} & \makecell{0.578 $\pm$ 0.033 \\\\ Feat: 3.4 $\pm$ 1.9} & \makecell{0.574 $\pm$ 0.030 \\\\ Feat: 4.0 $\pm$ 1.0} & \makecell{0.574 $\pm$ 0.021 \\\\ Feat: 4.0 $\pm$ 0.7} & \makecell{0.581 $\pm$ 0.041 \\\\ Feat: 3.0 $\pm$ 0.7} & \makecell{\textbf{0.603 $\pm$ 0.023} \\\\ Feat: 3.2 $\pm$ 1.6} & \makecell{0.589 $\pm$ 0.029 \\\\ Feat: 3.8 $\pm$ 1.3} \\
+\multirow{3}{*}{\textbf{MITBIH}} & Acc (↑) & \textbf{0.989} & 0.987 & 0.988 & 0.962 & 0.988 & 0.983 & \textbf{0.989} & 0.986 \\
+ & \# Feat. & 20 & 15 & 20 & 26 & 16 & 15 & 20 & 20 \\
+ & Time (s) & 1075 & 772 & 1290 & 262 & 2746 & 781 & 1091 & 75 \\
 \midrule
-Emotions & \makecell{0.986 $\pm$ 0.005 \\\\ Feat: 7.4 $\pm$ 1.3} & \makecell{0.980 $\pm$ 0.004 \\\\ Feat: 7.6 $\pm$ 2.7} & \makecell{0.921 $\pm$ 0.017 \\\\ Feat: 6.8 $\pm$ 1.9} & \makecell{0.983 $\pm$ 0.005 \\\\ Feat: 8.8 $\pm$ 0.8} & \makecell{0.752 $\pm$ 0.035 \\\\ Feat: 7.8 $\pm$ 1.3} & \makecell{0.985 $\pm$ 0.005 \\\\ Feat: 8.8 $\pm$ 2.2} & \makecell{\textbf{0.987 $\pm$ 0.004} \\\\ Feat: 10.0 $\pm$ 2.3} \\
+\multirow{3}{*}{\textbf{Emotions}} & Acc (↑) & \textbf{0.948} & 0.939 & 0.939 & 0.920 & 0.927 & 0.932 & 0.939 & 0.944 \\
+ & \# Feat. & 11 & 5 & 7 & 7 & 6 & 9 & 6 & 11 \\
+ & Time (s) & 40 & 19 & 156 & 10 & 77 & 31 & 17 & 9 \\
 \midrule
-MIMIC-IV & \makecell{\textbf{0.767 $\pm$ 0.010} \\\\ Feat: 6.2 $\pm$ 2.6} & \makecell{0.767 $\pm$ 0.013 \\\\ Feat: 6.6 $\pm$ 2.2} & \makecell{0.763 $\pm$ 0.008 \\\\ Feat: 3.2 $\pm$ 1.1} & \makecell{0.762 $\pm$ 0.016 \\\\ Feat: 5.8 $\pm$ 0.4} & \makecell{0.743 $\pm$ 0.001 \\\\ Feat: 4.2 $\pm$ 1.9} & \makecell{0.756 $\pm$ 0.013 \\\\ Feat: 2.8 $\pm$ 2.5} & \makecell{0.759 $\pm$ 0.014 \\\\ Feat: 3.6 $\pm$ 2.5} \\
+\multirow{3}{*}{\textbf{REMC}} & AUC (↑) & 0.928 & 0.924 & 0.926 & 0.910 & 0.928 & 0.927 & \textbf{0.930} & 0.926 \\
+ & \# Feat. & 12 & 18 & 19 & 13 & 14 & 11 & 22 & 12 \\
+ & Time (s) & 57 & 90 & 137 & 34 & 242 & 51 & 100 & 11 \\
 \midrule
-PAMAP2 & \makecell{0.996 $\pm$ 0.001 \\\\ Feat: 9.0 $\pm$ 1.0} & \makecell{0.991 $\pm$ 0.001 \\\\ Feat: 7.4 $\pm$ 1.7} & \makecell{0.997 $\pm$ 0.000 \\\\ Feat: 7.2 $\pm$ 0.8} & \makecell{0.997 $\pm$ 0.001 \\\\ Feat: 7.4 $\pm$ 0.5} & \makecell{0.996 $\pm$ 0.001 \\\\ Feat: 7.0 $\pm$ 1.0} & \makecell{0.996 $\pm$ 0.001 \\\\ Feat: 7.4 $\pm$ 0.9} & \makecell{\textbf{0.997 $\pm$ 0.001} \\\\ Feat: 7.4 $\pm$ 1.5} \\
+\multirow{3}{*}{\textbf{MIMIC-IV}} & AUC (↑) & 0.847 & 0.847 & 0.852 & 0.771 & 0.848 & \textbf{0.859} & 0.849 & 0.847 \\
+ & \# Feat. & 5 & 5 & 6 & 10 & 3 & 6 & 5 & 5 \\
+ & Time (s) & 19 & 19 & 24 & 19 & 45 & 21 & 16 & 5 \\
 \midrule
-REMC & \makecell{0.928 $\pm$ 0.003 \\\\ Feat: 13.2 $\pm$ 2.2} & \makecell{0.927 $\pm$ 0.005 \\\\ Feat: 14.6 $\pm$ 5.8} & \makecell{\textbf{0.930 $\pm$ 0.003} \\\\ Feat: 15.8 $\pm$ 3.8} & \makecell{0.929 $\pm$ 0.005 \\\\ Feat: 13.2 $\pm$ 4.6} & --- & --- & --- \\
+\multirow{3}{*}{\textbf{PAMAP2}} & Acc (↑) & 0.728 & 0.682 & \textbf{0.761} & 0.702 & 0.676 & 0.667 & 0.712 & 0.719 \\
+ & \# Feat. & 18 & 15 & 19 & 12 & 18 & 19 & 13 & 18 \\
+ & Time (s) & 682 & 562 & 2380 & 53 & 3341 & 840 & 521 & 77 \\
+\midrule
+\multirow{3}{*}{\textbf{SVD}} & Acc (↑) & 0.693 & 0.656 & \textbf{0.698} & 0.678 & 0.653 & 0.671 & 0.671 & 0.668 \\
+ & \# Feat. & 9 & 3 & 10 & 5 & 5 & 5 & 2 & 9 \\
+ & Time (s) & 26 & 9 & 85 & 7 & 47 & 11 & 4 & 5 \\
 \bottomrule
 \end{tabular*}

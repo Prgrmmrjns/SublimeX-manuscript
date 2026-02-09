@@ -1,0 +1,61 @@
+{
+  "azt1d": {
+    "metric": "rmse",
+    "task": "regression",
+    "target": "target",
+    "ts_prefixes": ["CGM", "Insulin", "Carbs"],
+    "input_data": "CGM, Insulin, Carbs",
+    "target_feature": "Glucose change at 60~min"
+  },
+  "emotions": {
+    "metric": "accuracy",
+    "task": "classification",
+    "target": "target",
+    "ts_prefixes": ["a", "b"],
+    "n_channels": 5,
+    "input_data": "EEG channels",
+    "target_feature": "Emotion"
+  },
+  "mimic": {
+    "metric": "auc",
+    "task": "classification",
+    "target": "mortality_flag",
+    "ts_prefixes": ["heart_rate", "respiratory_rate", "spo2", "bp_systolic", "bp_diastolic", "bp_mean", "temperature", "fio2", "pao2", "peep", "gcs_eye", "urine_output"],
+    "static_cols": ["anchor_age", "gender", "diabetes", "hypertension", "anemia", "immunosupression", "renal_failure", "obesity", "heart_failure", "liver_disease", "cancer", "BMI", "OMED", "NMED", "NSURG", "TSURG", "CMED", "VSURG", "PSURG", "GU", "GYN", "TRAUM", "Sepsis3", "ARDS", "sirs_flag", "creatinine_mean", "platelets_mean", "wbc_mean", "inr_mean", "lactate_mean", "bilirubin_mean", "paco2_mean", "ph_arterial_mean", "gcs_verbal_mean", "gcs_motor_mean", "norepinephrine_mean", "epinephrine_mean", "dobutamine_mean"],
+    "input_data": "ICU time series",
+    "target_feature": "Mortality"
+  },
+  "mitbih": {
+    "metric": "accuracy",
+    "task": "classification",
+    "target": "target",
+    "single_channel": true,
+    "input_data": "ECG beats",
+    "target_feature": "Arrhythmia"
+  },
+  "pamap2": {
+    "metric": "accuracy",
+    "task": "classification",
+    "target": "activity_id",
+    "subject_col": "subject_id",
+    "ts_prefixes": ["hand_acc_x", "hand_acc_y", "hand_acc_z", "hand_gyro_x", "hand_gyro_y", "hand_gyro_z", "hand_mag_x", "hand_mag_y", "hand_mag_z", "chest_acc_x", "chest_acc_y", "chest_acc_z", "chest_gyro_x", "chest_gyro_y", "chest_gyro_z", "chest_mag_x", "chest_mag_y", "chest_mag_z", "ankle_acc_x", "ankle_acc_y", "ankle_acc_z", "ankle_gyro_x", "ankle_gyro_y", "ankle_gyro_z", "ankle_mag_x", "ankle_mag_y", "ankle_mag_z"],
+    "input_data": "IMU sensors",
+    "target_feature": "Activity"
+  },
+  "remc": {
+    "metric": "auc",
+    "task": "classification",
+    "target": "target",
+    "ts_prefixes": ["H3K4me3", "H3K4me1", "H3K36me3", "H3K9me3", "H3K27me3"],
+    "input_data": "Histone marks",
+    "target_feature": "Gene expression"
+  },
+  "svd": {
+    "metric": "accuracy",
+    "task": "classification",
+    "target": "target",
+    "ts_prefixes": ["phrase"],
+    "input_data": "Phrase audio",
+    "target_feature": "Voice pathology"
+  }
+}

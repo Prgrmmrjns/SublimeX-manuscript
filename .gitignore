@@ -1,16 +1,66 @@
 /.DS_Store
+.DS_Store
 __pycache__
-datasets
-processed_datasets/pamap2
-processed_datasets/remc
-processed_datasets/azt1d
-Multivariate_arff
+.vscode
+.cursor
+
+# LaTeX build artifacts
 manuscript/main.out
 manuscript/main.aux
 manuscript/main.fls
 manuscript/main.log
 manuscript/main.fdb_latexmk
 manuscript/main.synctex.gz
-.vscode
-.cursor
-patx
+elsarticle/main.out
+elsarticle/main.aux
+elsarticle/main.fls
+elsarticle/main.log
+elsarticle/main.fdb_latexmk
+elsarticle/main.synctex.gz
+elsarticle/main.bbl
+elsarticle/main.blg
+
+# Pre-generated graphical abstract images
+elsarticle/images/graphical_abstract
+
+# ============================================================================
+# Large files (>100MB) - must be downloaded separately
+# See README.md for download instructions
+# ============================================================================
+
+# PAMAP2 raw data (~1.5GB total) and processed parquets (364MB + 1.1GB)
+datasets/pamap2/Protocol/*.dat
+datasets/pamap2/pamap2.parquet
+datasets/pamap2/pamap2_processed.parquet
+
+# MIMIC-IV extracted data (~571MB)
+datasets/mimic/final_df.csv
+
+# SVD raw audio files (~3GB) and external venv
+datasets/SVD/raw/
+
+# ============================================================================
+# Other data files that can be regenerated from preprocessing scripts
+# ============================================================================
+
+# Processed data files (regenerate with preprocessing scripts)
+datasets/*/*.parquet
+datasets/*/*.csv
+!datasets/*/preprocess*.py
+!datasets/*/generate*.py
+!datasets/*/*.py
+
+# MITBIH raw data files
+datasets/mitbih/*.txt
+datasets/mitbih/*.csv
+
+# AZT1D raw CGM records
+datasets/azt1d/CGM Records/
+
+# REMC parquet files (many cell lines)
+datasets/remc/*.parquet
+
+# Domain interpretation figure cache (regenerate with domain_interpretation.py)
+results/domain_interpretation_figure_data.pkl
+
+cover_letter

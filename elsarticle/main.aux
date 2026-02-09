@@ -2,133 +2,217 @@
 \providecommand\hyper@newdestlabel[2]{}
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
-\emailauthor{jwolber@ukaachen.de}{J.C. Wolber}
-\emailauthor{npaul@uni-goettingen.de}{N.B. Paul}
-\emailauthor{jsellin@ukaachen.de}{J. Sellin}
-\emailauthor{aschuppert@ukaachen.de}{A. Schuppert}
+\urlauthor{jwolber@ukaachen.de}{J.C. Wolber}
+\Newlabel{cor1}{1}
 \Newlabel{1}{a}
 \Newlabel{2}{b}
 \Newlabel{3}{c}
-\Newlabel{1}{d}
-\citation{morid2023time,rood2022impact,patharkar2024predictive}
+\Newlabel{4}{d}
+\citation{morid2023time,patharkar2024predictive}
 \citation{tonekaboni2019clinicians,rudin2019stop}
 \citation{fulcher2018feature,miotto2018deep}
-\citation{christ2018tsfresh,lubba2019catch22,henderson2021empirical}
-\citation{miotto2018deep,wang2022systematic,ennab2024enhancing}
+\citation{dempster2020rocket}
+\citation{dempster2021minirocket}
+\citation{christ2018tsfresh}
+\citation{henderson2021empirical}
+\citation{miotto2018deep,wang2022systematic}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
-\citation{ye2009shapelets,lines2012shapelet,hills2014shapelet,grabocka2014learning}
-\citation{syed2010motif,mueen2014motif,balasubramanian2016motifs}
+\citation{ye2009shapelets,hills2014shapelet,grabocka2014learning}
+\citation{middlehurst2024bakeoff}
 \citation{MoodyMark1992,Goldberger2000}
+\citation{bird2018study}
 \citation{Roadmap2015}
 \citation{Johnson2023MIMICIV}
+\citation{khamesian2025azt1d}
 \citation{Reiss2012PAMAP2}
-\citation{woldaregay2019data}
-\citation{fulcher2018feature,miotto2018deep}
+\citation{svd_database}
+\citation{woldaregay2019data,fulcher2018feature}
+\citation{miotto2018deep}
 \citation{christ2018tsfresh}
 \citation{lubba2019catch22}
-\citation{guillaume2022random}
-\citation{dempster2020rocket,dempster2021minirocket}
-\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{4}{section.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Manual feature engineering in biomedical studies}{4}{subsection.2.1}\protected@file@percent }
-\citation{christ2018tsfresh,lubba2019catch22}
 \citation{fulcher2017hctsa,barandas2020tsfel}
-\citation{henderson2021empirical}
 \citation{dempster2020rocket,dempster2021minirocket}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Feature engineering packages and pipelines}{5}{subsection.2.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces High-level comparison of time series feature engineering toolkits and transforms commonly used in biomedical pipelines.}}{5}{table.caption.1}\protected@file@percent }
-\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{tab:feature_toolkits}{{1}{5}{High-level comparison of time series feature engineering toolkits and transforms commonly used in biomedical pipelines}{table.caption.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Automated feature extraction and fast transforms}{5}{subsection.2.3}\protected@file@percent }
-\citation{ye2009shapelets,lines2012shapelet,hills2014shapelet}
+\citation{ye2009shapelets,hills2014shapelet}
+\citation{hills2014shapelet}
 \citation{rakthanmanon2013fast_shapelets}
 \citation{grabocka2014learning,hou2016efficient_shapelets}
-\citation{fang2018interpretable_shapelets}
-\citation{hills2014shapelet}
 \citation{guillaume2022random}
-\citation{chen2023localized_shapelets}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Shapelets and shapelet selection for feature engineering}{6}{subsection.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Methods}{7}{section.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview}{7}{subsection.3.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces patX methodology overview: The process begins with time series or spatial data, then applies multiple signal transformations to create parallel views of the data. Iterative pattern discovery then: (1) proposes candidate pattern parameters (channel, transform, control points, position range, width), (2) generates a spline pattern, (3) computes min-window MSE dissimilarity features between pattern and transformed signal segments, and (4) evaluates model performance via cross-validation. The best pattern is appended to the feature set and the procedure repeats until adding a new pattern no longer improves performance.}}{8}{figure.caption.2}\protected@file@percent }
-\newlabel{fig:patx_methodology}{{1}{8}{patX methodology overview: The process begins with time series or spatial data, then applies multiple signal transformations to create parallel views of the data. Iterative pattern discovery then: (1) proposes candidate pattern parameters (channel, transform, control points, position range, width), (2) generates a spline pattern, (3) computes min-window MSE dissimilarity features between pattern and transformed signal segments, and (4) evaluates model performance via cross-validation. The best pattern is appended to the feature set and the procedure repeats until adding a new pattern no longer improves performance}{figure.caption.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Signal Transformation}{8}{subsection.3.2}\protected@file@percent }
-\citation{balestriero2018spline}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Pattern Characteristics Optimization}{9}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{5}{section.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Manual and automated feature engineering}{5}{subsection.2.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Shapelet-based methods}{5}{subsection.2.2}\protected@file@percent }
+\citation{miotto2018deep,morid2023time}
+\citation{acharya2017ecg_deep,hannun2019cardiologist}
+\citation{ordonez2016deep_activity,hammerla2016deep_activity}
+\citation{rudin2019stop,tonekaboni2019clinicians,wang2022systematic}
+\citation{middlehurst2024bakeoff}
+\citation{deng2013tsf}
+\citation{middlehurst2020cif}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Deep learning approaches}{6}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Comparison of time series classification approaches}{6}{subsection.2.4}\protected@file@percent }
+\citation{middlehurst2024bakeoff}
+\citation{middlehurst2024bakeoff}
+\citation{deng2013tsf}
+\citation{middlehurst2020cif}
+\citation{middlehurst2021hivecote2}
+\citation{dempster2024quant}
+\citation{christ2018tsfresh}
+\citation{lubba2019catch22}
+\citation{dempster2020rocket}
+\citation{dempster2021minirocket}
+\citation{guillaume2022random}
+\citation{hills2014shapelet}
+\citation{schafer2023weasel2}
+\citation{middlehurst2021hivecote2}
+\citation{fawaz2020inceptiontime}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison of time series classification methods. Feature counts are approximate and task-dependent. Taxonomy follows Middlehurst et al.\ \cite  {middlehurst2024bakeoff}. Interpretability is assessed on a three-level scale (High / Medium / Low) reflecting how readily extracted features can be understood by domain experts; this assessment is partially subjective. Methods marked with * are used as baselines in our experiments.}}{7}{table.caption.1}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{tab:feature_toolkits}{{1}{7}{Comparison of time series classification methods. Feature counts are approximate and task-dependent. Taxonomy follows Middlehurst et al.\ \cite {middlehurst2024bakeoff}. Interpretability is assessed on a three-level scale (High / Medium / Low) reflecting how readily extracted features can be understood by domain experts; this assessment is partially subjective. Methods marked with * are used as baselines in our experiments}{table.caption.1}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {3}Methods}{8}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview}{8}{subsection.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces SublimeX methodology overview: The process begins with time series or spatial data, then applies multiple signal transformations to create parallel views of the data. Iterative feature discovery then: (1) proposes candidate feature parameters (channel, transform, segment boundaries), (2) extracts the segment from the transformed signal, (3) computes the mean over the segment, and (4) evaluates model performance via cross-validation. The best feature is appended to the feature set and the procedure repeats until adding a new feature no longer improves performance.}}{8}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:sublime_methodology}{{1}{8}{SublimeX methodology overview: The process begins with time series or spatial data, then applies multiple signal transformations to create parallel views of the data. Iterative feature discovery then: (1) proposes candidate feature parameters (channel, transform, segment boundaries), (2) extracts the segment from the transformed signal, (3) computes the mean over the segment, and (4) evaluates model performance via cross-validation. The best feature is appended to the feature set and the procedure repeats until adding a new feature no longer improves performance}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Signal Transformation}{9}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Segment-Based Feature Optimization}{9}{subsection.3.3}\protected@file@percent }
+\citation{bergstra2011tpe}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Implementation Details}{10}{subsection.3.4}\protected@file@percent }
-\citation{Johnson2023MIMICIV}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Datasets}{11}{subsection.3.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Dataset Characteristics and Evaluation Metrics}}{11}{table.caption.3}\protected@file@percent }
-\newlabel{tab:datasets}{{2}{11}{Dataset Characteristics and Evaluation Metrics}{table.caption.3}{}}
-\citation{Reiss2012PAMAP2}
-\citation{lee2021experimental}
-\citation{martinez2012voice,huckvale2021automated}
 \citation{christ2018tsfresh}
 \citation{lubba2019catch22}
 \citation{dempster2021minirocket}
 \citation{guillaume2022random}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Baselines}{12}{subsection.3.6}\protected@file@percent }
+\citation{ke2017lightgbm}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Datasets}{11}{subsection.3.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Dataset Characteristics and Evaluation Metrics}}{11}{table.caption.3}\protected@file@percent }
+\newlabel{tab:datasets}{{2}{11}{Dataset Characteristics and Evaluation Metrics}{table.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Baselines}{11}{subsection.3.6}\protected@file@percent }
+\newlabel{sec:baselines}{{3.6}{11}{Baselines}{subsection.3.6}{}}
+\citation{tello2025contrasting}
+\citation{tello2025contrasting,geissler2024power}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Evaluation}{12}{subsection.3.7}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {4}Results}{13}{section.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Performance Comparison}{13}{subsection.4.1}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Performance comparison across biomedical datasets. Results show mean $\pm $ standard deviation across subjects/folds. Best performance per dataset highlighted in bold.}}{13}{table.caption.4}\protected@file@percent }
 \newlabel{tab:results}{{3}{13}{Performance comparison across biomedical datasets. Results show mean $\pm $ standard deviation across subjects/folds. Best performance per dataset highlighted in bold}{table.caption.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Ablation Study}{14}{subsection.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Ablation study across six datasets. Bold indicates best score per dataset. Arrows indicate optimization direction ($\uparrow $ higher better, $\downarrow $ lower better).}}{15}{table.caption.5}\protected@file@percent }
-\newlabel{tab:ablation}{{4}{15}{Ablation study across six datasets. Bold indicates best score per dataset. Arrows indicate optimization direction ($\uparrow $ higher better, $\downarrow $ lower better)}{table.caption.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Domain-Specific Pattern Interpretation}{16}{subsection.4.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Domain-specific pattern interpretation comparing REMC (left column) and MITBIH (right column) datasets. Each column illustrates the pattern extraction mechanism through three panels: (A) Biological Context showing average class profiles with the pattern search region highlighted (gray background), (B) Pattern Matching Mechanism in the transformed signal space with the learned B-spline pattern (green) overlaid at optimal positions and error regions (hatched) visualized, and (C) Feature Discrimination via RMSE distributions demonstrating class separation. REMC: H3K4me3 histone mark pattern (raw transform, width 98 bins) for gene expression prediction in cell line E003. MITBIH: ECG beat pattern (z-score transform, width 47 samples) for arrhythmia classification. The visualization demonstrates how patX automatically selects discriminative transformations and discovers interpretable patterns aligned with domain knowledge.}}{18}{figure.caption.6}\protected@file@percent }
-\newlabel{fig:domain_pattern_interpretation}{{2}{18}{Domain-specific pattern interpretation comparing REMC (left column) and MITBIH (right column) datasets. Each column illustrates the pattern extraction mechanism through three panels: (A) Biological Context showing average class profiles with the pattern search region highlighted (gray background), (B) Pattern Matching Mechanism in the transformed signal space with the learned B-spline pattern (green) overlaid at optimal positions and error regions (hatched) visualized, and (C) Feature Discrimination via RMSE distributions demonstrating class separation. REMC: H3K4me3 histone mark pattern (raw transform, width 98 bins) for gene expression prediction in cell line E003. MITBIH: ECG beat pattern (z-score transform, width 47 samples) for arrhythmia classification. The visualization demonstrates how patX automatically selects discriminative transformations and discovers interpretable patterns aligned with domain knowledge}{figure.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Clinical Decision Making with patX: ARDS Prediction in MIMIC-IV}{18}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Transform Composition and Pattern Stability}{14}{subsection.4.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Transform composition and pattern stability. (A)~Proportion of \emph  {all} extracted features using each signal transformation per dataset. (B)~Segment position of the \emph  {first} (highest-ranked) extracted feature across cross-validation folds. Horizontal bars show the mean segment position; error bars indicate positional variability across folds. Labels show T (transform consistency) and C (channel consistency for multivariate datasets) as the fraction of folds selecting the same transform/channel for that first feature.}}{14}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:performance_analysis}{{2}{14}{Transform composition and pattern stability. (A)~Proportion of \emph {all} extracted features using each signal transformation per dataset. (B)~Segment position of the \emph {first} (highest-ranked) extracted feature across cross-validation folds. Horizontal bars show the mean segment position; error bars indicate positional variability across folds. Labels show T (transform consistency) and C (channel consistency for multivariate datasets) as the fraction of folds selecting the same transform/channel for that first feature}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Incremental Feature Analysis}{15}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:feature_analysis}{{4.3}{15}{Incremental Feature Analysis}{subsection.4.3}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Incremental feature analysis showing train, validation, and test performance as features are added. The model is trained on the optimization-train subset (the same data used during feature search) and evaluated on all three splits. Solid lines show mean performance across folds; shaded areas indicate $\pm $1 standard deviation. Note that across folds different amounts of features are extracted and thus standard deviation may not be available for all incremental evaluations.}}{16}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:incremental_features}{{3}{16}{Incremental feature analysis showing train, validation, and test performance as features are added. The model is trained on the optimization-train subset (the same data used during feature search) and evaluated on all three splits. Solid lines show mean performance across folds; shaded areas indicate $\pm $1 standard deviation. Note that across folds different amounts of features are extracted and thus standard deviation may not be available for all incremental evaluations}{figure.caption.6}{}}
+\citation{guillaume2022random}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Ablation Study}{17}{subsection.4.4}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Ablation study across seven datasets (single fold; Baseline scores may differ slightly from the multi-fold averages in Table~\ref {tab:results}). Bold indicates best score per dataset. Arrows indicate optimization direction ($\uparrow $ higher better, $\downarrow $ lower better). Rows show metric, number of extracted features, and runtime (s).}}{18}{table.caption.7}\protected@file@percent }
+\newlabel{tab:ablation}{{4}{18}{Ablation study across seven datasets (single fold; Baseline scores may differ slightly from the multi-fold averages in Table~\ref {tab:results}). Bold indicates best score per dataset. Arrows indicate optimization direction ($\uparrow $ higher better, $\downarrow $ lower better). Rows show metric, number of extracted features, and runtime (s)}{table.caption.7}{}}
+\citation{lundberg2017unified}
+\citation{karlic2010histone,howe2017h3k4me3}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Domain-Specific Feature Interpretation}{20}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}REMC: Gene Expression Prediction from Histone Modifications}{20}{subsubsection.4.5.1}\protected@file@percent }
+\citation{karlic2010histone,howe2017h3k4me3}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}AZT1D: Glucose Forecasting from Continuous Monitoring Data}{21}{subsubsection.4.5.2}\protected@file@percent }
+\citation{khamesian2025azt1d}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Domain interpretation via SHAP analysis for two biomedical tasks. \textbf  {Top row}: REMC gene expression prediction (cell line E003, fold~1). \textbf  {(A)}~Mean H3K4me3 signal within the SublimeX-extracted segment (bins~65--96, near the TSS) for highly expressed (red) and lowly expressed (blue) genes. \textbf  {(B)}~Class-conditional density of the extracted H3K4me3 feature values. \textbf  {(C)}~SHAP beeswarm plot for all 12~features. \textbf  {Bottom row}: AZT1D glucose forecasting (fold~1). \textbf  {(D)}~Mean CGM signal within the top feature segment ($-$40 to 0~min) for samples with rising (red) vs.\ falling (blue) glucose 60~minutes ahead. \textbf  {(E)}~Distribution of the top CGM feature for rising vs.\ falling glucose groups. \textbf  {(F)}~SHAP beeswarm plot for all 16~features. In all beeswarm plots, each dot is one test sample; color indicates the feature value (red~=~high, blue~=~low) and horizontal position shows the SHAP contribution.}}{23}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:domain_interpretation}{{4}{23}{Domain interpretation via SHAP analysis for two biomedical tasks. \textbf {Top row}: REMC gene expression prediction (cell line E003, fold~1). \textbf {(A)}~Mean H3K4me3 signal within the SublimeX-extracted segment (bins~65--96, near the TSS) for highly expressed (red) and lowly expressed (blue) genes. \textbf {(B)}~Class-conditional density of the extracted H3K4me3 feature values. \textbf {(C)}~SHAP beeswarm plot for all 12~features. \textbf {Bottom row}: AZT1D glucose forecasting (fold~1). \textbf {(D)}~Mean CGM signal within the top feature segment ($-$40 to 0~min) for samples with rising (red) vs.\ falling (blue) glucose 60~minutes ahead. \textbf {(E)}~Distribution of the top CGM feature for rising vs.\ falling glucose groups. \textbf {(F)}~SHAP beeswarm plot for all 16~features. In all beeswarm plots, each dot is one test sample; color indicates the feature value (red~=~high, blue~=~low) and horizontal position shows the SHAP contribution}{figure.caption.8}{}}
+\citation{karlic2010histone,howe2017h3k4me3}
+\citation{khamesian2025azt1d}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{24}{section.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Summary of Main Findings}{24}{subsection.5.1}\protected@file@percent }
+\citation{acharya2017ecg_deep,hannun2019cardiologist}
+\citation{harutyunyan2019multitask,purushotham2018benchmarking}
+\citation{tello2025contrasting}
+\citation{reiss2013confidence}
+\citation{ordonez2016deep_activity}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Comparison to Related Work}{25}{subsection.5.2}\protected@file@percent }
 \citation{tonekaboni2019clinicians,caruana2015intelligible}
-\citation{ye2009shapelets,hills2014shapelet,syed2010motif,mueen2014motif}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Clinician-facing SHAP summary for ARDS prediction using patX patterns from MIMIC-IV. A LightGBM model trained on nine pattern features achieves 82.5\% test accuracy after binarizing labels to ARDS vs.\ no ARDS. The top three patterns by mean absolute SHAP value are shown with their learned shape, feature mismatch distribution (RMSE), and SHAP contribution distribution, enabling direct clinical inspection of the evidence.}}{20}{figure.caption.7}\protected@file@percent }
-\newlabel{fig:mimic_shap_clinical}{{3}{20}{Clinician-facing SHAP summary for ARDS prediction using patX patterns from MIMIC-IV. A LightGBM model trained on nine pattern features achieves 82.5\% test accuracy after binarizing labels to ARDS vs.\ no ARDS. The top three patterns by mean absolute SHAP value are shown with their learned shape, feature mismatch distribution (RMSE), and SHAP contribution distribution, enabling direct clinical inspection of the evidence}{figure.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Pattern Stability and Reproducibility}{20}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{20}{section.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}Why patterns are a useful interface in biomedicine}{20}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Efficiency and deployability}{21}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Limitations and future work}{22}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{22}{section.6}\protected@file@percent }
+\citation{fulcher2018feature}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}Limitations}{26}{subsection.5.3}\protected@file@percent }
+\citation{middlehurst2021hivecote2}
+\citation{fawaz2020inceptiontime}
+\citation{ordonez2016deep_activity}
+\citation{middlehurst2024bakeoff}
+\citation{dau2019ucr}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}Future Directions}{27}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusion}{28}{section.6}\protected@file@percent }
 \bibstyle{unsrt}
 \bibdata{bibliography}
 \bibcite{morid2023time}{{1}{}{{}}{{}}}
-\bibcite{rood2022impact}{{2}{}{{}}{{}}}
-\bibcite{patharkar2024predictive}{{3}{}{{}}{{}}}
-\bibcite{tonekaboni2019clinicians}{{4}{}{{}}{{}}}
-\bibcite{rudin2019stop}{{5}{}{{}}{{}}}
-\bibcite{fulcher2018feature}{{6}{}{{}}{{}}}
-\bibcite{miotto2018deep}{{7}{}{{}}{{}}}
-\bibcite{christ2018tsfresh}{{8}{}{{}}{{}}}
-\bibcite{lubba2019catch22}{{9}{}{{}}{{}}}
+\bibcite{patharkar2024predictive}{{2}{}{{}}{{}}}
+\bibcite{tonekaboni2019clinicians}{{3}{}{{}}{{}}}
+\bibcite{rudin2019stop}{{4}{}{{}}{{}}}
+\bibcite{fulcher2018feature}{{5}{}{{}}{{}}}
+\bibcite{miotto2018deep}{{6}{}{{}}{{}}}
+\bibcite{dempster2020rocket}{{7}{}{{}}{{}}}
+\bibcite{dempster2021minirocket}{{8}{}{{}}{{}}}
+\bibcite{christ2018tsfresh}{{9}{}{{}}{{}}}
 \bibcite{henderson2021empirical}{{10}{}{{}}{{}}}
 \bibcite{wang2022systematic}{{11}{}{{}}{{}}}
-\bibcite{ennab2024enhancing}{{12}{}{{}}{{}}}
-\bibcite{ye2009shapelets}{{13}{}{{}}{{}}}
-\bibcite{lines2012shapelet}{{14}{}{{}}{{}}}
-\bibcite{hills2014shapelet}{{15}{}{{}}{{}}}
-\bibcite{grabocka2014learning}{{16}{}{{}}{{}}}
-\bibcite{syed2010motif}{{17}{}{{}}{{}}}
-\bibcite{mueen2014motif}{{18}{}{{}}{{}}}
-\bibcite{balasubramanian2016motifs}{{19}{}{{}}{{}}}
-\bibcite{MoodyMark1992}{{20}{}{{}}{{}}}
-\bibcite{Goldberger2000}{{21}{}{{}}{{}}}
-\bibcite{Roadmap2015}{{22}{}{{}}{{}}}
-\bibcite{Johnson2023MIMICIV}{{23}{}{{}}{{}}}
-\bibcite{Reiss2012PAMAP2}{{24}{}{{}}{{}}}
-\bibcite{woldaregay2019data}{{25}{}{{}}{{}}}
-\bibcite{guillaume2022random}{{26}{}{{}}{{}}}
-\bibcite{dempster2020rocket}{{27}{}{{}}{{}}}
-\bibcite{dempster2021minirocket}{{28}{}{{}}{{}}}
-\bibcite{fulcher2017hctsa}{{29}{}{{}}{{}}}
-\bibcite{barandas2020tsfel}{{30}{}{{}}{{}}}
-\bibcite{rakthanmanon2013fast_shapelets}{{31}{}{{}}{{}}}
-\bibcite{hou2016efficient_shapelets}{{32}{}{{}}{{}}}
-\bibcite{fang2018interpretable_shapelets}{{33}{}{{}}{{}}}
-\bibcite{chen2023localized_shapelets}{{34}{}{{}}{{}}}
-\bibcite{balestriero2018spline}{{35}{}{{}}{{}}}
-\bibcite{lee2021experimental}{{36}{}{{}}{{}}}
-\bibcite{martinez2012voice}{{37}{}{{}}{{}}}
-\bibcite{huckvale2021automated}{{38}{}{{}}{{}}}
-\bibcite{caruana2015intelligible}{{39}{}{{}}{{}}}
+\bibcite{ye2009shapelets}{{12}{}{{}}{{}}}
+\bibcite{hills2014shapelet}{{13}{}{{}}{{}}}
+\bibcite{grabocka2014learning}{{14}{}{{}}{{}}}
+\bibcite{middlehurst2024bakeoff}{{15}{}{{}}{{}}}
+\bibcite{MoodyMark1992}{{16}{}{{}}{{}}}
+\bibcite{Goldberger2000}{{17}{}{{}}{{}}}
+\bibcite{bird2018study}{{18}{}{{}}{{}}}
+\bibcite{Roadmap2015}{{19}{}{{}}{{}}}
+\bibcite{Johnson2023MIMICIV}{{20}{}{{}}{{}}}
+\bibcite{khamesian2025azt1d}{{21}{}{{}}{{}}}
+\bibcite{Reiss2012PAMAP2}{{22}{}{{}}{{}}}
+\bibcite{svd_database}{{23}{}{{}}{{}}}
+\bibcite{woldaregay2019data}{{24}{}{{}}{{}}}
+\bibcite{lubba2019catch22}{{25}{}{{}}{{}}}
+\bibcite{fulcher2017hctsa}{{26}{}{{}}{{}}}
+\bibcite{barandas2020tsfel}{{27}{}{{}}{{}}}
+\bibcite{rakthanmanon2013fast_shapelets}{{28}{}{{}}{{}}}
+\bibcite{hou2016efficient_shapelets}{{29}{}{{}}{{}}}
+\bibcite{guillaume2022random}{{30}{}{{}}{{}}}
+\bibcite{acharya2017ecg_deep}{{31}{}{{}}{{}}}
+\bibcite{hannun2019cardiologist}{{32}{}{{}}{{}}}
+\bibcite{ordonez2016deep_activity}{{33}{}{{}}{{}}}
+\bibcite{hammerla2016deep_activity}{{34}{}{{}}{{}}}
+\bibcite{deng2013tsf}{{35}{}{{}}{{}}}
+\bibcite{middlehurst2020cif}{{36}{}{{}}{{}}}
+\bibcite{middlehurst2021hivecote2}{{37}{}{{}}{{}}}
+\bibcite{dempster2024quant}{{38}{}{{}}{{}}}
+\bibcite{schafer2023weasel2}{{39}{}{{}}{{}}}
+\bibcite{fawaz2020inceptiontime}{{40}{}{{}}{{}}}
+\bibcite{bergstra2011tpe}{{41}{}{{}}{{}}}
+\bibcite{ke2017lightgbm}{{42}{}{{}}{{}}}
+\bibcite{tello2025contrasting}{{43}{}{{}}{{}}}
+\bibcite{geissler2024power}{{44}{}{{}}{{}}}
+\bibcite{lundberg2017unified}{{45}{}{{}}{{}}}
+\bibcite{karlic2010histone}{{46}{}{{}}{{}}}
+\bibcite{howe2017h3k4me3}{{47}{}{{}}{{}}}
+\bibcite{harutyunyan2019multitask}{{48}{}{{}}{{}}}
+\bibcite{purushotham2018benchmarking}{{49}{}{{}}{{}}}
+\bibcite{reiss2013confidence}{{50}{}{{}}{{}}}
+\bibcite{caruana2015intelligible}{{51}{}{{}}{{}}}
+\bibcite{dau2019ucr}{{52}{}{{}}{{}}}
+\bibcite{paul2025prediction}{{53}{}{{}}{{}}}
+\bibcite{martinez2012voice}{{54}{}{{}}{{}}}
+\citation{christ2018tsfresh}
+\citation{lubba2019catch22}
+\@writefile{toc}{\contentsline {section}{\numberline {7}Supplementary Material}{39}{section.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.1}Baseline Implementations}{39}{subsection.7.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.1}tsfresh}{39}{subsubsection.7.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.2}catch22}{39}{subsubsection.7.1.2}\protected@file@percent }
+\citation{dempster2021minirocket}
+\citation{guillaume2022random}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.3}MiniRocket}{40}{subsubsection.7.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.4}RDST}{40}{subsubsection.7.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.1.5}CNN}{40}{subsubsection.7.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {7.2}Dataset Processing Details}{41}{subsection.7.2}\protected@file@percent }
+\newlabel{sec:dataset_processing}{{7.2}{41}{Dataset Processing Details}{subsection.7.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.1}AZT1D Preprocessing}{41}{subsubsection.7.2.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces AZT1D preprocessing visualization showing insulin and carbohydrate response modeling. Top panel: Real-time CGM with overlapping insulin and carbohydrate effects over time for Subject 1. Blue line shows CGM values with target range (70-180 mg/dL) highlighted in green. The dark green shaded area represents active insulin effect from overlapping doses (circles with crosses). The orange shaded area represents active carbohydrate effect from overlapping intakes (circles with crosses). Bottom panel: Physiological response curves showing normalized insulin (15-min onset, 60-min peak, 240-min duration) and carbohydrate (10-min onset, 45-min peak, 180-min duration) effects over time.}}{42}{figure.caption.14}\protected@file@percent }
+\citation{paul2025prediction}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.2}MITBIH Preprocessing}{43}{subsubsection.7.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.3}Emotions Preprocessing}{43}{subsubsection.7.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.4}REMC Preprocessing}{43}{subsubsection.7.2.4}\protected@file@percent }
+\citation{Johnson2023MIMICIV}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.5}MIMIC-IV Preprocessing}{44}{subsubsection.7.2.5}\protected@file@percent }
+\citation{tello2025contrasting}
+\citation{svd_database}
+\citation{martinez2012voice}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.6}PAMAP2 Preprocessing}{45}{subsubsection.7.2.6}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {7.2.7}SVD Preprocessing}{45}{subsubsection.7.2.7}\protected@file@percent }
 \providecommand\NAT@force@numbers{}\NAT@force@numbers
-\gdef \@abspage@last{29}
+\gdef \@abspage@last{48}

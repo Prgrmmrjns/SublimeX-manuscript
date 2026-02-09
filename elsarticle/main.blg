@@ -3,47 +3,44 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: main.aux
 The style file: unsrt.bst
 Database file #1: bibliography.bib
-Warning--can't use both volume and number fields in hou2016efficient_shapelets
-Warning--empty journal in huckvale2021automated
-You've used 39 entries,
+You've used 54 entries,
             1791 wiz_defined-function locations,
-            697 strings with 12789 characters,
-and the built_in function-call counts, 11875 in all, are:
-= -- 1117
-> -- 527
-< -- 17
-+ -- 190
-- -- 151
-* -- 824
-:= -- 1764
-add.period$ -- 133
-call.type$ -- 39
-change.case$ -- 39
+            779 strings with 16544 characters,
+and the built_in function-call counts, 16152 in all, are:
+= -- 1468
+> -- 819
+< -- 19
++ -- 292
+- -- 238
+* -- 1170
+:= -- 2476
+add.period$ -- 183
+call.type$ -- 54
+change.case$ -- 54
 chr.to.int$ -- 0
-cite$ -- 41
-duplicate$ -- 537
-empty$ -- 1112
-format.name$ -- 151
-if$ -- 2731
+cite$ -- 54
+duplicate$ -- 686
+empty$ -- 1467
+format.name$ -- 238
+if$ -- 3641
 int.to.chr$ -- 0
-int.to.str$ -- 39
-missing$ -- 39
-newline$ -- 200
-num.names$ -- 39
-pop$ -- 118
+int.to.str$ -- 54
+missing$ -- 53
+newline$ -- 280
+num.names$ -- 54
+pop$ -- 143
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 302
+skip$ -- 374
 stack$ -- 0
-substring$ -- 946
-swap$ -- 193
-text.length$ -- 17
+substring$ -- 1254
+swap$ -- 226
+text.length$ -- 19
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 2
-while$ -- 118
-width$ -- 41
-write$ -- 447
-(There were 2 warnings)
+warning$ -- 0
+while$ -- 158
+width$ -- 56
+write$ -- 621

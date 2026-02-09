@@ -1,0 +1,3 @@
+dataset,fold,method,auc,n_features,top_feature_name,top_feature_shap,top_feature_high_expr_mean,top_feature_low_expr_mean,top_feature_separation,rmse,top_feature_high_change_mean,top_feature_low_change_mean
+remc_E003,1,SublimeX_LightGBM_SHAP,0.9280156215112145,12,H3K4me3 raw 65-96,1.4685994514920477,16.902395248413086,3.9654042720794678,12.936991,,,
+azt1d,1,SublimeX_LightGBM_SHAP,,16,CGM raw 16-23,11.774654891433405,,,34.330597,30.94056571065518,129.63882446289062,163.96942138671875
