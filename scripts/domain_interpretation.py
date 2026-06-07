@@ -1,591 +1,308 @@
-"""Domain interpretation: SHAP analysis of SublimeX on REMC E003 and AZT1D.
-
-Uses the baseline SublimeX features (mean objective, LightGBM) from the
-main evaluation.  Trains LightGBM on the extracted features, computes
-SHAP values, and produces a six-panel figure:
-  Row 1 (REMC E003, fold 1):
-    (A) Signal within the extracted segment of the top feature by class
-    (B) Class-conditional distribution of the top feature
-    (C) SHAP beeswarm plot for all features
-  Row 2 (AZT1D, fold 1):
-    (D) Signal within the extracted segment of the top feature
-        by high / low glucose change
-    (E) Distribution of the top feature by glucose-change group
-    (F) SHAP beeswarm plot for all features
-
-When domain_interpretation_summary.csv and domain_interpretation_features.csv
-exist and cached figure data is present, only the figure is regenerated.
-"""
+"""SHAP domain interpretation for REMC E003 and AZT1D (subject 1). Writes one CSV + figure."""
+import json, os, re, warnings
+from pathlib import Path
 import numpy as np
 import pandas as pd
-import json
-import pickle
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import seaborn as sns
-import os
-import warnings
-from pathlib import Path
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import roc_auc_score, mean_squared_error
 import shap
 from lightgbm import LGBMClassifier, LGBMRegressor
+from sklearn.metrics import mean_squared_error, roc_auc_score
+from sklearn.model_selection import StratifiedKFold
 
-from core import TRANSFORMS, extract_feature
+from config import RESULTS, PARAMETERS, ELARTICLE, setup_sublimex_path
+setup_sublimex_path()
+from sublimex import TRANSFORMS, extract_feature
 from preprocess import load_remc, load_azt1d
 
 warnings.filterwarnings('ignore')
+plt.rcParams.update({'font.family': 'serif', 'font.size': 7})
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-RESULTS_DIR = BASE_DIR / "results"
-IMAGE_DIR = BASE_DIR / "elsarticle" / "images"
-PARAMS_DIR = BASE_DIR / "parameters"
-FIGURE_CACHE = RESULTS_DIR / "domain_interpretation_figure_data.pkl"
-
+FIG_PATH = ELARTICLE / 'domain_interpretation.png'
+CSV_PATH = RESULTS / 'domain_interpretation.csv'
+PARAMS = PARAMETERS
 K_FOLDS = 5
-
-# ---- REMC constants ----
-REMC_CHANNEL_NAMES = [
-    'H3K4me3', 'H3K4me1', 'H3K36me3',
-    'H3K9me3', 'H3K27me3',
-]
-
-# ---- AZT1D constants ----
-AZT1D_CHANNEL_NAMES = ['CGM', 'Insulin', 'Carbs']
-
-TRANSFORM_NAMES = list(TRANSFORMS.keys())
-
-TRANSFORM_DISPLAY = {
-    'raw': 'raw', 'zscore': 'z-score',
-    'derivative': 'deriv.', 'fft': 'FFT',
-}
-
-# ---- Figure style (shared) ----
-AXIS_LABEL_FS = 22   # same for x- and y-axis labels
-LEGEND_FS = 20
-PANEL_LABEL_FS = 32
-SHAP_FEATURE_FS = 17 # beeswarm y-axis (feature names)
+SHAP_TOP_K = 5
+REMC_CH = ['H3K4me3', 'H3K4me1', 'H3K36me3', 'H3K9me3', 'H3K27me3']
+AZT1D_CH = ['CGM', 'Insulin', 'Carbs']
+T_NAMES = list(TRANSFORMS.keys())
+T_DISP = {'raw': 'raw', 'zscore': 'z-score', 'derivative': 'deriv.', 'fft': 'FFT'}
 COLORS = {'High': '#E53935', 'Low': '#1976D2'}
-LINE_KW = dict(linewidth=2.5, marker='o', markersize=4)
-KDE_KW = dict(fill=True, alpha=0.3, linewidth=2)
-GRID_ALPHA = 0.3
-LEGEND_LOC = 'upper right'   # same relative position in all panels
+AXIS_FS, XLABEL_FS, LEGEND_FS, PANEL_FS, SHAP_FS, TICK_FS = 5.5, 6.5, 5, 12, 6, 6
+LINE_KW = dict(linewidth=2, marker='o', markersize=3.5)
+KDE_KW = dict(fill=True, alpha=0.3, linewidth=1.5)
 
 
-# ------------------------------------------------------------------ #
-#  Helpers                                                            #
-# ------------------------------------------------------------------ #
-
-def get_feature_name(params, n_time, channel_names):
-    """Human-readable name from SublimeX parameters."""
-    ch = int(params['ch'])
-    t = int(params['t'])
-    c, r = params['c'], params['r']
-    center = c * (n_time - 1)
-    half = (r * (n_time - 1)) * 0.5
-    s = max(0, int(center - half))
-    e = min(n_time - 1, int(center + half))
-    ch_name = channel_names[ch]
-    t_name = TRANSFORM_DISPLAY.get(
-        TRANSFORM_NAMES[t], TRANSFORM_NAMES[t])
-    return f"{ch_name} {t_name} {s}-{e}"
+def _feat_name(p, n_time, channels):
+    ch, t = int(p['ch']), int(p['t'])
+    c, r = p['c'], p['r']
+    center, half = c * (n_time - 1), (r * (n_time - 1)) * 0.5
+    s, e = max(0, int(center - half)), min(n_time - 1, int(center + half))
+    tn = T_DISP.get(T_NAMES[t], T_NAMES[t])
+    return f"{channels[ch]} {tn} {s}-{e}"
 
 
-def apply_transforms_batch(X_list):
-    """Apply all transforms to data once."""
-    arrays = [
-        x.values.astype(np.float32) if hasattr(x, 'values')
-        else np.asarray(x, dtype=np.float32)
-        for x in X_list
-    ]
-    data = np.stack(arrays, axis=1).astype(np.float32)
-    n_samples, n_channels, n_time = data.shape
-    transform_names = list(TRANSFORMS.keys())
-    transformed = np.empty(
-        (len(transform_names), n_samples, n_channels, n_time),
-        dtype=np.float32)
-    for ti, tname in enumerate(transform_names):
-        transformed[ti] = TRANSFORMS[tname](
-            data.reshape(-1, n_time)
-        ).reshape(n_samples, n_channels, n_time)
-    return transformed, n_channels, n_time, transform_names
+def _transform_batch(X_list):
+    arrays = [x.values.astype(np.float32) if hasattr(x, 'values') else np.asarray(x, np.float32) for x in X_list]
+    data = np.stack(arrays, axis=1)
+    n, nc, nt = data.shape
+    out = np.empty((len(T_NAMES), n, nc, nt), dtype=np.float32)
+    for ti, tn in enumerate(T_NAMES):
+        out[ti] = TRANSFORMS[tn](data.reshape(-1, nt)).reshape(n, nc, nt)
+    return out, nc, nt, T_NAMES
 
 
-def extract_all_features(transformed, params_list, n_channels,
-                         n_time, transform_names):
-    """Extract all features from pre-transformed data."""
-    ctx = {
-        'transformed': transformed,
-        'n_channels': n_channels,
-        'n_time': n_time,
-        'transform_names': transform_names,
+def _extract(transformed, params, nc, nt, tnames):
+    ctx = {'transformed': transformed, 'n_channels': nc, 'n_time': nt, 'transform_names': tnames}
+    parts = [extract_feature(p, ctx) for p in params]
+    return np.hstack(parts).astype(np.float32) if parts else np.empty((transformed.shape[1], 0), np.float32)
+
+
+def _shap_dirs(sv, X, order):
+    ms = sv.mean(axis=0)
+    corr = [0.0 if np.std(X[:, j]) == 0 or np.std(sv[:, j]) == 0 else float(np.corrcoef(X[:, j], sv[:, j])[0, 1])
+            for j in range(sv.shape[1])]
+    corr = np.asarray(corr)
+    return {
+        'mean_shap_signed': ms[order],
+        'direction_by_mean': np.where(ms >= 0, 'positive', 'negative')[order],
+        'value_effect_direction': np.where(corr >= 0, 'higher value -> higher prediction',
+                                           'higher value -> lower prediction')[order],
+        'feature_shap_corr': corr[order],
     }
-    features = [extract_feature(p, ctx) for p in params_list]
-    if features:
-        return np.hstack(features).astype(np.float32)
-    return np.empty(
-        (transformed.shape[1], 0), dtype=np.float32)
 
 
-# ------------------------------------------------------------------ #
-#  REMC analysis                                                      #
-# ------------------------------------------------------------------ #
+def _run_study(X_list, y, tr, te, params, channels, regression=False, subject_id=None):
+    y_tr, y_te = y.iloc[tr].values, y.iloc[te].values
+    tf, nc, nt, tnames = _transform_batch(X_list)
+    ftr = _extract(tf[:, tr], params, nc, nt, tnames)
+    fte = _extract(tf[:, te], params, nc, nt, tnames)
+    names = [_feat_name(p, nt, channels) for p in params]
+    lgb = (LGBMRegressor if regression else LGBMClassifier)(max_depth=5, verbosity=-1, force_row_wise=True)
+    lgb.fit(ftr, y_tr)
+    pred = lgb.predict(fte) if regression else lgb.predict_proba(fte)[:, 1]
+    metric = np.sqrt(mean_squared_error(y_te, pred)) if regression else roc_auc_score(y_te, pred)
+    explainer = shap.TreeExplainer(lgb)
+    sv = explainer.shap_values(fte)
+    sv = sv[1] if isinstance(sv, list) else sv
+    order = np.argsort(np.abs(sv).mean(axis=0))[::-1]
+    top = order[0]
+    tp = params[top]
+    ch, t = int(tp['ch']), int(tp['t'])
+    center, half = tp['c'] * (nt - 1), (tp['r'] * (nt - 1)) * 0.5
+    ss, se = max(0, int(center - half)), min(nt - 1, int(center + half))
+    fn = TRANSFORMS[T_NAMES[t]]
+    raw = X_list[ch].iloc[tr].values.astype(np.float32)
+    tch = fn(raw.reshape(-1, nt)).reshape(-1, nt)
+    hi_tr, lo_tr = ((y_tr > 0), (y_tr < 0)) if regression else ((y_tr == 1), (y_tr == 0))
+    hi_te, lo_te = ((y_te > 0), (y_te < 0)) if regression else ((y_te == 1), (y_te == 0))
+    dirs = _shap_dirs(sv, fte, order)
+    feat_df = pd.DataFrame({
+        'rank': np.arange(1, len(names) + 1),
+        'feature_name': [names[i] for i in order],
+        'mean_abs_shap': np.abs(sv).mean(axis=0)[order],
+        **dirs,
+    })
+    base = explainer.expected_value
+    if isinstance(base, (list, np.ndarray)):
+        base = base[1 if not regression else 0]
+    summary = {
+        'metric_name': 'rmse' if regression else 'auc',
+        'metric_value': metric,
+        'n_features': len(names),
+        'top_feature_name': names[top],
+        'top_feature_mean_abs_shap': float(np.abs(sv).mean(axis=0)[top]),
+        'subject_id': subject_id,
+        'fold': 1,
+    }
+    return {
+        'summary': summary, 'features_df': feat_df,
+        'seg_start': ss, 'seg_end': se, 'n_time': nt,
+        'high_mean': tch[hi_tr].mean(0), 'low_mean': tch[lo_tr].mean(0),
+        'ch_name': channels[ch], 'transform_label': T_DISP.get(T_NAMES[t], T_NAMES[t]),
+        'top_name': names[top],
+        'high_vals': fte[hi_te, top], 'low_vals': fte[lo_te, top],
+        'sv': sv, 'top_idx': order, 'test_feat': fte, 'feat_names': names, 'base_value': base,
+    }
+
 
 def run_remc():
-    """Run SHAP analysis on REMC E003 fold 1."""
-    X_list, y, _info = load_remc(cell_line='E003')
-
-    folds = list(StratifiedKFold(
-        K_FOLDS, shuffle=True, random_state=42,
-    ).split(pd.concat(X_list, axis=1), y))
-    tr_idx, te_idx = folds[0]
-
-    y_tr = y.iloc[tr_idx].values
-    y_te = y.iloc[te_idx].values
-
-    params_path = PARAMS_DIR / "remc_E003" / "fold1.json"
-    with open(params_path) as f:
+    X, y, _ = load_remc(cell_line='E003')
+    tr, te = list(StratifiedKFold(K_FOLDS, shuffle=True, random_state=42).split(pd.concat(X, axis=1), y))[0]
+    with open(PARAMS / 'remc_E003' / 'fold1.json') as f:
         params = json.load(f)
-
-    transformed_all, n_channels, n_time, transform_names = \
-        apply_transforms_batch(X_list)
-
-    train_feat = extract_all_features(
-        transformed_all[:, tr_idx], params,
-        n_channels, n_time, transform_names)
-    test_feat = extract_all_features(
-        transformed_all[:, te_idx], params,
-        n_channels, n_time, transform_names)
-
-    feat_names = [
-        get_feature_name(p, n_time, REMC_CHANNEL_NAMES)
-        for p in params
-    ]
-
-    lgb = LGBMClassifier(
-        max_depth=5, verbosity=-1,
-        force_row_wise=True, num_threads=-1)
-    lgb.fit(train_feat, y_tr)
-    proba = lgb.predict_proba(test_feat)[:, 1]
-    auc = roc_auc_score(y_te, proba)
-    print(f"[REMC] LightGBM AUC = {auc:.4f}")
-    print(f"[REMC] Features: {len(feat_names)} extracted")
-
-    explainer = shap.TreeExplainer(lgb)
-    shap_values = explainer.shap_values(test_feat)
-    if isinstance(shap_values, list):
-        sv = shap_values[1]
-    else:
-        sv = shap_values
-
-    mean_abs_shap = np.abs(sv).mean(axis=0)
-    top_idx = np.argsort(mean_abs_shap)[::-1]
-
-    top_global = top_idx[0]
-    top_name = feat_names[top_global]
-    top_params = params[top_global]
-
-    print(f"[REMC] Top feature: {top_name} "
-          f"(mean |SHAP| = {mean_abs_shap[top_global]:.4f})")
-    for i, idx in enumerate(top_idx[:5], 1):
-        print(f"  #{i}: {feat_names[idx]} "
-              f"(|SHAP| = {mean_abs_shap[idx]:.4f})")
-
-    # Panel A data
-    ch = int(top_params['ch'])
-    t = int(top_params['t'])
-    c, r = top_params['c'], top_params['r']
-    center = c * (n_time - 1)
-    half = (r * (n_time - 1)) * 0.5
-    seg_start = max(0, int(center - half))
-    seg_end = min(n_time - 1, int(center + half))
-
-    ch_name = REMC_CHANNEL_NAMES[ch]
-    transform_name = TRANSFORM_NAMES[t]
-    transform_fn = TRANSFORMS[transform_name]
-    transform_label = TRANSFORM_DISPLAY.get(
-        transform_name, transform_name)
-
-    raw_data = X_list[ch].iloc[tr_idx].values.astype(
-        np.float32)
-    transformed_ch = transform_fn(
-        raw_data.reshape(-1, n_time)).reshape(-1, n_time)
-
-    high_mask = y_tr == 1
-    low_mask = y_tr == 0
-    high_mean = transformed_ch[high_mask].mean(axis=0)
-    low_mean = transformed_ch[low_mask].mean(axis=0)
-
-    # Panel B data
-    top_feat_vals_te = test_feat[:, top_global]
-    high_vals = top_feat_vals_te[y_te == 1]
-    low_vals = top_feat_vals_te[y_te == 0]
-
-    base_value = (
-        explainer.expected_value[1]
-        if isinstance(explainer.expected_value, (list, np.ndarray))
-        else explainer.expected_value
-    )
-
-    summary_remc = {
-        'dataset': 'remc_E003', 'fold': 1,
-        'method': 'SublimeX_LightGBM_SHAP',
-        'auc': auc,
-        'n_features': len(feat_names),
-        'top_feature_name': top_name,
-        'top_feature_shap': mean_abs_shap[top_global],
-        'top_feature_high_expr_mean': high_vals.mean(),
-        'top_feature_low_expr_mean': low_vals.mean(),
-        'top_feature_separation':
-            abs(high_vals.mean() - low_vals.mean()),
-    }
-
-    features_remc = pd.DataFrame({
-        'rank': range(1, len(feat_names) + 1),
-        'feature_name': [feat_names[i] for i in top_idx],
-        'mean_abs_shap': mean_abs_shap[top_idx].tolist(),
-    })
-
-    return {
-        'summary': summary_remc,
-        'features_df': features_remc,
-        'seg_start': seg_start,
-        'seg_end': seg_end,
-        'high_mean': high_mean,
-        'low_mean': low_mean,
-        'ch_name': ch_name,
-        'transform_label': transform_label,
-        'top_name': top_name,
-        'high_vals': high_vals,
-        'low_vals': low_vals,
-        'sv': sv,
-        'top_idx': top_idx,
-        'test_feat': test_feat,
-        'feat_names': feat_names,
-        'base_value': base_value,
-        'explainer': explainer,
-    }
-
-
-# ------------------------------------------------------------------ #
-#  AZT1D analysis                                                     #
-# ------------------------------------------------------------------ #
-
-def run_azt1d():
-    """Run SHAP analysis on AZT1D (fold 1 / temporal split)."""
-    X_list, y, info = load_azt1d()
-    subject_ids = info['subject_ids']
-
-    # 80/20 temporal split per patient (same as main eval)
-    tr_indices, te_indices = [], []
-    for subj in np.unique(subject_ids):
-        mask = subject_ids == subj
-        n = mask.sum()
-        cutoff = int(n * 0.8)
-        subj_idx = np.where(mask)[0]
-        tr_indices.extend(subj_idx[:cutoff])
-        te_indices.extend(subj_idx[cutoff:])
-    tr_idx = np.array(tr_indices)
-    te_idx = np.array(te_indices)
-
-    y_tr = y.iloc[tr_idx].values
-    y_te = y.iloc[te_idx].values
-
-    params_path = PARAMS_DIR / "azt1d" / "fold1.json"
-    with open(params_path) as f:
-        params = json.load(f)
-
-    transformed_all, n_channels, n_time, transform_names = \
-        apply_transforms_batch(X_list)
-
-    train_feat = extract_all_features(
-        transformed_all[:, tr_idx], params,
-        n_channels, n_time, transform_names)
-    test_feat = extract_all_features(
-        transformed_all[:, te_idx], params,
-        n_channels, n_time, transform_names)
-
-    feat_names = [
-        get_feature_name(p, n_time, AZT1D_CHANNEL_NAMES)
-        for p in params
-    ]
-
-    lgb = LGBMRegressor(
-        max_depth=5, verbosity=-1,
-        force_row_wise=True, num_threads=-1)
-    lgb.fit(train_feat, y_tr)
-    preds = lgb.predict(test_feat)
-    rmse = np.sqrt(mean_squared_error(y_te, preds))
-    print(f"\n[AZT1D] LightGBM RMSE = {rmse:.4f}")
-    print(f"[AZT1D] Features: {len(feat_names)} extracted")
-
-    explainer = shap.TreeExplainer(lgb)
-    sv = explainer.shap_values(test_feat)
-
-    mean_abs_shap = np.abs(sv).mean(axis=0)
-    top_idx = np.argsort(mean_abs_shap)[::-1]
-
-    top_global = top_idx[0]
-    top_name = feat_names[top_global]
-    top_params = params[top_global]
-
-    print(f"[AZT1D] Top feature: {top_name} "
-          f"(mean |SHAP| = {mean_abs_shap[top_global]:.4f})")
-    for i, idx in enumerate(top_idx[:5], 1):
-        print(f"  #{i}: {feat_names[idx]} "
-              f"(|SHAP| = {mean_abs_shap[idx]:.4f})")
-
-    # Panel D data: signal within top feature segment
-    ch = int(top_params['ch'])
-    t = int(top_params['t'])
-    c, r = top_params['c'], top_params['r']
-    center = c * (n_time - 1)
-    half = (r * (n_time - 1)) * 0.5
-    seg_start = max(0, int(center - half))
-    seg_end = min(n_time - 1, int(center + half))
-
-    ch_name = AZT1D_CHANNEL_NAMES[ch]
-    transform_name = TRANSFORM_NAMES[t]
-    transform_fn = TRANSFORMS[transform_name]
-    transform_label = TRANSFORM_DISPLAY.get(
-        transform_name, transform_name)
-
-    raw_data = X_list[ch].iloc[tr_idx].values.astype(
-        np.float32)
-    transformed_ch = transform_fn(
-        raw_data.reshape(-1, n_time)).reshape(-1, n_time)
-
-    # Split by median glucose change (regression target)
-    median_change = np.median(y_tr)
-    high_mask = y_tr >= median_change
-    low_mask = y_tr < median_change
-    high_mean = transformed_ch[high_mask].mean(axis=0)
-    low_mean = transformed_ch[low_mask].mean(axis=0)
-
-    # Panel E data
-    top_feat_vals_te = test_feat[:, top_global]
-    median_change_te = np.median(y_te)
-    high_vals = top_feat_vals_te[y_te >= median_change_te]
-    low_vals = top_feat_vals_te[y_te < median_change_te]
-
-    # Summary
-    summary_azt1d = {
-        'dataset': 'azt1d', 'fold': 1,
-        'method': 'SublimeX_LightGBM_SHAP',
-        'rmse': rmse,
-        'n_features': len(feat_names),
-        'top_feature_name': top_name,
-        'top_feature_shap': mean_abs_shap[top_global],
-        'top_feature_high_change_mean': high_vals.mean(),
-        'top_feature_low_change_mean': low_vals.mean(),
-        'top_feature_separation':
-            abs(high_vals.mean() - low_vals.mean()),
-    }
-
-    features_azt1d = pd.DataFrame({
-        'rank': range(1, len(feat_names) + 1),
-        'feature_name': [feat_names[i] for i in top_idx],
-        'mean_abs_shap': mean_abs_shap[top_idx].tolist(),
-    })
-
-    base_value = explainer.expected_value
-    if isinstance(base_value, (list, np.ndarray)):
-        base_value = base_value[0]
-
-    return {
-        'summary': summary_azt1d,
-        'features_df': features_azt1d,
-        'seg_start': seg_start,
-        'seg_end': seg_end,
-        'high_mean': high_mean,
-        'low_mean': low_mean,
-        'ch_name': ch_name,
-        'transform_label': transform_label,
-        'top_name': top_name,
-        'high_vals': high_vals,
-        'low_vals': low_vals,
-        'sv': sv,
-        'top_idx': top_idx,
-        'test_feat': test_feat,
-        'feat_names': feat_names,
-        'base_value': base_value,
-        'explainer': explainer,
-        'n_time': n_time,
-    }
-
-
-# ------------------------------------------------------------------ #
-#  Six-panel figure                                                   #
-# ------------------------------------------------------------------ #
-
-def _panel_label(ax, letter, x=-0.03, y=1.01):
-    ax.text(x, y, letter, transform=ax.transAxes,
-            fontsize=PANEL_LABEL_FS, fontweight='bold', va='bottom')
-
-
-def _draw_signal_panel(ax, high_mean, low_mean, seg_start, seg_end,
-                       ch_name, transform_label, xlabel,
-                       high_label, low_label, letter,
-                       x_times=None):
-    """Draw signal segment (panel A or D)."""
-    seg_slice = slice(seg_start, seg_end + 1)
-    if x_times is None:
-        x_times = np.arange(seg_start, seg_end + 1)
-    ax.plot(x_times, high_mean[seg_slice], color=COLORS['High'],
-            label=high_label, **LINE_KW)
-    ax.plot(x_times, low_mean[seg_slice], color=COLORS['Low'],
-            label=low_label, **LINE_KW)
-    ax.set_xlabel(xlabel, fontsize=AXIS_LABEL_FS)
-    ax.set_ylabel(f"{ch_name} ({transform_label})", fontsize=AXIS_LABEL_FS)
-    ax.legend(fontsize=LEGEND_FS, loc=LEGEND_LOC)
-    ax.grid(True, alpha=GRID_ALPHA)
-    if x_times is None:
-        ax.set_xlim(seg_start - 0.5, seg_end + 0.5)
-    _panel_label(ax, letter)
-
-
-def _draw_density_panel(ax, high_vals, low_vals, top_name,
-                        high_label, low_label, letter):
-    """Draw density (panel B or E)."""
-    sns.kdeplot(high_vals, ax=ax, color=COLORS['High'],
-                **KDE_KW, label=high_label)
-    sns.kdeplot(low_vals, ax=ax, color=COLORS['Low'],
-                **KDE_KW, label=low_label)
-    ax.set_xlabel(top_name, fontsize=AXIS_LABEL_FS)
-    ax.set_ylabel('Density', fontsize=AXIS_LABEL_FS)
-    ax.legend(fontsize=LEGEND_FS, loc=LEGEND_LOC)
-    ax.grid(True, alpha=GRID_ALPHA)
-    _panel_label(ax, letter)
-
-
-def _draw_shap_panel(ax, sv, top_idx, test_feat, feat_names, base_value,
-                     letter):
-    """Draw SHAP beeswarm (panel C or F)."""
-    explanation = shap.Explanation(
-        values=sv[:, top_idx],
-        base_values=base_value,
-        data=test_feat[:, top_idx],
-        feature_names=[feat_names[i] for i in top_idx],
-    )
-    plt.sca(ax)
-    shap.plots.beeswarm(explanation, show=False, max_display=len(feat_names))
-    ax.tick_params(axis='y', labelsize=SHAP_FEATURE_FS, pad=1)
-    ax.set_xlabel(ax.get_xlabel(), fontsize=AXIS_LABEL_FS)
-    ax.set_ylim(-1, len(feat_names))
-    _panel_label(ax, letter, x=0.0)
-
-
-def make_figure(remc, azt1d):
-    """Create a 2x3 figure (REMC top, AZT1D bottom)."""
-    os.makedirs(IMAGE_DIR, exist_ok=True)
-
-    base_remc = remc.get('base_value')
-    if base_remc is None and 'explainer' in remc:
-        ev = remc['explainer'].expected_value
-        base_remc = ev[1] if isinstance(ev, (list, np.ndarray)) else ev
-    base_azt = azt1d.get('base_value')
-    if base_azt is None and 'explainer' in azt1d:
-        ev = azt1d['explainer'].expected_value
-        base_azt = ev if not isinstance(ev, (list, np.ndarray)) else ev[0]
-
-    fig_width, fig_height = 46, 18
-    fig = plt.figure(figsize=(fig_width, fig_height))
-    # Left block (A-B, D-E): moderate wspace
-    gs_top_ab = fig.add_gridspec(
-        1, 2, left=0.02, right=0.56,
-        top=0.96, bottom=0.53, wspace=0.15)
-    gs_bot_de = fig.add_gridspec(
-        1, 2, left=0.02, right=0.56,
-        top=0.47, bottom=0.04, wspace=0.15)
-    # Right block (C, F): more gap from B/E; extend to right edge (minimal margin)
-    gs_top_c = fig.add_gridspec(1, 1, left=0.65, right=0.995,
-                                top=0.96, bottom=0.53)
-    gs_bot_f = fig.add_gridspec(1, 1, left=0.65, right=0.995,
-                                top=0.47, bottom=0.04)
-
-    ax_a = fig.add_subplot(gs_top_ab[0, 0])
-    ax_b = fig.add_subplot(gs_top_ab[0, 1])
-    ax_c = fig.add_subplot(gs_top_c[0, 0])
-    ax_d = fig.add_subplot(gs_bot_de[0, 0])
-    ax_e = fig.add_subplot(gs_bot_de[0, 1])
-    ax_f = fig.add_subplot(gs_bot_f[0, 0])
-
-    # Row 1: REMC
-    _draw_signal_panel(
-        ax_a, remc['high_mean'], remc['low_mean'],
-        remc['seg_start'], remc['seg_end'],
-        remc['ch_name'], remc['transform_label'],
-        'Bin (100 bp)',
-        'High expression', 'Low expression', 'A')
-    _draw_density_panel(
-        ax_b, remc['high_vals'], remc['low_vals'], remc['top_name'],
-        'High expression', 'Low expression', 'B')
-    _draw_shap_panel(
-        ax_c, remc['sv'], remc['top_idx'], remc['test_feat'],
-        remc['feat_names'], base_remc, 'C')
-
-    # Row 2: AZT1D
-    n_time = azt1d['n_time']
-    seg_bins = np.arange(azt1d['seg_start'], azt1d['seg_end'] + 1)
-    seg_times = [(b - (n_time - 1)) * 5 for b in seg_bins]
-    _draw_signal_panel(
-        ax_d, azt1d['high_mean'], azt1d['low_mean'],
-        azt1d['seg_start'], azt1d['seg_end'],
-        azt1d['ch_name'], azt1d['transform_label'],
-        'Time (min before prediction)',
-        'Rising glucose', 'Falling glucose', 'D',
-        x_times=seg_times)
-    _draw_density_panel(
-        ax_e, azt1d['high_vals'], azt1d['low_vals'], azt1d['top_name'],
-        'Rising glucose', 'Falling glucose', 'E')
-    _draw_shap_panel(
-        ax_f, azt1d['sv'], azt1d['top_idx'], azt1d['test_feat'],
-        azt1d['feat_names'], base_azt, 'F')
-
-    out = IMAGE_DIR / "domain_interpretation.png"
-    # Force size before save (SHAP or other code can resize the figure)
-    fig.set_size_inches(fig_width, fig_height)
-    # Do not use bbox_inches='tight' so figsize directly controls output dimensions
-    fig.savefig(out, dpi=300, facecolor='white')
-    plt.close()
-
-
-def _figure_data_for_cache(d):
-    """Return a copy of the result dict without explainer (for pickle)."""
-    out = {k: v for k, v in d.items() if k != 'explainer'}
+    out = _run_study(X, y, tr, te, params, REMC_CH)
+    out['summary']['dataset'] = 'remc_E003'
     return out
 
 
+def run_azt1d(subject_id=1):
+    X, y, _ = load_azt1d(subject_id=subject_id)
+    n, c = len(y), int(len(y) * 0.8)
+    tr, te = np.arange(c), np.arange(c, n)
+    with open(PARAMS / 'azt1d' / 'fold1.json') as f:
+        params = json.load(f)
+    out = _run_study(X, y, tr, te, params, AZT1D_CH, regression=True, subject_id=subject_id)
+    out['summary']['dataset'] = 'azt1d'
+    return out
+
+
+def _to_csv(remc, azt1d):
+    rows = []
+    for res in (remc, azt1d):
+        s, fd = res['summary'], res['features_df']
+        for _, r in fd.iterrows():
+            rows.append({**s, **r.to_dict()})
+    pd.DataFrame(rows).to_csv(CSV_PATH, index=False)
+
+
+def _panel_label(ax, letter):
+    ax.text(-0.10, 1.0, letter, transform=ax.transAxes, fontsize=PANEL_FS, fontweight='bold', va='bottom', ha='left')
+
+
+def _short_feat(name):
+    name = name.replace(' derivative', ' deriv.').replace(' z-score', ' zsc.')
+    m = re.match(r'^(.+?)\s(\d+-\d+)$', name)
+    return f"{m.group(1)}\n{m.group(2)}" if m else name
+
+
+def _shap_y_label(name):
+    name = name.replace(' derivative', ' deriv.').replace(' z-score', ' zsc.')
+    m = re.match(r'^(.+?)\s+(raw|zsc\.|deriv\.|FFT|z-score)\s+(\d+-\d+)$', name)
+    return f"{m.group(1)}\n{m.group(2)} {m.group(3)}" if m else _short_feat(name)
+
+
+def _draw_signal(ax, d, xlab, hi, lo, letter, xtimes=None):
+    sl = slice(d['seg_start'], d['seg_end'] + 1)
+    xt = xtimes if xtimes is not None else np.arange(d['seg_start'], d['seg_end'] + 1)
+    ax.plot(xt, d['high_mean'][sl], color=COLORS['High'], label=hi, **LINE_KW)
+    ax.plot(xt, d['low_mean'][sl], color=COLORS['Low'], label=lo, **LINE_KW)
+    ax.set_xlabel(xlab, fontsize=XLABEL_FS)
+    ax.set_ylabel(f"{d['ch_name']} ({d['transform_label']})", fontsize=AXIS_FS)
+    ax.tick_params(axis='x', labelsize=TICK_FS - 0.5)
+    ax.tick_params(axis='y', labelsize=TICK_FS)
+    ax.legend(fontsize=LEGEND_FS, loc='upper right', framealpha=0.9)
+    ax.grid(True, alpha=0.3)
+    _panel_label(ax, letter)
+
+
+def _draw_density(ax, d, hi, lo, letter):
+    sns.kdeplot(d['high_vals'], ax=ax, color=COLORS['High'], **KDE_KW, label=hi)
+    sns.kdeplot(d['low_vals'], ax=ax, color=COLORS['Low'], **KDE_KW, label=lo)
+    ax.set_xlabel(_short_feat(d['top_name']).replace('\n', ' '), fontsize=XLABEL_FS)
+    ax.set_ylabel('Density', fontsize=AXIS_FS)
+    ax.tick_params(axis='x', labelsize=TICK_FS - 0.5)
+    ax.tick_params(axis='y', labelsize=TICK_FS)
+    ax.legend(fontsize=LEGEND_FS, loc='upper right', framealpha=0.9)
+    ax.grid(True, alpha=0.3)
+    _panel_label(ax, letter)
+
+
+def _strip_parens(s):
+    return re.sub(r'\s*\(.*\)', '', s).strip() if s else s
+
+
+def _place_shap_cbars(fig, pairs, shap_w=0.19, cbar_w=0.014, gap=0.004):
+    claimed = {a for ax_s, ax_l in pairs for a in (ax_s, ax_l)}
+    pool = [a for a in fig.axes if a not in claimed and 'feature' in (a.get_ylabel() or '').lower()]
+    for ax_shap, _ in pairs:
+        ps = ax_shap.get_position()
+        ax_shap.set_position([ps.x0, ps.y0, shap_w, ps.height])
+        cbar_x0 = ps.x0 + shap_w + gap
+        best = min(pool, key=lambda a: abs(a.get_position().y0 - ps.y0) + abs(a.get_position().y1 - ps.y1), default=None)
+        if best is None:
+            continue
+        pool.remove(best)
+        pa = best.get_position()
+        best._colorbar_info['aspect'] = 14
+        best._axes_locator = None
+        best.set_position([cbar_x0, pa.y0, cbar_w, pa.height])
+        best.set_box_aspect(14)
+        best.tick_params(labelsize=5)
+        yl = best.get_ylabel()
+        lab = _strip_parens(yl if isinstance(yl, str) else yl.get_text())
+        best.yaxis.set_label_position('right')
+        best.set_ylabel(lab, fontsize=5, labelpad=-11, rotation=90, va='center')
+    for a in pool:
+        a.set_visible(False)
+
+
+def _draw_shap(ax, ax_lab, d, letter):
+    idx = d['top_idx'][:SHAP_TOP_K]
+    plt.sca(ax)
+    shap.plots.beeswarm(shap.Explanation(
+        values=d['sv'][:, idx], base_values=d['base_value'], data=d['test_feat'][:, idx],
+        feature_names=[f'f{k}' for k in range(len(idx))]), show=False, max_display=SHAP_TOP_K)
+    ax.tick_params(axis='y', left=False, labelleft=False)
+    ax.tick_params(axis='x', labelsize=TICK_FS - 0.5)
+    ax.set_xlabel('SHAP value', fontsize=XLABEL_FS)
+    ax.set_ylim(-0.5, SHAP_TOP_K - 0.5)
+    ax_lab.set_ylim(ax.get_ylim())
+    ax_lab.axis('off')
+    for y, lab in zip(ax.get_yticks(), [_shap_y_label(d['feat_names'][i]) for i in idx]):
+        ax_lab.text(1.0, y, lab, ha='right', va='center', fontsize=SHAP_FS, linespacing=0.95,
+                    transform=ax_lab.get_yaxis_transform())
+    _panel_label(ax, letter)
+
+
+def _tighten_row(ax_a, ax_b, ax_lab, ax_shap, gap_ab=0.068, gap_bc=0.042):
+    pa, pb = ax_a.get_position(), ax_b.get_position()
+    ax_b.set_position([pa.x1 + gap_ab, pb.y0, pb.width, pb.height])
+    pb = ax_b.get_position()
+    pl, ps = ax_lab.get_position(), ax_shap.get_position()
+    lab_w = min(pl.width, 0.048)
+    x0 = pb.x1 + gap_bc
+    ax_lab.set_position([x0, pl.y0, lab_w, pl.height])
+    ax_shap.set_position([x0 + lab_w + 0.006, ps.y0, ps.width, ps.height])
+
+
+def _widen_shap(ax_lab, ax_shap, scale=1.0):
+    pl, ps = ax_lab.get_position(), ax_shap.get_position()
+    ax_shap.set_position([pl.x1 + 0.006, ps.y0, ps.width * scale, ps.height])
+
+
+def make_figure(remc, azt1d):
+    fig = plt.figure(figsize=(17, 6.6))
+    gs = fig.add_gridspec(2, 3, width_ratios=[1, 1, 1.15], wspace=0.34, hspace=0.42,
+                         left=0.055, right=0.92, top=0.975, bottom=0.095)
+    gs_ct = gs[0, 2].subgridspec(1, 2, width_ratios=[0.16, 1.6], wspace=0.02)
+    gs_cb = gs[1, 2].subgridspec(1, 2, width_ratios=[0.16, 1.6], wspace=0.02)
+    ax_a, ax_b = fig.add_subplot(gs[0, 0]), fig.add_subplot(gs[0, 1])
+    ax_d, ax_e = fig.add_subplot(gs[1, 0]), fig.add_subplot(gs[1, 1])
+    ax_cl = fig.add_subplot(gs_ct[0, 0])
+    ax_c = fig.add_subplot(gs_ct[0, 1], sharey=ax_cl)
+    ax_fl = fig.add_subplot(gs_cb[0, 0])
+    ax_f = fig.add_subplot(gs_cb[0, 1], sharey=ax_fl)
+    _draw_signal(ax_a, remc, 'Bin (100 bp)', 'High expr.', 'Low expr.', 'A')
+    _draw_density(ax_b, remc, 'High expr.', 'Low expr.', 'B')
+    _draw_shap(ax_c, ax_cl, remc, 'C')
+    nt = azt1d['n_time']
+    times = [(b - (nt - 1)) * 5 for b in range(azt1d['seg_start'], azt1d['seg_end'] + 1)]
+    _draw_signal(ax_d, azt1d, 'Time (min)', 'Rising', 'Falling', 'D', times)
+    _draw_density(ax_e, azt1d, 'Rising', 'Falling', 'E')
+    _draw_shap(ax_f, ax_fl, azt1d, 'F')
+    _tighten_row(ax_a, ax_b, ax_cl, ax_c)
+    _tighten_row(ax_d, ax_e, ax_fl, ax_f)
+    _widen_shap(ax_cl, ax_c)
+    _widen_shap(ax_fl, ax_f)
+    _place_shap_cbars(fig, [(ax_c, ax_cl), (ax_f, ax_fl)])
+    FIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(FIG_PATH, dpi=350, facecolor='white', pad_inches=0.01, bbox_inches='tight')
+    plt.close()
+
+
 def main():
-    os.makedirs(RESULTS_DIR, exist_ok=True)
-    summary_path = RESULTS_DIR / "domain_interpretation_summary.csv"
-    features_path = RESULTS_DIR / "domain_interpretation_features.csv"
-
-    if (summary_path.exists() and features_path.exists()
-            and FIGURE_CACHE.exists()):
-        with open(FIGURE_CACHE, 'rb') as f:
-            remc, azt1d = pickle.load(f)
-        make_figure(remc, azt1d)
-        return
-
-    remc = run_remc()
-    azt1d = run_azt1d()
-
-    summary_df = pd.DataFrame([remc['summary'], azt1d['summary']])
-    summary_df.to_csv(summary_path, index=False)
-
-    remc['features_df']['dataset'] = 'remc_E003'
-    azt1d['features_df']['dataset'] = 'azt1d'
-    features_df = pd.concat(
-        [remc['features_df'], azt1d['features_df']], ignore_index=True)
-    features_df.to_csv(features_path, index=False)
-
-    with open(FIGURE_CACHE, 'wb') as f:
-        pickle.dump(
-            (_figure_data_for_cache(remc), _figure_data_for_cache(azt1d)), f)
-
+    os.makedirs(RESULTS, exist_ok=True)
+    for old in (RESULTS / 'domain_interpretation_summary.csv',
+                RESULTS / 'domain_interpretation_features.csv',
+                RESULTS / 'domain_interpretation_figure_data.pkl'):
+        old.unlink(missing_ok=True)
+    remc, azt1d = run_remc(), run_azt1d(1)
+    _to_csv(remc, azt1d)
     make_figure(remc, azt1d)
+    print(f'wrote {CSV_PATH} and {FIG_PATH}', flush=True)
 
 
 if __name__ == '__main__':

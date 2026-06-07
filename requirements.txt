@@ -7,11 +7,12 @@ optuna
 lightgbm
 fastparquet
 torch
-art
 sktime
+aeon
 pycatch22
 tsfresh
 statsmodels
 tqdm
-sktime
-aeon
+shap
+seaborn
+sublimex==0.1.2

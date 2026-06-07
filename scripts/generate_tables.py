@@ -1,51 +1,39 @@
-"""Generate LaTeX tables from evaluation results.
-
-Handles:
-- main_eval.csv: Main results with all approaches (SublimeX + baselines)
-- ablation_study.csv: Ablation study results (excludes mean_only/SublimeX baseline)
-
-Aggregation:
-- Standard datasets: mean±std across 5 folds
-- REMC: mean±std across ALL cell lines and folds
-- AZT1D: mean±std across ALL subjects
-"""
+"""Generate LaTeX tables from main_eval.csv and ablation_study.csv."""
+import os, warnings
 import pandas as pd
 import numpy as np
-import os
+from scipy.stats import wilcoxon
 
-# Configuration
-RESULTS_DIR = '../results'
-OUTPUT_DIR = '../elsarticle/tables'
+from config import RESULTS, PARAMETERS, ELARTICLE, MAIN_EVAL_CSV, ABLATION_CSV
 
-# Dataset information
+warnings.filterwarnings('ignore')
+RESULTS_DIR = str(RESULTS)
+PARAMS_DIR = str(PARAMETERS)
+OUTPUT_DIR = str(ELARTICLE)
+DATASETS = ['azt1d', 'mitbih', 'emotions', 'remc', 'mimic', 'pamap2', 'svd']
+REMC_LINE = 'remc_E003'
+INITIAL_FEATURES = {}
+
 DATASET_INFO = {
     'azt1d': {'name': 'AZT1D', 'metric': 'RMSE', 'direction': 'minimize'},
     'emotions': {'name': 'Emotions', 'metric': 'Accuracy', 'direction': 'maximize'},
     'mimic': {'name': 'MIMIC-IV', 'metric': 'AUC', 'direction': 'maximize'},
-    'mitbih': {'name': 'MITBIH', 'metric': 'Accuracy', 'direction': 'maximize'},
+    'mitbih': {'name': 'MIT-BIH', 'metric': 'Accuracy', 'direction': 'maximize'},
     'remc': {'name': 'REMC', 'metric': 'AUC', 'direction': 'maximize'},
     'pamap2': {'name': 'PAMAP2', 'metric': 'Accuracy', 'direction': 'maximize'},
-    'svd': {'name': 'SVD', 'metric': 'Accuracy', 'direction': 'maximize'}
+    'svd': {'name': 'SVD', 'metric': 'Accuracy', 'direction': 'maximize'},
 }
+DIRECTION = {k: v['direction'] for k, v in DATASET_INFO.items()}
+METRIC_ABBR = {'Accuracy': 'Acc', 'AUC': 'AUC', 'RMSE': 'RMSE'}
 
-# Initial features for datasets (to compute extracted features)
-# MIMIC has 38 initial static features (demographics, comorbidities, aggregated vitals)
-INITIAL_FEATURES = {
-    'mimic': 34,
-}
-
-# Ablation variants (actual names from CSV)
-ABLATION_VARIANTS = [
-    'aggregate',
-    'pattern',
-    'decision_tree',
-    'n_trials_1000',
-    'raw_only',
-    'nsga2',
-    'parallel',
-]
-
+APPROACHES = ['SublimeX', 'TSFRESH', 'CATCH22', 'MiniRocket', 'RDST', 'CNN']
+APPROACH_NORM = {'sublimex': 'SublimeX', 'tsfresh': 'TSFRESH', 'catch22': 'CATCH22',
+                 'cnn': 'CNN', 'minirocket': 'MiniRocket', 'rdst': 'RDST'}
+ABLATION_VARIANTS = ['resampling', 'aggregate', 'pattern', 'decision_tree',
+                     'n_trials_1000', 'raw_only', 'nsga2', 'parallel']
 VARIANT_LABELS = {
+    'baseline': ('Baseline', ''),
+    'resampling': ('Resampling', ''),
     'aggregate': ('Optimize', 'Aggregates'),
     'pattern': ('Pattern', 'Search'),
     'decision_tree': ('Decision', 'Tree'),
@@ -55,379 +43,258 @@ VARIANT_LABELS = {
     'parallel': ('Parallel', ''),
 }
 
-# Approaches for main results table
-APPROACHES = ['SublimeX', 'TSFRESH', 'CATCH22', 'MiniRocket', 'RDST', 'CNN']
-APPROACH_NORMALIZE = {
-    'sublimex': 'SublimeX',
-    'tsfresh': 'TSFRESH',
-    'catch22': 'CATCH22',
-    'cnn': 'CNN',
-    'minirocket': 'MiniRocket',
-    'rdst': 'RDST'
-}
+
+def base_ds(name):
+    s = str(name)
+    if s.startswith('remc_'): return 'remc'
+    if s.startswith('azt1d_'): return 'azt1d'
+    return s
 
 
-def normalize_approach(name):
-    return APPROACH_NORMALIZE.get(name.lower(), name)
+def fmt_score(score, std, dec=3):
+    if score is None: return '-'
+    if std and std > 0: return f'{score:.{dec}f}±{std:.{dec}f}'
+    return f'{score:.{dec}f}'
 
 
-def format_score(score, score_std, decimals=3):
-    """Format score with optional std. Returns '-' if None."""
-    if score is None:
-        return "-"
-    if score_std is not None and score_std > 0:
-        return f"{score:.{decimals}f}±{score_std:.{decimals}f}"
-    return f"{score:.{decimals}f}"
+def fmt_feat(n, std):
+    if n is None: return '-'
+    if std and std > 0.5: return f'{n:.1f}±{std:.1f}'
+    return f'{n:.0f}'
 
 
-def format_features(n_features, n_features_std):
-    """Format feature count with optional std. Returns '-' if None."""
-    if n_features is None:
-        return "-"
-    if n_features_std is not None and n_features_std > 0.5:
-        return f"{n_features:.1f}±{n_features_std:.1f}"
-    return f"{n_features:.0f}"
+def fmt_time(t, std=None):
+    if t is None: return '-'
+    if std and std > 0: return f'{t:.0f}±{std:.0f}'
+    return f'{t:.0f}'
 
 
-def format_time(time_seconds, time_std=None):
-    """Format time in seconds."""
-    if time_seconds is None:
-        return "-"
-    if time_std is not None and time_std > 0:
-        return f"{time_seconds:.0f}±{time_std:.0f}"
-    return f"{time_seconds:.0f}"
+def _stats(rows, subtract_initial=0, scalar_feat_time=False):
+    nf = max(0, rows['n_features'].mean() - subtract_initial)
+    return {
+        'score': rows['score'].mean(),
+        'score_std': rows['score'].std() if len(rows) > 1 else 0.0,
+        'n_features': nf,
+        'n_features_std': 0.0 if scalar_feat_time else (rows['n_features'].std() if len(rows) > 1 else 0.0),
+        'time': rows['time'].mean(),
+        'time_std': 0.0 if scalar_feat_time else (rows['time'].std() if len(rows) > 1 else 0.0),
+    }
 
 
-def get_dataset_key(dataset_name):
-    """Extract base dataset key from dataset name (handles remc_E003, azt1d_s1, etc.)."""
-    if dataset_name.startswith('remc_'):
-        return 'remc'
-    if dataset_name.startswith('azt1d_'):
-        return 'azt1d'
-    return dataset_name
+def _filter_ablation(df):
+    df = df[df['variant'] != 'baseline'].copy()
+    df['base_dataset'] = df['dataset'].apply(
+        lambda d: 'azt1d' if str(d).startswith('azt1d') else base_ds(d))
+    df = df[~((df['base_dataset'] == 'remc') & (df['dataset'] != REMC_LINE))]
+    if df['dataset'].str.startswith('azt1d_s').any():
+        df = df[~((df['base_dataset'] == 'azt1d') & (df['dataset'] == 'azt1d'))]
+    return df
 
 
-# =============================================================================
-# MAIN RESULTS TABLE
-# =============================================================================
+def _pick_best(means, direction):
+    return min(means, key=means.get) if direction == 'minimize' else max(means, key=means.get)
+
+
+def _wilcoxon(a, b):
+    n = min(len(a), len(b))
+    if n < 2: return 1.0, n
+    try:
+        _, p = wilcoxon(a[:n], b[:n], alternative='two-sided')
+    except ValueError:
+        p = 1.0
+    return p, n
+
+
+def _fold_scores_main(df, ds, method):
+    if ds == 'azt1d':
+        sub = df[(df['base_dataset'] == 'azt1d') & (df['approach'] == method) & df['test_subject'].notna()]
+        return sub.sort_values('test_subject')['score'].values if len(sub) else None
+    sub = df[(df['base_dataset'] == ds) & (df['approach'] == method)]
+    if sub.empty: return None
+    if ds == 'remc':
+        sub = sub.groupby(['cell_line', 'fold'])['score'].mean().reset_index()
+    keys = ['cell_line', 'fold'] if 'cell_line' in sub.columns else ['fold']
+    return sub.sort_values(keys)['score'].values
+
+
+def _fold_scores_ablation(df, ds, variant):
+    sub = df[(df['base_dataset'] == ds) & (df['variant'] == variant)]
+    if sub.empty: return None
+    key = 'dataset' if ds == 'azt1d' else 'fold'
+    return sub.sort_values(key)['score'].values
+
+
+def compute_significance_tests():
+    rows = []
+    me = pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv'))
+    me['approach'] = me['approach'].str.lower().map(APPROACH_NORM).fillna(me['approach'])
+    me['base_dataset'] = me['dataset'].apply(base_ds)
+    for ds in DATASETS:
+        by_m = {m: _fold_scores_main(me, ds, m) for m in APPROACHES}
+        means = {m: v.mean() for m, v in by_m.items() if v is not None and len(v)}
+        if len(means) < 2: continue
+        best = _pick_best(means, DIRECTION[ds])
+        for other in APPROACHES:
+            if other == best or by_m[other] is None: continue
+            p, n = _wilcoxon(by_m[best], by_m[other])
+            rows.append({'study': 'main_eval', 'dataset': ds, 'best_method': best,
+                         'comparison': other, 'p_value': p, 'n_pairs': n})
+
+    ab_path = os.path.join(RESULTS_DIR, 'ablation_study.csv')
+    if os.path.exists(ab_path):
+        ab = _filter_ablation(pd.read_csv(ab_path))
+        variants = [v for v in ABLATION_VARIANTS if v in ab['variant'].values]
+        for ds in DATASETS:
+            by_v = {v: _fold_scores_ablation(ab, ds, v) for v in variants}
+            means = {v: vscores.mean() for v, vscores in by_v.items() if vscores is not None and len(vscores)}
+            if len(means) < 2: continue
+            best = _pick_best(means, DIRECTION[ds])
+            for other in variants:
+                if other == best or by_v[other] is None: continue
+                p, n = _wilcoxon(by_v[best], by_v[other])
+                rows.append({'study': 'ablation', 'dataset': ds, 'best_method': best,
+                             'comparison': other, 'p_value': p, 'n_pairs': n})
+
+    out = pd.DataFrame(rows)
+    out.to_csv(os.path.join(RESULTS_DIR, 'significance_tests.csv'), index=False)
+    return out
+
+
+def _sig(study):
+    path = os.path.join(RESULTS_DIR, 'significance_tests.csv')
+    if not os.path.exists(path): return set(), {}
+    df = pd.read_csv(path)
+    df = df[df['study'] == study]
+    pairs = {(r['dataset'], r['comparison']) for _, r in df.iterrows() if r['p_value'] < 0.05}
+    best = df.groupby('dataset')['best_method'].first().to_dict() if 'best_method' in df.columns else {}
+    return pairs, best
+
 
 def load_main_eval_data():
-    """Load and process main_eval.csv results."""
-    filepath = os.path.join(RESULTS_DIR, 'main_eval.csv')
-    
-    df = pd.read_csv(filepath)
-    df['approach'] = df['approach'].apply(normalize_approach)
-    df['base_dataset'] = df['dataset'].apply(get_dataset_key)
-    
-    results = {}
-    for base_ds in ['emotions', 'mimic', 'mitbih', 'pamap2', 'svd', 'remc', 'azt1d']:
-        ds_data = df[df['base_dataset'] == base_ds]
-        if ds_data.empty:
-            results[base_ds] = {}
-            continue
-        
-        ds_results = {}
-        for approach in ds_data['approach'].unique():
-            app_data = ds_data[ds_data['approach'] == approach]
-            if app_data.empty:
+    df = pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv'))
+    df['approach'] = df['approach'].str.lower().map(APPROACH_NORM).fillna(df['approach'])
+    df['base_dataset'] = df['dataset'].apply(base_ds)
+    out = {}
+    for ds in DATASETS:
+        out[ds] = {}
+        for app in APPROACHES:
+            rows = df[(df['base_dataset'] == ds) & (df['approach'] == app)]
+            if ds == 'azt1d' and rows['test_subject'].notna().any():
+                rows = rows[rows['test_subject'].notna()]
+            if rows.empty:
                 continue
-            
-            # Aggregate across all folds/cell_lines/subjects
-            n_features_mean = app_data['n_features'].mean()
-            n_features_std = app_data['n_features'].std() if len(app_data) > 1 else 0.0
-            
-            # Subtract initial features to get extracted features (only for SublimeX)
-            if approach == 'SublimeX':
-                initial_feat = INITIAL_FEATURES.get(base_ds, 0)
-                n_features_mean = max(0, n_features_mean - initial_feat)
-            
-            ds_results[approach] = {
-                'score': app_data['score'].mean(),
-                'score_std': app_data['score'].std() if len(app_data) > 1 else 0.0,
-                'n_features': n_features_mean,
-                'n_features_std': n_features_std,
-                'n_samples': len(app_data),
-            }
-        results[base_ds] = ds_results
-    
-    return results
+            out[ds][app] = _stats(rows, INITIAL_FEATURES.get(ds, 0), scalar_feat_time=(ds == 'azt1d'))
+    return out
+
+
+def _sublimex_baseline_rows(ds):
+    bl = pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv'))
+    bl['approach'] = bl['approach'].str.lower().map(APPROACH_NORM).fillna(bl['approach'])
+    bl = bl[bl['approach'] == 'SublimeX']
+    bl['base_dataset'] = bl['dataset'].apply(base_ds)
+    bsub = bl[bl['base_dataset'] == ds]
+    if ds == 'remc':
+        bsub = bsub[bsub['dataset'] == REMC_LINE]
+    return bsub
+
+
+def load_ablation_data(main_results=None):
+    path = os.path.join(RESULTS_DIR, 'ablation_study.csv')
+    if not os.path.exists(path): return {}
+    main_results = main_results or load_main_eval_data()
+    df = _filter_ablation(pd.read_csv(path))
+    out = {ds: {} for ds in DATASETS}
+    for ds in DATASETS:
+        sub = df[df['base_dataset'] == ds]
+        bsub = _sublimex_baseline_rows(ds)
+        if ds == 'remc' and not bsub.empty:
+            out[ds]['baseline'] = _stats(bsub, INITIAL_FEATURES.get(ds, 0))
+        elif ds != 'remc' and 'SublimeX' in main_results.get(ds, {}):
+            out[ds]['baseline'] = main_results[ds]['SublimeX'].copy()
+        for v in ABLATION_VARIANTS:
+            vrows = sub[sub['variant'] == v]
+            if not vrows.empty:
+                out[ds][v] = _stats(vrows, INITIAL_FEATURES.get(ds, 0))
+    return out
+
+
+def _best_rounded(ds_results, cols, direction, dec):
+    best = None
+    for c in cols:
+        if c not in ds_results: continue
+        r = round(ds_results[c]['score'], dec)
+        best = r if best is None else (min if direction == 'minimize' else max)(best, r)
+    return best
+
+
+def _write_table(path, caption, label, results, cols, labels, study, tabcolsep='1pt',
+                 arraystretch='0.85', tight_subrows=False):
+    sig, best = _sig(study)
+    stretch = '0.62' if tight_subrows else arraystretch
+    row_end = (' \\\\[-0.85ex]\n', ' \\\\[-0.35ex]\n', ' \\\\\n') if tight_subrows else (' \\\\\n',) * 3
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, 'w') as f:
+        f.write(f'\\begin{{table}}[H]\\centering\\caption{{{caption}}}\\label{{{label}}}\\tiny\n')
+        f.write(f'\\setlength{{\\tabcolsep}}{{{tabcolsep}}}\\renewcommand{{\\arraystretch}}{{{stretch}}}\n')
+        f.write(f'\\begin{{tabular*}}{{\\textwidth}}{{@{{\\extracolsep{{\\fill}}}}ll{"c" * len(cols)}@{{}}}}\n\\toprule\n')
+        f.write(' &  & ' + ' & '.join(f'\\textbf{{{labels[c][0]}}}' for c in cols) + ' \\\\\n')
+        f.write(' &  & ' + ' & '.join(
+            f'\\textbf{{{labels[c][1]}}}' if labels[c][1] else '' for c in cols) + ' \\\\\n\\midrule\n')
+        for i, ds in enumerate(DATASETS):
+            info, dr = DATASET_INFO[ds], results.get(ds, {})
+            dec = 2 if info['metric'] == 'RMSE' else 3
+            sign = '↑' if info['direction'] == 'maximize' else '↓'
+            abbr = METRIC_ABBR[info['metric']]
+            br = _best_rounded(dr, cols, info['direction'], dec)
+            rows = {k: [] for k in ('s', 'f', 't')}
+            for c in cols:
+                if c not in dr:
+                    rows['s'].append('-'); rows['f'].append('-'); rows['t'].append('-')
+                    continue
+                d = dr[c]
+                sc = fmt_score(d['score'], d['score_std'], dec)
+                if br is not None and abs(round(d['score'], dec) - br) < 1e-6:
+                    sc = f'\\textbf{{{sc}}}'
+                if c != best.get(ds) and (ds, c) in sig:
+                    sc += '$^{*}$'
+                rows['s'].append(sc)
+                rows['f'].append(fmt_feat(d['n_features'], d['n_features_std']))
+                rows['t'].append(fmt_time(d['time'], d['time_std']))
+            f.write(f'\\multirow{{3}}{{*}}{{\\textbf{{{info["name"]}}}}} & {abbr} ({sign}) & '
+                    + ' & '.join(rows['s']) + row_end[2])
+            f.write(' & \\# Feat. & ' + ' & '.join(rows['f']) + row_end[0])
+            f.write(' & Time (s) & ' + ' & '.join(rows['t']) + row_end[1])
+            if i < len(DATASETS) - 1:
+                f.write('\\midrule\n')
+        f.write('\\bottomrule\\end{tabular*}\\end{table}\n')
 
 
 def generate_results_table(results):
-    """Generate main results comparison table."""
-    output_file = os.path.join(OUTPUT_DIR, 'results_table.tex')
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
-    dataset_order = ['azt1d', 'mitbih', 'emotions', 'remc', 'mimic', 'pamap2', 'svd']
-    
-    with open(output_file, 'w') as f:
-        f.write("\\begin{table}[H]\n")
-        f.write("\\centering\n")
-        f.write("\\caption{Performance comparison across biomedical datasets. "
-                "Results show mean $\\pm$ standard deviation across subjects/folds. "
-                "Best performance per dataset highlighted in bold.}\n")
-        f.write("\\label{tab:results}\n")
-        f.write("\\tiny\n")
-        f.write("\\setlength{\\tabcolsep}{1pt}\n")
-        f.write("\\renewcommand{\\arraystretch}{0.85}\n")
-        f.write("\\begin{tabular*}{\\textwidth}{@{\\extracolsep{\\fill}}ll" + 
-                "c" * len(APPROACHES) + "@{}}\n")
-        f.write("\\toprule\n")
-        
-        # Header (two empty columns for dataset name + metric label columns)
-        header = " &  & " + " & ".join([f"\\textbf{{{a}}}" for a in APPROACHES])
-        f.write(header + " \\\\\n")
-        f.write("\\midrule\n")
-        
-        for ds_idx, dataset in enumerate(dataset_order):
-            info = DATASET_INFO[dataset]
-            ds_results = results.get(dataset, {})
-            
-            # Find best score rounded to 3 decimals
-            decimals = 2 if info['metric'] == 'RMSE' else 3
-            best_rounded_score = None
-            for approach in APPROACHES:
-                if approach in ds_results:
-                    score = ds_results[approach]['score']
-                    rounded_score = round(score, decimals)
-                    if best_rounded_score is None:
-                        best_rounded_score = rounded_score
-                    elif info['direction'] == 'maximize':
-                        best_rounded_score = max(best_rounded_score, rounded_score)
-                    else:
-                        best_rounded_score = min(best_rounded_score, rounded_score)
-            
-            # Format dataset label
-            sign = '↑' if info['direction'] == 'maximize' else '↓'
-            metric_abbrev = {'Accuracy': 'Acc', 'AUC': 'AUC', 'RMSE': 'RMSE'}[info['metric']]
-            
-            # Collect scores only (no # Features in main table)
-            scores = []
-            for approach in APPROACHES:
-                if approach in ds_results:
-                    data = ds_results[approach]
-                    score_str = format_score(data['score'], data['score_std'], decimals)
-                    
-                    # Bold if rounded score matches best rounded score
-                    rounded_score = round(data['score'], decimals)
-                    is_best = (best_rounded_score is not None and 
-                               abs(rounded_score - best_rounded_score) < 1e-6)
-                    if is_best:
-                        score_str = f"\\textbf{{{score_str}}}"
-                    
-                    scores.append(score_str)
-                else:
-                    scores.append("-")
-            
-            # Single row: Dataset name + metric label + scores
-            f.write(f"\\textbf{{{info['name']}}} & {metric_abbrev} ({sign}) & " + " & ".join(scores) + " \\\\\n")
-            
-            if ds_idx < len(dataset_order) - 1:
-                f.write("\\midrule\n")
-        
-        f.write("\\bottomrule\n")
-        f.write("\\end{tabular*}\n")
-        f.write("\\end{table}\n")
-
-
-# =============================================================================
-# ABLATION TABLE
-# =============================================================================
-
-def load_ablation_data():
-    """Load and process ablation_study.csv results.
-    
-    For REMC and AZT1D, ablation study only runs on first cell line / first subject.
-    So for fair comparison, baseline should also use only the first cell line / subject.
-    """
-    filepath = os.path.join(RESULTS_DIR, 'ablation_study.csv')
-    
-    df = pd.read_csv(filepath)
-    # If all-patients 'azt1d' rows exist, drop old per-subject 'azt1d_s*' rows
-    if 'azt1d' in df['dataset'].values:
-        df = df[~df['dataset'].str.startswith('azt1d_s')]
-    df['base_dataset'] = df['dataset'].apply(get_dataset_key)
-    
-    # Also load main_eval to get SublimeX baseline for comparison
-    main_eval_path = os.path.join(RESULTS_DIR, 'main_eval.csv')
-    baseline_df = None
-    if os.path.exists(main_eval_path):
-        baseline_df = pd.read_csv(main_eval_path)
-        baseline_df['approach'] = baseline_df['approach'].apply(normalize_approach)
-        baseline_df = baseline_df[baseline_df['approach'] == 'SublimeX']
-        baseline_df['base_dataset'] = baseline_df['dataset'].apply(get_dataset_key)
-    
-    results = {}
-    for base_ds in ['mitbih', 'emotions', 'mimic', 'svd', 'pamap2', 'remc', 'azt1d']:
-        ds_data = df[df['base_dataset'] == base_ds]
-        
-        ds_results = {}
-        
-        # Add baseline (SublimeX from main_eval, fold 1 only like ablation study)
-        if baseline_df is not None:
-            bl_data = baseline_df[baseline_df['base_dataset'] == base_ds]
-            
-            # For REMC: filter to first cell line only (matches ablation study)
-            if base_ds == 'remc' and not bl_data.empty:
-                first_cell_line = bl_data['dataset'].iloc[0]  # e.g., remc_E003
-                bl_data = bl_data[bl_data['dataset'] == first_cell_line]
-            
-            # For AZT1D: use 'azt1d' (all patients) if available,
-            # else fall back to first subject
-            if base_ds == 'azt1d' and not bl_data.empty:
-                if 'azt1d' in bl_data['dataset'].values:
-                    bl_data = bl_data[bl_data['dataset'] == 'azt1d']
-                else:
-                    first_subject = bl_data['dataset'].iloc[0]
-                    bl_data = bl_data[bl_data['dataset'] == first_subject]
-            
-            # For PAMAP2: filter to first subject only (matches ablation study)
-            if base_ds == 'pamap2' and not bl_data.empty:
-                # First LOSO fold = first subject as test set
-                bl_data = bl_data[bl_data['fold'] == 1]
-            
-            # Filter to fold 1 only for standard datasets (matches ablation study)
-            if base_ds in ['emotions', 'mimic', 'mitbih', 'svd'] and not bl_data.empty:
-                bl_data = bl_data[bl_data['fold'] == 1]
-            
-            if not bl_data.empty:
-                n_features_total = bl_data['n_features'].iloc[0]
-                
-                # Subtract initial features to get extracted features
-                initial_feat = INITIAL_FEATURES.get(base_ds, 0)
-                n_features_extracted = max(0, n_features_total - initial_feat)
-                
-                ds_results['baseline'] = {
-                    'score': bl_data['score'].iloc[0],
-                    'score_std': None,
-                    'n_features': n_features_extracted,
-                    'n_features_std': None,
-                    'time': bl_data['time'].iloc[0],
-                    'time_std': None,
-                }
-        
-        # Add ablation variants
-        for variant in ABLATION_VARIANTS:
-            var_data = ds_data[ds_data['variant'] == variant]
-            if var_data.empty:
-                continue
-            
-            n_features_mean = var_data['n_features'].mean()
-            n_features_std = var_data['n_features'].std() if len(var_data) > 1 else 0.0
-            
-            # Subtract initial features to get extracted features
-            initial_feat = INITIAL_FEATURES.get(base_ds, 0)
-            n_features_mean = max(0, n_features_mean - initial_feat)
-            
-            ds_results[variant] = {
-                'score': var_data['score'].mean(),
-                'score_std': var_data['score'].std() if len(var_data) > 1 else 0.0,
-                'n_features': n_features_mean,
-                'n_features_std': n_features_std,
-                'time': var_data['time'].mean(),
-                'time_std': var_data['time'].std() if len(var_data) > 1 else 0.0,
-            }
-        
-        results[base_ds] = ds_results
-    
-    return results
+    cap = ('Predictive score, LightGBM input size (\\# Feat.), and wall-clock time (s). '
+           'Scores: mean $\\pm$ std over folds (AZT1D RMSE: over 23 test patients). '
+           'AZT1D \\# Feat.\\ and Time are single values (no $\\pm$). '
+           'Bold: best per dataset; $^{*}$: $p{<}0.05$ vs.\\ best (Wilcoxon). '
+           'Arrows: higher ($\\uparrow$) or lower ($\\downarrow$) is better.')
+    _write_table(os.path.join(OUTPUT_DIR, 'results_table.tex'), cap, 'tab:results',
+                 results, APPROACHES, {a: (a, '') for a in APPROACHES}, 'main_eval',
+                 tight_subrows=True)
 
 
 def generate_ablation_table(results):
-    """Generate ablation study table."""
-    output_file = os.path.join(OUTPUT_DIR, 'ablation_results.tex')
-    os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    
-    dataset_order = ['azt1d', 'mitbih', 'emotions', 'remc', 'mimic', 'pamap2', 'svd']
-    
-    # Only include variants that exist in at least one dataset
-    existing_variants = set()
-    for ds_results in results.values():
-        existing_variants.update(ds_results.keys())
-    existing_variants.discard('baseline')  # baseline is always included
-    
-    # Order: baseline first, then ABLATION_VARIANTS in order, but only if they exist
-    all_variants = ['baseline'] + [v for v in ABLATION_VARIANTS if v in existing_variants]
-    variant_labels = {'baseline': ('Baseline', ''), **VARIANT_LABELS}
-    
-    with open(output_file, 'w') as f:
-        f.write("\\label{tab:ablation}\n")
-        f.write("\\tiny\n")
-        f.write("\\setlength{\\tabcolsep}{0.5pt}\n")
-        f.write("\\renewcommand{\\arraystretch}{0.85}\n")
-        f.write("\\begin{tabular*}{\\textwidth}{@{\\extracolsep{\\fill}}ll" + 
-                "c" * len(all_variants) + "@{}}\n")
-        f.write("\\toprule\n")
-        
-        # Two-row header for variant names
-        header_row1 = " &  & " + " & ".join([f"\\textbf{{{variant_labels[v][0]}}}" for v in all_variants])
-        header_row2 = " &  & " + " & ".join([f"\\textbf{{{variant_labels[v][1]}}}" for v in all_variants])
-        f.write(header_row1 + " \\\\\n")
-        f.write(header_row2 + " \\\\\n")
-        f.write("\\midrule\n")
-        
-        for ds_idx, dataset in enumerate(dataset_order):
-            info = DATASET_INFO[dataset]
-            ds_results = results.get(dataset, {})
-            
-            # Find best score rounded to 3 decimals
-            decimals = 2 if info['metric'] == 'RMSE' else 3
-            best_rounded_score = None
-            for variant in all_variants:
-                if variant in ds_results:
-                    score = ds_results[variant]['score']
-                    rounded_score = round(score, decimals)
-                    if best_rounded_score is None:
-                        best_rounded_score = rounded_score
-                    elif info['direction'] == 'maximize':
-                        best_rounded_score = max(best_rounded_score, rounded_score)
-                    else:
-                        best_rounded_score = min(best_rounded_score, rounded_score)
-            
-            # Format dataset label
-            sign = '↑' if info['direction'] == 'maximize' else '↓'
-            metric_abbrev = {'Accuracy': 'Acc', 'AUC': 'AUC', 'RMSE': 'RMSE'}[info['metric']]
-            
-            # Collect data
-            scores = []
-            features = []
-            times = []
-            for variant in all_variants:
-                if variant in ds_results:
-                    data = ds_results[variant]
-                    score_str = format_score(data['score'], data['score_std'], decimals)
-                    
-                    # Bold if rounded score matches best rounded score
-                    rounded_score = round(data['score'], decimals)
-                    is_best = (best_rounded_score is not None and 
-                               abs(rounded_score - best_rounded_score) < 1e-6)
-                    if is_best:
-                        score_str = f"\\textbf{{{score_str}}}"
-                    
-                    scores.append(score_str)
-                    features.append(format_features(data['n_features'], data['n_features_std']))
-                    times.append(format_time(data['time'], data['time_std']))
-                else:
-                    scores.append("-")
-                    features.append("-")
-                    times.append("-")
-            
-            # Row 1: Dataset name (multirow) + metric label + scores
-            f.write(f"\\multirow{{3}}{{*}}{{\\textbf{{{info['name']}}}}} & {metric_abbrev} ({sign}) & " + " & ".join(scores) + " \\\\\n")
-            # Row 2: empty (multirow) + #Feat label + features
-            f.write(f" & \\# Feat. & " + " & ".join(features) + " \\\\\n")
-            # Row 3: empty (multirow) + Time label + times
-            f.write(f" & Time (s) & " + " & ".join(times) + " \\\\\n")
-            
-            if ds_idx < len(dataset_order) - 1:
-                f.write("\\midrule\n")
-        
-        f.write("\\bottomrule\n")
-        f.write("\\end{tabular*}\n")
-    
+    existing = {v for dr in results.values() for v in dr} - {'baseline'}
+    cols = ['baseline'] + [v for v in ABLATION_VARIANTS if v in existing]
+    cap = ('Ablation study (mean $\\pm$ std across folds; AZT1D across patients; PAMAP2 LOSO). '
+           'Baseline matches SublimeX in Table~\\ref{tab:results} (REMC: cell line E003 only, same as ablation runs). '
+           'Bold: best per dataset; $^{*}$: $p{<}0.05$ vs.\\ best variant (Wilcoxon). '
+           'Rows: metric, \\# features, runtime (s).')
+    _write_table(os.path.join(OUTPUT_DIR, 'ablation_results.tex'), cap, 'tab:ablation',
+                 results, cols, VARIANT_LABELS, 'ablation', tabcolsep='0.5pt')
+
+
 if __name__ == '__main__':
+    compute_significance_tests()
     main_results = load_main_eval_data()
-    ablation_results = load_ablation_data()
-    
     generate_results_table(main_results)
-    generate_ablation_table(ablation_results)
+    ablation = load_ablation_data(main_results)
+    if ablation:
+        generate_ablation_table(ablation)

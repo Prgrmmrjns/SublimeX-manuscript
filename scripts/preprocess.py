@@ -6,14 +6,15 @@ from pathlib import Path
 from scipy.io import wavfile
 from scipy.signal import resample
 
-ROOT = Path(__file__).parent.parent / 'datasets'
-ELARTICLE = Path(__file__).parent.parent / 'elsarticle'
+from config import DATASETS, ELARTICLE
+
+ROOT = DATASETS
 TABLE_ORDER = ['azt1d', 'mitbih', 'emotions', 'remc', 'mimic', 'pamap2', 'svd']
 DISPLAY_NAMES = {
     'azt1d': 'AZT1D', 'mitbih': 'MITBIH', 'emotions': 'Emotions', 'remc': 'REMC',
     'mimic': 'MIMIC--IV', 'pamap2': 'PAMAP2', 'svd': 'SVD',
 }
-METRIC_DISPLAY = {'accuracy': 'Acc.', 'auc': 'AUC', 'rmse': 'RMSE'}
+METRIC_DISPLAY = {'accuracy': 'Accuracy', 'auc': 'AUC', 'rmse': 'RMSE'}
 
 
 # =============================================================================
@@ -151,6 +152,7 @@ def preprocess_pamap2():
     data.to_parquet(ROOT / 'pamap2/pamap2.parquet', compression='zstd', index=False)
 
 def preprocess_azt1d():
+    """Preprocess AZT1D once: all subjects concatenated into a single parquet."""
     def response(t, onset, peak, decay):
         t = np.asarray(t)
         r = np.zeros_like(t, dtype=np.float32)
@@ -172,12 +174,16 @@ def preprocess_azt1d():
             active_carb = sum(amt * response(np.maximum(t_min - et, 0), 10, 35, 3) for et, amt in zip(t_min[df['carbs'] > 0], df['carbs'].values[df['carbs'] > 0]))
             
             g = df['glucose'].values
+            hours = df['datetime'].dt.hour.values
+            times = hours + df['datetime'].dt.minute.values / 60.0
             rows = []
             for i in range(24, len(df) - 12):
                 if np.any(np.isnan(g[i-24:i+13])): continue
                 row = {f'CGM_{t}': g[i-24+t] for t in range(24)}
                 row |= {f'Insulin_{t}': active_ins[i-24+t] for t in range(24)}
                 row |= {f'Carbs_{t}': active_carb[i-24+t] for t in range(24)}
+                row['hour'] = hours[i]
+                row['time'] = times[i]
                 row['target'], row['subject_id'] = g[i + 12] - g[i], sid
                 rows.append(row)
             if rows: dfs.append(pd.DataFrame(rows))
@@ -280,10 +286,20 @@ def load_remc(cell_line=None):
 
 
 def load_azt1d(subject_id=None):
-    df = pd.read_parquet(ROOT / 'azt1d/azt1d_all_patients.parquet')
+    path = ROOT / 'azt1d/azt1d_all_patients.parquet'
+    try:
+        df = pd.read_parquet(path, engine='pyarrow')
+    except OSError as e:
+        if 'Repetition level histogram size mismatch' not in str(e):
+            raise
+        preprocess_azt1d()
+        df = pd.read_parquet(path, engine='pyarrow')
     if subject_id is not None:
         df = df[df['subject_id'] == subject_id].reset_index(drop=True)
-    get_cols = lambda p: sorted([c for c in df.columns if c.startswith(f'{p}_') and c.split('_')[-1].isdigit()], key=lambda x: int(x.split('_')[-1]))
+    get_cols = lambda p: sorted(
+        [c for c in df.columns if c.startswith(f'{p}_') and c.split('_')[-1].isdigit()],
+        key=lambda x: int(x.split('_')[-1])
+    )
     X = [df[get_cols(s)].fillna(0) for s in ['CGM', 'Insulin', 'Carbs']]
     info = {'metric': 'rmse', 'task': 'regression'}
     if subject_id is None:
@@ -300,18 +316,22 @@ def _format_int(n):
     return f'{int(n):,}'.replace(',', '{,}')
 
 
+def _class_balance_str(y, task):
+    y = np.asarray(y)
+    if task == 'regression':
+        return '---'
+    maj_pct = 100 * pd.Series(y).value_counts().max() / len(y)
+    return f'{maj_pct:.0f}\\%'
+
+
 def write_dataset_table():
     """Generate dataset characteristics table from metadata and loaded data."""
     meta_path = ROOT / 'metadata.json'
-    if not meta_path.exists():
-        raise FileNotFoundError(f"Metadata not found: {meta_path}")
     with open(meta_path) as f:
         metadata = json.load(f)
 
     def _load_remc_table():
         cell_lines = load_remc()
-        if not cell_lines:
-            return None, None, None
         return load_remc(cell_line=cell_lines[0])
 
     loaders = {
@@ -329,13 +349,7 @@ def write_dataset_table():
         if key not in metadata or key not in loaders:
             continue
         meta = metadata[key]
-        try:
-            X, y, info = loaders[key]()
-        except Exception as e:
-            print(f"Warning: could not load {key} for table: {e}")
-            continue
-        if X is None or y is None:
-            continue
+        X, y, info = loaders[key]()
 
         X_list = X if isinstance(X, list) else [X]
         n_channels = meta.get('n_channels') or len(meta.get('ts_prefixes', [])) or (
@@ -362,39 +376,33 @@ def write_dataset_table():
         name = DISPLAY_NAMES.get(key, key.upper())
         input_data = meta.get('input_data', '')
         target_feature = meta.get('target_feature', '')
-        rows.append((name, samples_str, n_channels, length, metric_str, task_str,
-                     input_data, target_feature))
+        balance = _class_balance_str(y, task)
+        shape = f'{samples_str}; ${n_channels} \\times {length}$'
+        io = f'{input_data} / {target_feature}'
+        rows.append((name, shape, metric_str, task_str, balance, io))
 
-    out_path = ELARTICLE / 'tables' / 'dataset_characteristics.tex'
-    out_path.parent.mkdir(parents=True, exist_ok=True)
     lines = [
-        '\\begin{table}[H]',
-        '\\centering',
-        '\\caption{Dataset Characteristics and Evaluation Metrics}',
+        '\\begin{table}[H]\\centering',
+        '\\caption{Seven preprocessed benchmarks: sample size and $C{\\times}L$ shape, metric, task, '
+        'majority-class share ($---$ for regression), and input/target. '
+        'Stratified 5-fold CV except AZT1D (80/20 per patient) and PAMAP2 (8-fold LOSO).}'
         '\\label{tab:datasets}',
         '\\tiny',
-        '\\setlength{\\tabcolsep}{2pt}',
+        '\\setlength{\\tabcolsep}{1pt}\\renewcommand{\\arraystretch}{0.85}',
         '\\begin{tabular*}{\\textwidth}'
-        '{@{\\extracolsep{\\fill}}lcccp{0.9cm}p{0.9cm}p{2.2cm}p{2.4cm}@{}}',
+        '{@{\\extracolsep{\\fill}}lp{2.25cm}llp{0.75cm}>{\\raggedright\\arraybackslash}p{3.35cm}@{}}',
         '\\toprule',
-        '\\textbf{Dataset} & \\textbf{Samples} & \\textbf{Chan.} & \\textbf{Length} &',
-        '\\textbf{Metric} & \\textbf{Task} & \\textbf{Input Data} & \\textbf{Target Feature} \\\\',
+        '\\textbf{Dataset} & \\textbf{Samples; $C{\\times}L$} & \\textbf{Metric} & '
+        '\\textbf{Task} & \\textbf{\\% max.} & \\textbf{Input / target} \\\\',
         '\\midrule',
     ]
-    for name, samples, ch, length, m, task_str, input_data, target in rows:
-        # Keep lines under 90 chars: break after Task column
-        lines.append(
-            f'{name} & {samples} & {ch} & {length} & {m} & {task_str} &'
-        )
-        lines.append(f'{input_data} & {target} \\\\')
+    for name, shape, m, task_str, balance, io in rows:
+        lines.append(f'{name} & {shape} & {m} & {task_str} & {balance} & {io} \\\\')
     lines.extend(['\\bottomrule', '\\end{tabular*}', '\\end{table}'])
-    out_path.write_text('\n'.join(lines), encoding='utf-8')
-    print(f"Wrote {out_path}")
+    (ELARTICLE / 'dataset_characteristics.tex').write_text('\n'.join(lines), encoding='utf-8')
 
 
 if __name__ == '__main__':
-    for name, func in {'emotions': preprocess_emotions, 'mimic': preprocess_mimic, 'svd': preprocess_svd, 'pamap2': preprocess_pamap2, 'azt1d': preprocess_azt1d}.items():
-        print(f"Preprocessing {name}...")
+    for func in (preprocess_emotions, preprocess_mimic, preprocess_svd, preprocess_pamap2, preprocess_azt1d):
         func()
-    print("Writing dataset characteristics table...")
     write_dataset_table()

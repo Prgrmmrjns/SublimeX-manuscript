@@ -1,217 +1,138 @@
 # SublimeX Manuscript Repository
 
-This repository contains the evaluation pipelines, analysis scripts, and manuscript
-source for the SublimeX paper: *"SublimeX: Supervised bottom-up localized
-multi-representative feature eXtraction for time series and spatial data"*.
+Pattern Recognition paper: [*Interpretable supervised feature extraction for time series and spatial data*](elsarticle/main.tex).
+
+Scripts reproduce Table~3, Table~4, and Figures~1--4 from the manuscript. The **SublimeX** package is installed from PyPI (`sublimex==0.1.2`); optional local checkout: clone [sublimex](https://github.com/Prgrmmrjns/sublimex) into `sublimex/` at the repo root.
 
 ---
 
-## Reproducing Results
+## Quick reproduction (paper numbers)
 
-Follow these steps to reproduce the paper’s experiments and figures.
-
-### 1. Environment setup
-
-From the repository root:
+With **preprocessed data** in `datasets/` and **saved features** in `parameters/` (committed or downloaded), regenerate tables and figures in minutes:
 
 ```bash
-git clone https://github.com/Prgrmmrjns/patternExtraction-manuscript.git
-cd patternExtraction-manuscript
-
-conda create -n sublimex python=3.13
-conda activate sublimex
+python -m venv .venv && source .venv/bin/activate   # or: conda create -n sublimex python=3.11
 pip install -r requirements.txt
+
+python scripts/run_all.py --only tables
+python scripts/run_all.py --only figures
+cd elsarticle && latexmk -pdf main.tex
 ```
 
-### 2. Download datasets
+This re-runs LightGBM/CNN/MiniRocket scoring and plotting using stored SublimeX segment definitions. Set `LOAD_FEATURES = False` in `scripts/config.py` only if you intend to re-run full Optuna feature search (days of compute; results may differ slightly from parallel TPE).
 
-Several datasets exceed GitHub’s 100 MB limit and must be downloaded separately.
-Place each dataset in the path listed under **Target location**.
+---
 
-| Dataset | Approx. size | Source | Target location |
-|---------|--------------|--------|------------------|
-| **PAMAP2** | ~1.5 GB | [UCI ML Repository](https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring) | `datasets/pamap2/Protocol/` |
-| **MIMIC-IV** | ~571 MB | [PhysioNet](https://physionet.org/content/mimiciv/) (credentialing required) | `datasets/mimic/` (e.g. `final_df.csv`) |
-| **MIT-BIH** | ~100 MB | [PhysioNet](https://physionet.org/content/mitdb/1.0.0/) | `datasets/mitbih/` |
-| **SVD** | ~3 GB | [Saarbrücken Voice Database](https://stimmdb.coli.uni-saarland.de) | `datasets/SVD/raw/` |
-| **AZT1D** | ~50 MB | [Zenodo](https://zenodo.org/records/15094234) or [Mendeley](https://data.mendeley.com/datasets/gk9m674wcx/1) | `datasets/azt1d/CGM Records/` |
-| **REMC** | ~2 GB | [Roadmap Epigenomics](https://gitlab.gwdg.de/MedBioinf/generegulation/patternchrome/-/tree/main/datasets/Binned_sequencing_data) | Convert .RData to .parquet and place in `datasets/remc/` |
-| **Emotions** | ~10 MB | [Kaggle](https://www.kaggle.com/datasets/birdy654/eeg-brainwave-dataset-feeling-emotions) | `datasets/emotions/` |
+## Full pipeline
 
-For MIMIC-IV, complete [PhysioNet credentialing](https://physionet.org/settings/credentialing/) and follow their export instructions to produce `final_df.csv` (or equivalent) in `datasets/mimic/`.
+| Step | Command | Outputs |
+|------|---------|---------|
+| 1. Setup | `pip install -r requirements.txt` | Python env |
+| 2. Data | Download raw data (see below), then `python scripts/preprocess.py` | `datasets/*` processed files; `elsarticle/dataset_characteristics.tex` |
+| 3. Benchmarks | `python scripts/main_eval.py` | `results/main_eval.csv`, `parameters/<dataset>/fold*.json` |
+| 4. Ablations | `python scripts/ablation_study.py` | `results/ablation_study.csv`, `parameters/ablation/` |
+| 5. Tables | `python scripts/generate_tables.py` | `elsarticle/results_table.tex`, `elsarticle/ablation_results.tex` |
+| 6. Figures | `python scripts/run_all.py --only figures` | `elsarticle/*.eps`, `*.png`, … |
+| 7. PDF | `cd elsarticle && latexmk -pdf main.tex` | `elsarticle/main.pdf` |
 
-### 3. Preprocess data
+Or run steps 2–6 in one go (from repo root):
 
-From the repository root, run the preprocessing pipeline. It expects raw data in the locations above and writes processed files under `datasets/` (e.g. `emotions_processed.csv`, `mimic_processed.parquet`, `pamap2.parquet`, `SVD/svd.parquet`, `azt1d_all_patients.parquet`). MIT-BIH and REMC use pre-existing processed files in their dataset folders.
+```bash
+python scripts/run_all.py
+```
+
+All analysis scripts use absolute paths via `scripts/config.py` and may be invoked from **any working directory**.
+
+---
+
+## Environment
+
+- Python **3.10+** (3.11 recommended)
+- **Hardware** (paper): MacBook Pro M2, 12 cores, 32 GB RAM
+- Thread caps are set in `main_eval.py` for reproducible library baselines (`OMP_NUM_THREADS=1`, etc.)
+
+```bash
+pip install -r requirements.txt
+# sublimex==0.1.2 is pinned; for development:
+# git clone https://github.com/Prgrmmrjns/sublimex sublimex && pip install -e sublimex
+```
+
+---
+
+## Datasets
+
+Large raw files are **not** in git (see `.gitignore`). Download sources match `supplementary_data/supplementary.tex`.
+
+| Dataset | Approx. | Source | Place under |
+|---------|---------|--------|-------------|
+| **AZT1D** | ~50 MB | [Zenodo](https://zenodo.org/records/15094234) | `datasets/azt1d/CGM Records/` |
+| **MIT-BIH** | ~100 MB | [PhysioNet mitdb](https://physionet.org/content/mitdb/1.0.0/) | `datasets/mitbih/` |
+| **Emotions** | ~10 MB | [Kaggle EEG emotions](https://www.kaggle.com/datasets/birdy654/eeg-brainwave-dataset-feeling-emotions) | `datasets/emotions/` |
+| **REMC** | ~2 GB | [PatternChrome bins](https://gitlab.gwdg.de/MedBioinf/generegulation/patternchrome/-/tree/main/datasets/Binned_sequencing_data) | `datasets/remc/*.parquet` |
+| **MIMIC-IV** | ~571 MB | [PhysioNet](https://physionet.org/content/mimiciv/) (credentialing) | `datasets/mimic/final_df.csv` |
+| **PAMAP2** | ~1.5 GB | [UCI PAMAP2](https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring) | `datasets/pamap2/Protocol/` |
+| **SVD** | ~3 GB | [Saarbrücken Voice DB](https://stimmdb.coli.uni-saarland.de) | `datasets/SVD/raw/` |
+
+Then:
 
 ```bash
 python scripts/preprocess.py
 ```
 
-This also writes `elsarticle/tables/dataset_characteristics.tex`.
-
-### 4. Run main evaluation
-
-The main evaluation compares SublimeX with baselines (TSFRESH, CATCH22, MiniRocket, RDST, CNN) on all datasets. **Run from the `scripts/` directory** so result paths resolve correctly.
-
-```bash
-cd scripts
-python main_eval.py
-```
-
-Output: `results/main_eval.csv`, and SublimeX parameters under `parameters/<dataset>/`.
-
-### 5. Run ablation study
-
-Ablation over SublimeX variants (aggregates, pattern search, decision tree, trials, etc.). Also run from `scripts/`.
-
-```bash
-cd scripts
-python ablation_study.py
-```
-
-Output: `results/ablation_study.csv`.
-
-### 6. Generate manuscript tables and figures
-
-From `scripts/`:
-
-```bash
-# LaTeX tables (main results + ablation)
-python generate_tables.py
-```
-
-Output: `elsarticle/tables/results_table.tex`, `elsarticle/tables/ablation_results.tex`.
-
-From the repository root (these scripts use pathlib and work from any cwd):
-
-```bash
-# Domain interpretation figure (SHAP on REMC E003 and AZT1D)
-python scripts/domain_interpretation.py
-
-# Methodology flowchart
-python scripts/flowchart.py
-
-# Performance stability analysis
-python scripts/performance_analysis.py
-
-# Incremental feature analysis (optional)
-python scripts/incremental_features.py
-```
-
-Figures are written to `elsarticle/images/`; optional CSVs to `results/`.
-
-### 7. Build the manuscript
-
-Compile the LaTeX source in `elsarticle/` (e.g. `pdflatex` or your usual workflow):
-
-```bash
-cd elsarticle
-pdflatex main
-bibtex main
-pdflatex main
-pdflatex main
-```
+Metadata and channel definitions: `datasets/metadata.json`.
 
 ---
 
-## Repository structure
+## Evaluation settings (main text)
 
-```
-├── elsarticle/              # LaTeX manuscript (Elsevier style)
-│   ├── main.tex
-│   ├── bibliography.bib
-│   ├── images/
-│   └── tables/
-├── scripts/                 # Evaluation and analysis
-│   ├── main_eval.py         # SublimeX + baselines
-│   ├── ablation_study.py    # Ablation over SublimeX variants
-│   ├── preprocess.py        # Dataset preprocessing and loaders
-│   ├── generate_tables.py   # LaTeX tables from result CSVs
-│   ├── domain_interpretation.py
-│   ├── flowchart.py
-│   ├── performance_analysis.py
-│   ├── incremental_features.py
-│   ├── core.py              # SublimeX core
-│   └── model.py             # LightGBM wrapper
-├── datasets/                # Raw and processed data (see .gitignore)
-├── results/                 # main_eval.csv, ablation_study.csv, etc.
-├── parameters/              # Extracted SublimeX parameters (JSON)
-└── requirements.txt
-```
+Aligned with `elsarticle/main.tex` Methods:
+
+- **SublimeX**: 300 Optuna trials per feature (TPE); mean over segment; four views (raw, z-score, derivative, FFT power); LightGBM depth 5; inner 50/50 search split (seed 42); stop when no strict validation improvement.
+- **Baselines**: tsfresh (`MinimalFCParameters`), catch22, MiniRocket (`random_state=42`), RDST (`max_shapelets=1000`), 1D CNN — all on the same outer splits; feature-based methods use the same LightGBM readout.
+- **Splits**: 5-fold CV (most sets); PAMAP2 8-fold LOSO; REMC 5-fold × 56 cell lines; AZT1D temporal 80/20 per patient (pooled SublimeX discovery on training windows only).
+- **Hyperparameters**: Supplementary Table S1 (`supplementary_data/supplementary.tex`).
 
 ---
 
-## Datasets summary
+## Key paths
 
-| Dataset | Task | Samples | Channels | Length | Metric |
-|---------|------|---------|----------|--------|--------|
-| AZT1D | Glucose forecasting | ~12k | 3 | 24 | RMSE |
-| MIT-BIH | Arrhythmia classification | ~12k | 1 | 100 | Accuracy |
-| Emotions | Emotion classification | 2,048 | 5 | 254 | AUC |
-| REMC | Gene expression | 18,421 | 5 | 200 | AUC |
-| MIMIC-IV | Mortality prediction | 6,439 | 12 | 24 | AUC |
-| PAMAP2 | Activity recognition | ~4k | 51 | 100 | Accuracy |
-| SVD | Voice pathology | 1,988 | 1 | 1,000 | Accuracy |
-
----
-
-## Baselines
-
-SublimeX is compared with:
-
-| Method | Description |
-|--------|-------------|
-| **TSFRESH** | Statistical time series features |
-| **CATCH22** | 22 canonical time series features |
-| **MiniRocket** | Random convolutional kernels |
-| **RDST** | Random Dilated Shapelet Transform |
-| **CNN** | 1D convolutional neural network |
+| Path | Role |
+|------|------|
+| `scripts/config.py` | Paths, `LOAD_FEATURES`, `K_FOLDS` |
+| `scripts/run_all.py` | Orchestrator (`--only preprocess\|eval\|ablation\|tables\|figures\|all`) |
+| `parameters/<dataset>/fold<N>.json` | Saved SublimeX features (main evaluation) |
+| `parameters/ablation/` | Ablation feature JSONs |
+| `results/main_eval.csv` | Benchmark scores, times, feature counts |
+| `results/ablation_study.csv` | Ablation scores |
+| `elsarticle/results_table.tex` | Table~3 |
+| `elsarticle/ablation_results.tex` | Table~4 |
+| `elsarticle/flowchart.eps` | Figure~1 |
+| `elsarticle/feature_analysis.eps` | Figure~2 |
+| `elsarticle/incremental_features.png` | Figure~3 |
+| `elsarticle/domain_interpretation.png` | Figure~4 |
 
 ---
 
-## Preprocessed data (skip preprocessing)
+## Reproducibility notes
 
-If you want to skip preprocessing and only run evaluation, you need the processed
-artifacts. Large ones are not in the repo; contact the authors for access if needed:
+| Component | Bit-exact? | Notes |
+|-----------|------------|--------|
+| Saved `parameters/*.json` | Yes | Re-load with `LOAD_FEATURES=True` |
+| LightGBM on fixed features | Yes | `deterministic=True` for SublimeX readout |
+| Optuna feature search | No | Parallel TPE can vary; use committed JSON for paper features |
+| CNN / MiniRocket | Approx. | GPU/MPS vs CPU may differ slightly |
 
-- `datasets/pamap2/pamap2.parquet` (364 MB)
-- `datasets/mimic/final_df.csv` (571 MB) — then run preprocessing to produce
-  `mimic_processed.parquet` used by the pipeline.
+**Ablation baseline** rows are taken from `main_eval.csv` (SublimeX), not re-fit in `ablation_study.py`. Delete `results/*.csv` to force a full re-run.
 
 ---
 
 ## Citation
 
-If you use this code or the SublimeX method, please cite:
-
 ```bibtex
 @article{wolber2025sublimex,
-  title={SublimeX: Supervised bottom-up localized multi-representative feature
-         eXtraction for time series and spatial data},
-  author={Wolber, J.C. and Paul, N.B. and Sellin, J. and Muecke, M. and Schuppert, A.},
+  title={Interpretable supervised feature extraction for time series and spatial data},
+  author={Wolber, J.C. and Paul, N.B. and Sellin, J. and Samadi, M. E. and Muecke, M. and Schuppert, A.},
   journal={Pattern Recognition},
   year={2025}
 }
 ```
-
----
-
-## SublimeX package
-
-The SublimeX Python package is available on PyPI:
-
-```bash
-pip install sublimex
-```
-
-Documentation and source: https://github.com/Prgrmmrjns/sublimex
-
----
-
-## License and contact
-
-This project is licensed under the MIT License (see LICENSE).
-
-- Jonas Chanrithy Wolber — jwolber@ukaachen.de  
-- Institute of Digitalization and General Medicine, RWTH Aachen University
