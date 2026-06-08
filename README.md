@@ -1,9 +1,4 @@
 # SublimeX Manuscript Repository
-
-Pattern Recognition paper: [*Interpretable supervised feature extraction for time series and spatial data*](elsarticle/main.tex).
-
-Scripts reproduce Table~3, Table~4, and Figures~1--4 from the manuscript. The **SublimeX** package is installed from PyPI (`sublimex==0.1.2`); optional local checkout: clone [sublimex](https://github.com/Prgrmmrjns/sublimex) into `sublimex/` at the repo root.
-
 ---
 
 ## Quick reproduction (paper numbers)
@@ -14,9 +9,11 @@ With **preprocessed data** in `datasets/` and **saved features** in `parameters/
 python -m venv .venv && source .venv/bin/activate   # or: conda create -n sublimex python=3.11
 pip install -r requirements.txt
 
-python scripts/run_all.py --only tables
-python scripts/run_all.py --only figures
-cd elsarticle && latexmk -pdf main.tex
+python scripts/generate_tables.py
+python scripts/flowchart.py
+python scripts/feature_analysis.py
+python scripts/domain_interpretation.py
+python scripts/incremental_features.py
 ```
 
 This re-runs LightGBM/CNN/MiniRocket scoring and plotting using stored SublimeX segment definitions. Set `LOAD_FEATURES = False` in `scripts/config.py` only if you intend to re-run full Optuna feature search (days of compute; results may differ slightly from parallel TPE).
@@ -32,13 +29,17 @@ This re-runs LightGBM/CNN/MiniRocket scoring and plotting using stored SublimeX 
 | 3. Benchmarks | `python scripts/main_eval.py` | `results/main_eval.csv`, `parameters/<dataset>/fold*.json` |
 | 4. Ablations | `python scripts/ablation_study.py` | `results/ablation_study.csv`, `parameters/ablation/` |
 | 5. Tables | `python scripts/generate_tables.py` | `elsarticle/results_table.tex`, `elsarticle/ablation_results.tex` |
-| 6. Figures | `python scripts/run_all.py --only figures` | `elsarticle/*.eps`, `*.png`, … |
+| 6. Figures | see below | `elsarticle/*.eps`, `*.png`, … |
 | 7. PDF | `cd elsarticle && latexmk -pdf main.tex` | `elsarticle/main.pdf` |
 
-Or run steps 2–6 in one go (from repo root):
+**Figure scripts** (run from repo root; order does not matter):
 
 ```bash
-python scripts/run_all.py
+python scripts/flowchart.py              # Figure 1 — methodology flowchart
+python scripts/feature_analysis.py       # Figure 2 — performance stability
+python scripts/incremental_features.py   # Figure 3 — incremental feature analysis
+python scripts/domain_interpretation.py  # Figure 4 — domain interpretation (SHAP)
+python scripts/graphical_abstract.py     # graphical abstract (optional)
 ```
 
 All analysis scripts use absolute paths via `scripts/config.py` and may be invoked from **any working directory**.
@@ -47,14 +48,12 @@ All analysis scripts use absolute paths via `scripts/config.py` and may be invok
 
 ## Environment
 
-- Python **3.10+** (3.11 recommended)
+- Python **3.11+**
 - **Hardware** (paper): MacBook Pro M2, 12 cores, 32 GB RAM
 - Thread caps are set in `main_eval.py` for reproducible library baselines (`OMP_NUM_THREADS=1`, etc.)
 
 ```bash
 pip install -r requirements.txt
-# sublimex==0.1.2 is pinned; for development:
-# git clone https://github.com/Prgrmmrjns/sublimex sublimex && pip install -e sublimex
 ```
 
 ---
@@ -99,7 +98,6 @@ Aligned with `elsarticle/main.tex` Methods:
 | Path | Role |
 |------|------|
 | `scripts/config.py` | Paths, `LOAD_FEATURES`, `K_FOLDS` |
-| `scripts/run_all.py` | Orchestrator (`--only preprocess\|eval\|ablation\|tables\|figures\|all`) |
 | `parameters/<dataset>/fold<N>.json` | Saved SublimeX features (main evaluation) |
 | `parameters/ablation/` | Ablation feature JSONs |
 | `results/main_eval.csv` | Benchmark scores, times, feature counts |

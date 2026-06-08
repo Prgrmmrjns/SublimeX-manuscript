@@ -1,0 +1,164 @@
+Other datasets complete, AZT1D incomplete → running AZT1D only
+AZT1D: 6 approaches × 23 patients (pooled SublimeX fit)
+[1/6] SublimeX — 23 patients
+    + feature 1: val=33.618990
+    + feature 2: val=33.341974
+    + feature 3: val=32.845664
+    + feature 4: val=32.595131
+    + feature 5: val=32.379427
+    + feature 6: val=32.297250
+    + feature 7: val=32.186890
+    + feature 8: val=32.132740
+    + feature 9: val=32.087108
+    + feature 10: val=32.051819
+    + feature 11: val=32.028642
+    + feature 12: val=31.998070
+    + feature 13: val=31.978188
+    + feature 14: val=31.944214
+    + feature 15: val=31.915252
+    + feature 16: val=31.896722
+    + feature 17: val=31.886162
+azt1d 1/23 | SublimeX | rmse=22.8295 | 28.6s | feat=17
+azt1d 2/23 | SublimeX | rmse=36.3989 | 28.6s | feat=17
+azt1d 3/23 | SublimeX | rmse=26.3271 | 28.6s | feat=17
+azt1d 4/23 | SublimeX | rmse=32.2464 | 28.6s | feat=17
+azt1d 5/23 | SublimeX | rmse=28.0507 | 28.6s | feat=17
+azt1d 6/23 | SublimeX | rmse=25.2536 | 28.6s | feat=17
+azt1d 7/23 | SublimeX | rmse=27.4179 | 28.6s | feat=17
+azt1d 8/23 | SublimeX | rmse=36.7870 | 28.6s | feat=17
+azt1d 9/23 | SublimeX | rmse=33.3358 | 28.6s | feat=17
+azt1d 10/23 | SublimeX | rmse=33.3895 | 28.6s | feat=17
+azt1d 11/23 | SublimeX | rmse=33.8651 | 28.6s | feat=17
+azt1d 12/23 | SublimeX | rmse=29.2768 | 28.6s | feat=17
+azt1d 13/23 | SublimeX | rmse=20.5922 | 28.6s | feat=17
+azt1d 14/23 | SublimeX | rmse=28.7529 | 28.6s | feat=17
+azt1d 15/23 | SublimeX | rmse=25.7433 | 28.6s | feat=17
+azt1d 16/23 | SublimeX | rmse=39.6649 | 28.6s | feat=17
+azt1d 17/23 | SublimeX | rmse=32.6113 | 28.6s | feat=17
+azt1d 18/23 | SublimeX | rmse=25.9773 | 28.6s | feat=17
+azt1d 19/23 | SublimeX | rmse=27.2879 | 28.6s | feat=17
+azt1d 20/23 | SublimeX | rmse=40.7572 | 28.6s | feat=17
+azt1d 21/23 | SublimeX | rmse=32.4327 | 28.6s | feat=17
+azt1d 22/23 | SublimeX | rmse=31.6225 | 28.6s | feat=17
+azt1d 23/23 | SublimeX | rmse=41.8238 | 28.6s | feat=17
+[2/6] CNN — 23 patients
+azt1d 1/23 | CNN | rmse=26.1521 | 17.8s | feat=72
+azt1d 2/23 | CNN | rmse=36.7501 | 19.5s | feat=72
+azt1d 3/23 | CNN | rmse=29.6351 | 27.9s | feat=72
+azt1d 4/23 | CNN | rmse=31.8354 | 12.9s | feat=72
+azt1d 5/23 | CNN | rmse=29.5729 | 21.4s | feat=72
+azt1d 6/23 | CNN | rmse=28.0481 | 14.2s | feat=72
+azt1d 7/23 | CNN | rmse=29.0749 | 19.7s | feat=72
+azt1d 8/23 | CNN | rmse=37.6023 | 21.0s | feat=72
+azt1d 9/23 | CNN | rmse=32.8258 | 26.3s | feat=72
+azt1d 10/23 | CNN | rmse=32.7229 | 19.1s | feat=72
+azt1d 11/23 | CNN | rmse=38.3616 | 34.4s | feat=72
+azt1d 12/23 | CNN | rmse=29.9826 | 23.2s | feat=72
+azt1d 13/23 | CNN | rmse=21.5455 | 25.1s | feat=72
+azt1d 14/23 | CNN | rmse=27.9087 | 50.3s | feat=72
+azt1d 15/23 | CNN | rmse=27.2789 | 27.5s | feat=72
+azt1d 16/23 | CNN | rmse=41.8539 | 18.0s | feat=72
+azt1d 17/23 | CNN | rmse=34.1837 | 26.6s | feat=72
+azt1d 18/23 | CNN | rmse=29.1627 | 32.4s | feat=72
+azt1d 19/23 | CNN | rmse=30.2060 | 21.5s | feat=72
+azt1d 20/23 | CNN | rmse=44.6434 | 33.8s | feat=72
+azt1d 21/23 | CNN | rmse=35.9119 | 21.4s | feat=72
+azt1d 22/23 | CNN | rmse=34.0042 | 21.0s | feat=72
+azt1d 23/23 | CNN | rmse=41.6031 | 17.1s | feat=72
+[3/6] MiniRocket — 23 patients
+azt1d 1/23 | MiniRocket | rmse=24.2474 | 7.2s | feat=9996
+azt1d 2/23 | MiniRocket | rmse=35.9248 | 6.1s | feat=9996
+azt1d 3/23 | MiniRocket | rmse=26.2923 | 6.7s | feat=9996
+azt1d 4/23 | MiniRocket | rmse=31.3298 | 7.1s | feat=9996
+azt1d 5/23 | MiniRocket | rmse=27.6758 | 7.4s | feat=9996
+azt1d 6/23 | MiniRocket | rmse=25.8552 | 7.0s | feat=9996
+azt1d 7/23 | MiniRocket | rmse=27.8506 | 7.9s | feat=9996
+azt1d 8/23 | MiniRocket | rmse=35.7070 | 5.0s | feat=9996
+azt1d 9/23 | MiniRocket | rmse=33.6958 | 6.2s | feat=9996
+azt1d 10/23 | MiniRocket | rmse=30.8838 | 6.9s | feat=9996
+azt1d 11/23 | MiniRocket | rmse=33.5247 | 7.3s | feat=9996
+azt1d 12/23 | MiniRocket | rmse=28.6156 | 7.0s | feat=9996
+azt1d 13/23 | MiniRocket | rmse=20.7664 | 7.1s | feat=9996
+azt1d 14/23 | MiniRocket | rmse=26.4367 | 7.6s | feat=9996
+azt1d 15/23 | MiniRocket | rmse=25.0654 | 6.7s | feat=9996
+azt1d 16/23 | MiniRocket | rmse=39.3401 | 6.9s | feat=9996
+azt1d 17/23 | MiniRocket | rmse=33.3615 | 5.8s | feat=9996
+azt1d 18/23 | MiniRocket | rmse=26.2584 | 7.2s | feat=9996
+azt1d 19/23 | MiniRocket | rmse=28.1287 | 7.0s | feat=9996
+azt1d 20/23 | MiniRocket | rmse=40.7422 | 7.1s | feat=9996
+azt1d 21/23 | MiniRocket | rmse=34.2809 | 6.5s | feat=9996
+azt1d 22/23 | MiniRocket | rmse=31.4038 | 6.4s | feat=9996
+azt1d 23/23 | MiniRocket | rmse=40.1961 | 6.5s | feat=9996
+[4/6] catch22 — 23 patients
+azt1d 1/23 | catch22 | rmse=27.0107 | 2.6s | feat=66
+azt1d 2/23 | catch22 | rmse=40.0884 | 2.5s | feat=66
+azt1d 3/23 | catch22 | rmse=29.5994 | 2.6s | feat=66
+azt1d 4/23 | catch22 | rmse=36.1900 | 2.7s | feat=66
+azt1d 5/23 | catch22 | rmse=30.9251 | 2.9s | feat=66
+azt1d 6/23 | catch22 | rmse=28.1070 | 2.6s | feat=66
+azt1d 7/23 | catch22 | rmse=32.9077 | 3.1s | feat=66
+azt1d 8/23 | catch22 | rmse=41.9299 | 1.9s | feat=66
+azt1d 9/23 | catch22 | rmse=38.4143 | 2.4s | feat=66
+azt1d 10/23 | catch22 | rmse=37.2831 | 2.5s | feat=66
+azt1d 11/23 | catch22 | rmse=37.1489 | 3.0s | feat=66
+azt1d 12/23 | catch22 | rmse=32.8166 | 2.7s | feat=66
+azt1d 13/23 | catch22 | rmse=24.0909 | 2.6s | feat=66
+azt1d 14/23 | catch22 | rmse=27.2169 | 2.6s | feat=66
+azt1d 15/23 | catch22 | rmse=29.4643 | 2.5s | feat=66
+azt1d 16/23 | catch22 | rmse=43.9389 | 2.7s | feat=66
+azt1d 17/23 | catch22 | rmse=38.2232 | 2.2s | feat=66
+azt1d 18/23 | catch22 | rmse=28.3932 | 2.8s | feat=66
+azt1d 19/23 | catch22 | rmse=30.3581 | 2.8s | feat=66
+azt1d 20/23 | catch22 | rmse=41.9085 | 2.8s | feat=66
+azt1d 21/23 | catch22 | rmse=35.4811 | 2.7s | feat=66
+azt1d 22/23 | catch22 | rmse=32.8713 | 2.4s | feat=66
+azt1d 23/23 | catch22 | rmse=45.4484 | 2.5s | feat=66
+[5/6] tsfresh — 23 patients
+azt1d 1/23 | tsfresh | rmse=25.2553 | 3.8s | feat=30
+azt1d 2/23 | tsfresh | rmse=42.8613 | 3.7s | feat=30
+azt1d 3/23 | tsfresh | rmse=28.3991 | 3.9s | feat=30
+azt1d 4/23 | tsfresh | rmse=33.7073 | 4.3s | feat=30
+azt1d 5/23 | tsfresh | rmse=29.1561 | 4.4s | feat=30
+azt1d 6/23 | tsfresh | rmse=28.1269 | 4.3s | feat=30
+azt1d 7/23 | tsfresh | rmse=32.1066 | 4.5s | feat=30
+azt1d 8/23 | tsfresh | rmse=37.1286 | 2.9s | feat=30
+azt1d 9/23 | tsfresh | rmse=35.1830 | 3.6s | feat=30
+azt1d 10/23 | tsfresh | rmse=35.3772 | 4.0s | feat=30
+azt1d 11/23 | tsfresh | rmse=36.4836 | 4.3s | feat=30
+azt1d 12/23 | tsfresh | rmse=30.4614 | 4.3s | feat=30
+azt1d 13/23 | tsfresh | rmse=22.6718 | 4.2s | feat=30
+azt1d 14/23 | tsfresh | rmse=28.6227 | 5.1s | feat=30
+azt1d 15/23 | tsfresh | rmse=26.7549 | 4.2s | feat=30
+azt1d 16/23 | tsfresh | rmse=40.0145 | 4.3s | feat=30
+azt1d 17/23 | tsfresh | rmse=35.0938 | 3.5s | feat=30
+azt1d 18/23 | tsfresh | rmse=28.1081 | 4.4s | feat=30
+azt1d 19/23 | tsfresh | rmse=29.7141 | 4.5s | feat=30
+azt1d 20/23 | tsfresh | rmse=41.6640 | 4.4s | feat=30
+azt1d 21/23 | tsfresh | rmse=33.9038 | 3.7s | feat=30
+azt1d 22/23 | tsfresh | rmse=35.4912 | 3.5s | feat=30
+azt1d 23/23 | tsfresh | rmse=43.0247 | 3.8s | feat=30
+[6/6] RDST — 23 patients
+azt1d 1/23 | RDST | rmse=24.2059 | 5.6s | feat=3000
+azt1d 2/23 | RDST | rmse=37.7309 | 5.7s | feat=3000
+azt1d 3/23 | RDST | rmse=27.6415 | 5.8s | feat=3000
+azt1d 4/23 | RDST | rmse=32.5744 | 6.4s | feat=3000
+azt1d 5/23 | RDST | rmse=29.4689 | 6.4s | feat=3000
+azt1d 6/23 | RDST | rmse=27.1049 | 6.5s | feat=3000
+azt1d 7/23 | RDST | rmse=29.6659 | 6.3s | feat=3000
+azt1d 8/23 | RDST | rmse=38.5943 | 4.0s | feat=3000
+azt1d 9/23 | RDST | rmse=36.8362 | 5.2s | feat=3000
+azt1d 10/23 | RDST | rmse=35.1009 | 6.0s | feat=3000
+azt1d 11/23 | RDST | rmse=34.8588 | 6.3s | feat=3000
+azt1d 12/23 | RDST | rmse=31.0891 | 6.3s | feat=3000
+azt1d 13/23 | RDST | rmse=22.5853 | 6.5s | feat=3000
+azt1d 14/23 | RDST | rmse=26.5895 | 7.4s | feat=3000
+azt1d 15/23 | RDST | rmse=26.4819 | 6.3s | feat=3000
+azt1d 16/23 | RDST | rmse=39.6111 | 6.2s | feat=3000
+azt1d 17/23 | RDST | rmse=34.3404 | 5.1s | feat=3000
+azt1d 18/23 | RDST | rmse=27.3189 | 6.5s | feat=3000
+azt1d 19/23 | RDST | rmse=28.3229 | 6.4s | feat=3000
+azt1d 20/23 | RDST | rmse=41.7370 | 6.7s | feat=3000
+azt1d 21/23 | RDST | rmse=33.0828 | 5.7s | feat=3000
+azt1d 22/23 | RDST | rmse=34.3775 | 5.2s | feat=3000
+azt1d 23/23 | RDST | rmse=41.0953 | 5.8s | feat=3000
+done (1986 rows)
