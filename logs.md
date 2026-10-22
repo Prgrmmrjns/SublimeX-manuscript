@@ -1,4 +1,7 @@
 ## 2026-10-22
+* **Update**: Rebuilt clean (35 pages), supplementary (7 pages), and marked (49 pages) PDFs with no errors or undefined references. `mark_manuscript.py` now strips deleted figure filenames and citations without a bibitem; the supplement loads `amsmath`; TSFEL author accents are Unicode.
+* **Update**: Removed `final_df_aggregates.csv` and `update_mortality_flag.py`. MIMIC keeps `final_df.csv` and `mimic_processed.parquet`.
+* **Update**: REMC source link is PatternChrome. The supplement and README state that MIMIC-IV starts from a preselected `final_df.csv` and is not rebuilt from PhysioNet.
 * **Update**: Pushed manuscript `bcbf830` and sublimex `20a43ba` to GitHub. The clean manuscript stays gitignored.
 * **Update**: README notes that a full preprocess rewrites processed files and would add AZT1D subjects 14 and 23, which the paper parquet omits.
 * **Update**: Preprocessing now rebuilds MIT-BIH beats from the record CSVs and keeps AZT1D subjects 14 and 23 (glucose column name; empty carb sum). README and gitignore match the tracked tree; the sublimex checkout clone URL is the real repo.

@@ -67,8 +67,8 @@ Git tracks `scripts/`, `results/`, `parameters/`, `requirements.txt`, and `datas
 | **AZT1D** | ~50 MB | [Zenodo](https://zenodo.org/records/15094234) | `datasets/azt1d/CGM Records/Subject N/Subject N.csv` |
 | **MIT-BIH** | ~100 MB | [PhysioNet mitdb](https://physionet.org/content/mitdb/1.0.0/) | `datasets/mitbih/{record}.csv` and `{record}annotations.txt` |
 | **Emotions** | ~10 MB | [Kaggle EEG emotions](https://www.kaggle.com/datasets/birdy654/eeg-brainwave-dataset-feeling-emotions) | `datasets/emotions/emotions.csv` |
-| **REMC** | ~2 GB | [Roadmap Epigenomics](http://www.roadmapepigenomics.org/) bins | `datasets/remc/remc_<cell>.parquet` (loaded as-is) |
-| **MIMIC-IV** | ~571 MB | [PhysioNet](https://physionet.org/content/mimiciv/) (credentialing) | `datasets/mimic/final_df.csv` |
+| **REMC** | ~2 GB | [PatternChrome](https://gitlab.gwdg.de/MedBioinf/generegulation/patternchrome) | `datasets/remc/remc_<cell>.parquet` (loaded as-is) |
+| **MIMIC-IV** | ~571 MB | Preselected `final_df.csv`, not a raw [PhysioNet](https://physionet.org/content/mimiciv/) extract | `datasets/mimic/final_df.csv` |
 | **PAMAP2** | ~1.5 GB | [UCI PAMAP2](https://archive.ics.uci.edu/dataset/231/pamap2+physical+activity+monitoring) | `datasets/pamap2/Protocol/subject10N.dat` |
 | **SVD** | ~3 GB | [Saarbrücken Voice DB](https://stimmdb.coli.uni-saarland.de) | `datasets/SVD/raw/<diagnosis>/` with `overview.csv` and phrase wavs |
 
@@ -78,7 +78,7 @@ Then:
 python scripts/preprocess.py
 ```
 
-That command rewrites every processed file. The AZT1D parquet behind Table 2 omits subjects 14 and 23; a fresh run keeps them, so the sample count changes. MIT-BIH is rebuilt from the record CSVs and annotation texts, not a raw WFDB drop.
+That command rewrites every processed file. The AZT1D parquet behind Table 2 omits subjects 14 and 23; a fresh run keeps them, so the sample count changes. MIT-BIH is rebuilt from the record CSVs and annotation texts, not a raw WFDB drop. MIMIC-IV is not rebuilt from PhysioNet: `preprocess.py` only reshapes a preselected `final_df.csv` (cohort, variables, and hourly alignment are already fixed in that file). REMC parquets are used as released by PatternChrome.
 
 Metadata and channel definitions: `datasets/metadata.json`.
 

@@ -15,6 +15,7 @@ current clean manuscript:
 Requires latexdiff. \\input files are expanded before the diff.
 Added text is \\DIFadd (blue underline); removed text is \\DIFdel (red strikeout).
 """
+import re
 import subprocess
 import sys
 
@@ -24,5 +25,9 @@ diff = subprocess.run(
      '--graphics-markup=none', old, new],
     check=True, capture_output=True, text=True,
 )
-open(out, 'w').write(diff.stdout)
+text = re.sub(r'\\DIFdelFL\{images/[^}]*\}', '', diff.stdout)
+items = set(re.findall(r'\\bibitem\{([^}]+)\}', text))
+keep = lambda m: ', '.join(k for k in map(str.strip, m.group(1).split(',')) if k in items)
+text = re.sub(r'\\cite\{([^}]+)\}', lambda m: f'\\cite{{{keep(m)}}}' if keep(m) else '', text)
+open(out, 'w').write(text)
 print(out)
