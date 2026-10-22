@@ -1,4 +1,5 @@
 ## 2026-10-22
+* **Update**: Pushed manuscript `bcbf830` and sublimex `20a43ba` to GitHub. The clean manuscript stays gitignored.
 * **Update**: README notes that a full preprocess rewrites processed files and would add AZT1D subjects 14 and 23, which the paper parquet omits.
 * **Update**: Preprocessing now rebuilds MIT-BIH beats from the record CSVs and keeps AZT1D subjects 14 and 23 (glucose column name; empty carb sum). README and gitignore match the tracked tree; the sublimex checkout clone URL is the real repo.
 * **Update**: QUANT probe on SVD, MIMIC-IV, and AZT1D finished (not added to the paper). Regenerated Figure 4 with reversed SHAP y labels.
