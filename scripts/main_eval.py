@@ -25,6 +25,8 @@ from config import (
 )
 setup_sublimex_path()
 from sublimex import SublimeX, mean_objective, LightGBMModel
+
+N_WORKERS = 1
 from preprocess import load_emotions, load_mimic, load_mitbih, load_remc, load_svd, load_pamap2, load_azt1d
 
 warnings.filterwarnings('ignore', message='X does not have valid feature names')
@@ -53,7 +55,7 @@ def _azt1d_pooled_params_path():
 
 def _fit_azt1d_pooled_sublimex(splits, metric, force=False):
     ppath = _azt1d_pooled_params_path()
-    sx = SublimeX(metric=metric, objective_fn=mean_objective, verbose=True, deterministic=False, n_workers=6)
+    sx = SublimeX(metric=metric, objective_fn=mean_objective, verbose=True, deterministic=False, n_workers=1)
     if not force and os.path.exists(ppath):
         sx.load_features(ppath)
         return sx, 0.0
@@ -84,7 +86,7 @@ def eval_sublimex(X_tr, X_te, y_tr, y_te, metric, n_ch, ppath, itr, ite):
     t0, nt = time.time(), X_tr.shape[1] // n_ch
     tr_list = [pd.DataFrame(X_tr[:, i*nt:(i+1)*nt]) for i in range(n_ch)]
     te_list = [pd.DataFrame(X_te[:, i*nt:(i+1)*nt]) for i in range(n_ch)]
-    sx = SublimeX(metric=metric, objective_fn=mean_objective, verbose=True, deterministic=False, n_workers=6)
+    sx = SublimeX(metric=metric, objective_fn=mean_objective, verbose=True, deterministic=False, n_workers=N_WORKERS)
     if LOAD_FEATURES:
         if not os.path.exists(ppath):
             raise FileNotFoundError(f'Missing saved features: {ppath}')

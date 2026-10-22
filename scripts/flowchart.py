@@ -1,4 +1,4 @@
-"""SublimeX methodology flowchart (Figure~1) → elsarticle/flowchart.{eps,png}."""
+"""SublimeX methodology flowchart (Figure~1) → elsarticle/clean/flowchart.{eps,png}."""
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 from matplotlib import path as mpl_path
@@ -9,7 +9,7 @@ from plot_style import save_png_eps
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ICON_DIR = REPO_ROOT / "scripts" / "_flowchart_tmp_icons"
-OUT = REPO_ROOT / "elsarticle/flowchart"
+OUT = REPO_ROOT / "elsarticle/clean/flowchart"
 FIGSIZE = (5, 3)
 DERIV_C, FEAT_C = "#FF9800", "#E91E63"
 SEG_START, SEG_END = 32, 68
@@ -32,9 +32,12 @@ def workflow_views(n=100):
                 seg=deriv[SEG_START:SEG_END + 1], mean=float(deriv[SEG_START:SEG_END + 1].mean()))
 
 
-def _save_icon(fig, name, dpi=150):
-    plt.tight_layout()
-    fig.savefig(ICON_DIR / name, dpi=dpi, bbox_inches="tight", facecolor="white")
+def _save_icon(fig, name, dpi=180, tight=True):
+    if tight:
+        plt.tight_layout()
+        fig.savefig(ICON_DIR / name, dpi=dpi, bbox_inches="tight", facecolor="white")
+    else:
+        fig.savefig(ICON_DIR / name, dpi=dpi, facecolor="white")
     plt.close()
 
 
@@ -91,17 +94,79 @@ def create_transforms_icon():
         ("FFT Power", np.abs(np.fft.rfft(signal)) ** 2, "#9C27B0"),
     ]
     for ax, (name, data, color) in zip(axes.flat, transforms):
-        ax.plot(data, color=color, linewidth=1.5)
+        ax.plot(data, color=color, linewidth=1.6)
         ax.fill_between(range(len(data)), data, alpha=0.3, color=color)
-        ax.set_title(name, fontsize=12, fontweight="bold")
+        ax.set_title(name, fontsize=15, fontweight="bold", pad=2)
         ax.axis("off")
     _save_icon(fig, "transforms_icon.png")
 
 
+SEG = (0.24, 0.76)
+GROUP_MEANS = (("Group one", -0.13, 0.62), ("Group two", 0.14, 0.96))
+
+
+def _schematic_view(amp):
+    t = np.linspace(0, 1, 240)
+    skew = 1.0 + 0.18 * np.tanh((t - 0.50) / 0.11)
+    p_wave = amp * skew * np.exp(-0.5 * ((t - 0.50) / 0.13) ** 2)
+    return t, p_wave
+
+
+def _pair_traces(name):
+    fig, axes = plt.subplots(1, 2, figsize=(4.8, 2.42), sharey=True)
+    for ax, (title, mu, amp) in zip(axes, GROUP_MEANS):
+        t, y = _schematic_view(amp)
+        m = (t >= SEG[0]) & (t <= SEG[1])
+        seg_mean = float(y[m].mean())
+        ax.fill_between(t, y, 0, color=RAW_C, alpha=0.30, lw=0, zorder=2)
+        ax.plot(t, y, color=RAW_C, lw=1.8, solid_capstyle="round", zorder=3)
+        for xi in SEG:
+            ax.axvline(xi, color=FEAT_C, lw=2.6, ls=(0, (4, 3)), zorder=4)
+        ax.hlines(seg_mean, *SEG, color=FEAT_C, lw=3.6, zorder=5)
+        ax.set_title(title, fontsize=15, fontweight="bold", pad=4)
+        ax.text(0.5, 0.03, f"Mean {mu:.2f}", transform=ax.transAxes, ha="center", va="bottom",
+                fontsize=14, color=FEAT_C, fontweight="bold", zorder=6)
+        ax.set_xlim(0, 1)
+        ax.set_ylim(-0.28, 1.15)
+        ax.axis("off")
+    fig.subplots_adjust(left=0.02, right=0.98, top=0.83, bottom=0.04, wspace=0.08)
+    _save_icon(fig, name, dpi=200, tight=False)
+
+
 def create_aggregation_icon():
-    fig, ax = plt.subplots(figsize=FIGSIZE)
-    _plot_segment_markers(ax, show_mean=True)
-    _save_icon(fig, "aggregation_icon.png", dpi=170)
+    _pair_traces("aggregation_icon.png")
+
+
+def create_eval_dist_icon():
+    fig, axes = plt.subplots(2, 1, figsize=(4.8, 2.42), gridspec_kw=dict(height_ratios=[0.95, 1.45]))
+    ax = axes[0]
+    x = np.linspace(-3.0, 3.2, 400)
+    specs = ((-0.60, 0.80, "#1976D2", "Group one", -1.45, "center"),
+             (0.38, 1.05, "#E65100", "Group two", 1.55, "center"))
+    for mu, s, c, lab, xpos, ha in specs:
+        y = np.exp(-0.5 * ((x - mu) / s) ** 2)
+        ax.fill_between(x, y, color=c, alpha=0.35, lw=0)
+        ax.plot(x, y, color=c, lw=2.2)
+        ax.text(xpos, 0.96, lab, ha=ha, va="bottom", fontsize=15, color=c, fontweight="bold")
+    ax.axvline(0, color="#111111", ls=(0, (4, 3)), lw=1.8)
+    ax.set_xlim(x[0], x[-1])
+    ax.set_ylim(0, 1.42)
+    ax.axis("off")
+    ax = axes[1]
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.plot([0.5, 0.24], [0.56, 0.42], color="#333", lw=2.2)
+    ax.plot([0.5, 0.76], [0.56, 0.42], color="#333", lw=2.2)
+    boxes = ((0.5, 0.76, 0.78, 0.40, "Feature one < 0", "#2196F3", "white"),
+             (0.24, 0.22, 0.47, 0.40, "Group one", "#1976D2", "white"),
+             (0.76, 0.22, 0.47, 0.40, "Group two", "#E65100", "white"))
+    for bx, by, bw, bh, text, fc, tc in boxes:
+        ax.add_patch(FancyBboxPatch((bx - bw / 2, by - bh / 2), bw, bh, boxstyle="round,pad=0.01",
+                                    facecolor=fc, edgecolor="#333", lw=1.6))
+        ax.text(bx, by, text, ha="center", va="center", fontsize=15, fontweight="bold", color=tc)
+    fig.subplots_adjust(left=0.01, right=0.99, top=0.97, bottom=0.02, hspace=0.03)
+    _save_icon(fig, "eval_dist_icon.png", dpi=200, tight=False)
 
 
 def create_optimization_icon():
@@ -192,15 +257,11 @@ def create_output_icon():
 class FlowchartBox:
     W, H = 64, 17
     IMG_W, IMG_H = 29, H * 0.86
-    TITLE_FS, SUBTEXT_FS = 28, 24
-    INNER_TITLE_FS, INNER_SUBTEXT_FS = 30, 26
+    TITLE_FS, SUBTEXT_FS = 32, 26
 
     @staticmethod
-    def draw(ax, x, y, title, color, subtext=None, img_path=None, add_img_func=None,
-             title_fs=None, subtext_fs=None):
+    def draw(ax, x, y, title, color, subtext=None, img_path=None, add_img_func=None):
         w, h = FlowchartBox.W, FlowchartBox.H
-        title_fs = title_fs or FlowchartBox.TITLE_FS
-        subtext_fs = subtext_fs or FlowchartBox.SUBTEXT_FS
         ax.add_patch(FancyBboxPatch((x - w / 2, y - h / 2), w, h,
                                     boxstyle="round,pad=0.02,rounding_size=1",
                                     facecolor=color, edgecolor='#333', linewidth=2, zorder=2))
@@ -208,10 +269,10 @@ class FlowchartBox:
         if img_path and add_img_func:
             add_img_func(img_path, img_x, y, FlowchartBox.IMG_W, FlowchartBox.IMG_H)
         ax.text(text_x, y + h * 0.30, title, ha='center', va='center',
-                fontsize=title_fs, fontweight='bold', color='#222', zorder=4,
-                linespacing=1.05)
+                fontsize=FlowchartBox.TITLE_FS, fontweight='bold', color='#222', zorder=4,
+                linespacing=1.02)
         ax.text(text_x, y - h * 0.18, subtext, ha='center', va='center',
-                fontsize=subtext_fs, color='#444', zorder=4, linespacing=1.15)
+                fontsize=FlowchartBox.SUBTEXT_FS, color='#222', zorder=4, linespacing=1.10)
         return y - h / 2
 
 
@@ -248,7 +309,7 @@ def draw_flowchart():
         path = mpl_path.Path(verts, [mpl_path.Path.MOVETO] + [mpl_path.Path.LINETO] * 3)
         ax.add_patch(FancyArrowPatch(path=path, arrowstyle='->', color='#C62828', lw=ARROW_LW,
                                      mutation_scale=26, shrinkA=0, shrinkB=0, zorder=5))
-        ax.text(dest_x - 2.5, (hook_y + final_top) / 2 + 0.5, 'if no improvement', fontsize=23,
+        ax.text(dest_x - 2.5, (hook_y + final_top) / 2 + 0.5, 'If no improvement', fontsize=27,
                 color='#C62828', ha='right', va='center', fontweight='bold', zorder=5)
 
     c_input, c_process, c_output, c_feature = '#42A5F5', '#81C784', '#78909C', '#C8E6C9'
@@ -284,31 +345,30 @@ def draw_flowchart():
                                 facecolor=c_feature, edgecolor='#2E7D32', linewidth=2.5,
                                 zorder=0, alpha=0.6))
     ax.text(cx, fe_top - 0.5, "Iterative Feature Optimization",
-            fontsize=30, color='#1B5E20', ha='center', va='top', fontweight='bold')
+            fontsize=34, color='#1B5E20', ha='center', va='top', fontweight='bold')
 
     col1_x = cx - FlowchartBox.W / 2 - FE_H_GAP / 2
     col2_x = cx + FlowchartBox.W / 2 + FE_H_GAP / 2
-    inner_fs = dict(title_fs=FlowchartBox.INNER_TITLE_FS, subtext_fs=FlowchartBox.INNER_SUBTEXT_FS)
 
     FlowchartBox.draw(ax, col1_x, row1_y, "Feature Parameter\nSearch", c_process,
                       subtext="Optimizer proposes\ncandidate channel,\ntransform, segment",
-                      img_path=str(ICON_DIR / "optimization_icon.png"), add_img_func=add_img, **inner_fs)
+                      img_path=str(ICON_DIR / "optimization_icon.png"), add_img_func=add_img)
     FlowchartBox.draw(ax, col2_x, row1_y, "Extract Segment &\nCompute Mean", c_process,
                       subtext="Select segment [start:end]\non transformed data;\ncompute segment mean",
-                      img_path=str(ICON_DIR / "aggregation_icon.png"), add_img_func=add_img, **inner_fs)
+                      img_path=str(ICON_DIR / "aggregation_icon.png"), add_img_func=add_img)
     FlowchartBox.draw(ax, col1_x, row2_y, "Append Feature", c_process,
                       subtext="Add feature to set;\nrepeat search on\nexpanded feature matrix",
-                      img_path=str(ICON_DIR / "append_features_icon.png"), add_img_func=add_img, **inner_fs)
+                      img_path=str(ICON_DIR / "append_features_icon.png"), add_img_func=add_img)
     FlowchartBox.draw(ax, col2_x, row2_y, "Evaluate Model", c_process,
                       subtext="Train LightGBM with\ncurrent features;\nget validation score",
-                      img_path=str(ICON_DIR / "ml_model_icon.png"), add_img_func=add_img, **inner_fs)
+                      img_path=str(ICON_DIR / "eval_dist_icon.png"), add_img_func=add_img)
 
     add_arrow(*box_xy(col1_x, row1_y, 'right'), *box_xy(col2_x, row1_y, 'left'))
     add_arrow(*box_xy(col2_x, row1_y, 'bottom'), *box_xy(col2_x, row2_y, 'top'))
     add_arrow(*box_xy(col2_x, row2_y, 'left'), *box_xy(col1_x, row2_y, 'right'))
     add_arrow(*box_xy(col1_x, row2_y, 'top'), *box_xy(col1_x, row1_y, 'bottom'))
-    ax.text(cx, grid_y, 'repeat while improving',
-            fontsize=24, color='#1B5E20', ha='center', va='center', fontweight='bold')
+    ax.text(cx, grid_y, 'Repeat while improving',
+            fontsize=27, color='#1B5E20', ha='center', va='center', fontweight='bold')
 
     final_top = y_out + H / 2
     hook_y = fe_bottom - 2.0
@@ -329,7 +389,7 @@ def draw_flowchart():
 def main():
     ICON_DIR.mkdir(parents=True, exist_ok=True)
     for fn in (create_input_icon, create_transforms_icon, create_aggregation_icon,
-               create_optimization_icon, create_ml_model_icon,
+               create_optimization_icon, create_ml_model_icon, create_eval_dist_icon,
                create_append_features_icon, create_output_icon):
         fn()
     draw_flowchart()

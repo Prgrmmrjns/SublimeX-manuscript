@@ -1,4 +1,4 @@
-"""Graphical abstract: Iterative Feature Optimization panel → elsarticle/graphical_abstract.png."""
+"""Graphical abstract: Iterative Feature Optimization panel → elsarticle/clean/graphical_abstract.png."""
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -18,7 +18,7 @@ from flowchart import (
 from plot_style import save_png
 
 REPO = Path(__file__).resolve().parents[1]
-OUT = REPO / "elsarticle" / "graphical_abstract"
+OUT = REPO / "elsarticle" / "clean" / "graphical_abstract"
 C_PROCESS, C_FEATURE = "#81C784", "#C8E6C9"
 CX, Y_IN, V_GAP = 66, 120, 3.5
 FE_V_GAP, FE_H_GAP, FE_ROW_GAP = 1, 10, 5

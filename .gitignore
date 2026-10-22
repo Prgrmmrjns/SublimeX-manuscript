@@ -1,11 +1,14 @@
-/.DS_Store
 .DS_Store
 __pycache__/
 *.pyc
 .vscode/
 .cursor/
+.venv/
+~$*
+scripts/_flowchart_tmp_icons/
 
 elsarticle
-datasets
+datasets/*
+!datasets/metadata.json
 
 sublimex

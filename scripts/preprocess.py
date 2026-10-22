@@ -1,8 +1,6 @@
-"""Preprocessing and data loading for all datasets."""
 import json
 import pandas as pd
 import numpy as np
-from pathlib import Path
 from scipy.io import wavfile
 from scipy.signal import resample
 
@@ -11,15 +9,11 @@ from config import DATASETS, ELARTICLE
 ROOT = DATASETS
 TABLE_ORDER = ['azt1d', 'mitbih', 'emotions', 'remc', 'mimic', 'pamap2', 'svd']
 DISPLAY_NAMES = {
-    'azt1d': 'AZT1D', 'mitbih': 'MITBIH', 'emotions': 'Emotions', 'remc': 'REMC',
-    'mimic': 'MIMIC--IV', 'pamap2': 'PAMAP2', 'svd': 'SVD',
+    'azt1d': 'AZT1D', 'mitbih': 'MIT-BIH', 'emotions': 'Emotions', 'remc': 'REMC',
+    'mimic': 'MIMIC-IV', 'pamap2': 'PAMAP2', 'svd': 'SVD',
 }
 METRIC_DISPLAY = {'accuracy': 'Accuracy', 'auc': 'AUC', 'rmse': 'RMSE'}
 
-
-# =============================================================================
-# Preprocessing
-# =============================================================================
 
 def preprocess_emotions():
     df = pd.read_csv(ROOT / 'emotions/emotions.csv')
@@ -28,19 +22,10 @@ def preprocess_emotions():
 
 
 def preprocess_mimic():
-    """Preprocess MIMIC-IV data: extract static, aggregated, and time series features.
-    
-    Excludes flags: ARDS, Sepsis3, Anemia, SIRS, mortality_flag (target only).
-    Returns parquet with mortality_flag, static features, aggregated means, and 24h time series.
-    """
     df = pd.read_csv(ROOT / 'mimic/final_df.csv')
-    
-    # Static features (excluding flags: anemia, ARDS, Sepsis3, SIRS)
     STATIC = ['anchor_age', 'gender', 'diabetes', 'hypertension', 'immunosupression',
               'renal_failure', 'obesity', 'heart_failure', 'liver_disease', 'cancer', 'BMI',
               'OMED', 'NMED', 'NSURG', 'TSURG', 'CMED', 'VSURG', 'PSURG', 'GU', 'GYN', 'TRAUM']
-    
-    # Aggregated features (mean over 24h window)
     AGG = {
         'Creatinine (serum) [nan]': 'creatinine_mean',
         'Platelet Count [nan]': 'platelets_mean',
@@ -54,10 +39,8 @@ def preprocess_mimic():
         'Motor Response [nan]': 'gcs_motor_mean',
         'Norepinephrine [mg]': 'norepinephrine_mean',
         'Epinephrine [mg]': 'epinephrine_mean',
-        'Dobutamine [mg]': 'dobutamine_mean'
+        'Dobutamine [mg]': 'dobutamine_mean',
     }
-    
-    # Time series features (24 hourly values)
     TS = {
         'HR [bpm]': 'heart_rate',
         'RR [insp/min]': 'respiratory_rate',
@@ -70,41 +53,29 @@ def preprocess_mimic():
         'PO2 (Arterial) [mmHg]': 'pao2',
         'Total PEEP Level [cmH2O]': 'peep',
         'Eye Opening [nan]': 'gcs_eye',
-        'Foley [mL]': 'urine_output'
+        'Foley [mL]': 'urine_output',
     }
-    
-    # Filter to first 24h of mechanical ventilation
     df['hour_from_mv'] = df['hour'] - df['MV_start_hour']
     df = df[(df['hour_from_mv'] >= 0) & (df['hour_from_mv'] < 24)]
     df = df.dropna(subset=['subject_id', 'hour_from_mv', 'mortality_flag']).sort_values(['subject_id', 'hour_from_mv'])
-    
     rows = []
     for _, g in df.groupby('subject_id'):
         if len(g) < 24:
             continue
         row = {'mortality_flag': int(g['mortality_flag'].max())}
-        
-        # Static features
         for f in STATIC:
             if f in g.columns:
                 row[f] = 1 if g[f].iloc[0] == 'M' else (0 if f == 'gender' else g[f].iloc[0])
-        
-        # Aggregated features (mean over 24h)
         for orig, clean in AGG.items():
             if orig in g.columns:
                 row[clean] = g[orig].dropna().mean() if len(g[orig].dropna()) > 0 else 0
-        
-        # Time series features (24 hourly values)
         for orig, clean in TS.items():
             if orig not in g.columns:
                 continue
-            vals = pd.Series(np.where(np.isinf(g[orig].values[:24]), np.nan, g[orig].values[:24]))
-            vals = vals.ffill().bfill().fillna(0).values
+            vals = pd.Series(np.where(np.isinf(g[orig].values[:24]), np.nan, g[orig].values[:24])).ffill().bfill().fillna(0).values
             for h in range(24):
                 row[f'{clean}_{h}'] = vals[h]
-        
         rows.append(row)
-    
     pd.DataFrame(rows).to_parquet(ROOT / 'mimic/mimic_processed.parquet', index=False)
 
 
@@ -112,18 +83,18 @@ def preprocess_svd():
     raw_dir, n_samples = ROOT / 'SVD/raw', 1000
     subjects = {}
     for d in raw_dir.iterdir():
-        if not d.is_dir() or not (d / 'overview.csv').exists(): continue
+        if not d.is_dir() or not (d / 'overview.csv').exists():
+            continue
         for _, row in pd.read_csv(d / 'overview.csv').iterrows():
             wav = d / str(row['AufnahmeID']) / 'sentences' / f"{row['AufnahmeID']}-phrase.wav"
-            if wav.exists(): subjects[row['AufnahmeID']] = (wav, d.name == 'healthy')
-    
+            if wav.exists():
+                subjects[row['AufnahmeID']] = (wav, d.name == 'healthy')
     features, targets = [], []
     for wav_path, healthy in subjects.values():
         sr, audio = wavfile.read(wav_path)
         audio = audio.mean(axis=1) if audio.ndim > 1 else audio
         features.append(resample(audio[:int(sr * 3.0)], n_samples).astype(np.float32))
         targets.append(0 if healthy else 1)
-    
     df = pd.DataFrame(np.array(features), columns=[f'phrase_{i}' for i in range(n_samples)])
     df['target'] = targets
     df.to_parquet(ROOT / 'SVD/svd.parquet', index=False)
@@ -136,23 +107,22 @@ def preprocess_pamap2():
                'chest_gyro_x', 'chest_gyro_y', 'chest_gyro_z', 'chest_mag_x', 'chest_mag_y', 'chest_mag_z',
                'ankle_acc_x', 'ankle_acc_y', 'ankle_acc_z', 'ankle_gyro_x', 'ankle_gyro_y', 'ankle_gyro_z',
                'ankle_mag_x', 'ankle_mag_y', 'ankle_mag_z']
-    
     dfs = []
     for sid in range(101, 110):
         path = ROOT / f'pamap2/Protocol/subject{sid}.dat'
-        if not path.exists(): continue
+        if not path.exists():
+            continue
         df = pd.read_csv(path, sep=r'\s+', header=None).iloc[:, COLS]
         df = df[df.iloc[:, 0] != 0].interpolate().fillna(df.mean())
         df['subject_id'] = sid
         dfs.append(df)
-    
     data = pd.concat(dfs, ignore_index=True)
     data.columns = ['activity_id'] + SENSORS + ['subject_id']
     data[['activity_id', 'subject_id']] = data[['activity_id', 'subject_id']].astype('uint8')
     data.to_parquet(ROOT / 'pamap2/pamap2.parquet', compression='zstd', index=False)
 
-def preprocess_azt1d():
-    """Preprocess AZT1D once: all subjects concatenated into a single parquet."""
+
+def _azt1d_subject(csv_path, sid):
     def response(t, onset, peak, decay):
         t = np.asarray(t)
         r = np.zeros_like(t, dtype=np.float32)
@@ -161,39 +131,43 @@ def preprocess_azt1d():
         r[m] = ((ta / peak) ** decay) * np.exp(-decay * (ta / peak))
         return r / r.max() if r.max() > 0 else r
 
+    df = pd.read_csv(csv_path).rename(columns={'Readings (CGM / BGM)': 'CGM'})
+    df['datetime'] = pd.to_datetime(df['EventDateTime'])
+    df['glucose'], df['insulin'], df['carbs'] = df['CGM'].ffill(), df['TotalBolusInsulinDelivered'].fillna(0), df['CarbSize'].fillna(0)
+    df = df[['datetime', 'glucose', 'insulin', 'carbs']].dropna(subset=['glucose']).sort_values('datetime').reset_index(drop=True)
+    t_min = (df['datetime'] - df['datetime'].iloc[0]).dt.total_seconds().values / 60
+    z = lambda: np.zeros(len(t_min), np.float32)
+    ins_t, ins_a = t_min[df['insulin'] > 0], df['insulin'].values[df['insulin'] > 0]
+    carb_t, carb_a = t_min[df['carbs'] > 0], df['carbs'].values[df['carbs'] > 0]
+    active_ins = sum((amt * response(np.maximum(t_min - et, 0), 15, 45, 2.5) for et, amt in zip(ins_t, ins_a)), z())
+    active_carb = sum((amt * response(np.maximum(t_min - et, 0), 10, 35, 3) for et, amt in zip(carb_t, carb_a)), z())
+    g = df['glucose'].values
+    hours = df['datetime'].dt.hour.values
+    times = hours + df['datetime'].dt.minute.values / 60.0
+    rows = []
+    for i in range(24, len(df) - 12):
+        if np.any(np.isnan(g[i - 24:i + 13])):
+            continue
+        row = {f'CGM_{t}': g[i - 24 + t] for t in range(24)}
+        row |= {f'Insulin_{t}': active_ins[i - 24 + t] for t in range(24)}
+        row |= {f'Carbs_{t}': active_carb[i - 24 + t] for t in range(24)}
+        row['hour'], row['time'] = hours[i], times[i]
+        row['target'], row['subject_id'] = g[i + 12] - g[i], sid
+        rows.append(row)
+    return pd.DataFrame(rows) if rows else None
+
+
+def preprocess_azt1d():
     dfs = []
     for sid in range(1, 26):
-        try:
-            df = pd.read_csv(ROOT / f'azt1d/CGM Records/Subject {sid}/Subject {sid}.csv')
-            df['datetime'] = pd.to_datetime(df['EventDateTime'])
-            df['glucose'], df['insulin'], df['carbs'] = df['CGM'].ffill(), df['TotalBolusInsulinDelivered'].fillna(0), df['CarbSize'].fillna(0)
-            df = df[['datetime', 'glucose', 'insulin', 'carbs']].dropna(subset=['glucose']).sort_values('datetime').reset_index(drop=True)
-            
-            t_min = (df['datetime'] - df['datetime'].iloc[0]).dt.total_seconds().values / 60
-            active_ins = sum(amt * response(np.maximum(t_min - et, 0), 15, 45, 2.5) for et, amt in zip(t_min[df['insulin'] > 0], df['insulin'].values[df['insulin'] > 0]))
-            active_carb = sum(amt * response(np.maximum(t_min - et, 0), 10, 35, 3) for et, amt in zip(t_min[df['carbs'] > 0], df['carbs'].values[df['carbs'] > 0]))
-            
-            g = df['glucose'].values
-            hours = df['datetime'].dt.hour.values
-            times = hours + df['datetime'].dt.minute.values / 60.0
-            rows = []
-            for i in range(24, len(df) - 12):
-                if np.any(np.isnan(g[i-24:i+13])): continue
-                row = {f'CGM_{t}': g[i-24+t] for t in range(24)}
-                row |= {f'Insulin_{t}': active_ins[i-24+t] for t in range(24)}
-                row |= {f'Carbs_{t}': active_carb[i-24+t] for t in range(24)}
-                row['hour'] = hours[i]
-                row['time'] = times[i]
-                row['target'], row['subject_id'] = g[i + 12] - g[i], sid
-                rows.append(row)
-            if rows: dfs.append(pd.DataFrame(rows))
-        except: pass
+        csv_path = ROOT / f'azt1d/CGM Records/Subject {sid}/Subject {sid}.csv'
+        if not csv_path.exists():
+            continue
+        part = _azt1d_subject(csv_path, sid)
+        if part is not None:
+            dfs.append(part)
     pd.concat(dfs, ignore_index=True).to_parquet(ROOT / 'azt1d/azt1d_all_patients.parquet', index=False)
 
-
-# =============================================================================
-# Data loading
-# =============================================================================
 
 def load_emotions():
     df = pd.read_csv(ROOT / 'emotions/emotions_processed.csv')
@@ -203,40 +177,51 @@ def load_emotions():
 
 
 def load_mimic():
-    """MIMIC: time series = channels we extract from; static+agg = initial features (prepended).
-    
-    Excludes flags: ARDS, Sepsis3, Anemia, SIRS from initial features.
-    """
     path = ROOT / 'mimic/mimic_processed.parquet'
-    csv_path = ROOT / 'mimic/final_df.csv'
-    try:
-        df = pd.read_parquet(path)
-    except OSError:
-        if csv_path.exists():
-            preprocess_mimic()
-            df = pd.read_parquet(path)
-        else:
-            raise
-    
-    # Static features (excluding flags: anemia, ARDS, Sepsis3, SIRS)
+    if not path.exists():
+        preprocess_mimic()
+    df = pd.read_parquet(path)
     static = ['anchor_age', 'gender', 'diabetes', 'hypertension', 'immunosupression',
               'renal_failure', 'obesity', 'heart_failure', 'liver_disease', 'cancer', 'BMI',
               'OMED', 'NMED', 'NSURG', 'TSURG', 'CMED', 'VSURG', 'PSURG', 'GU', 'GYN', 'TRAUM']
-    
-    # Aggregated features (mean over 24h)
     agg_cols = [c for c in df.columns if c.endswith('_mean')]
     initial_cols = [c for c in static if c in df.columns] + agg_cols
     initial_features = df[initial_cols].fillna(0).values.astype(np.float32)
-
-    # Time series channels (24 hourly values per channel)
     series = sorted(set(c.rsplit('_', 1)[0] for c in df.columns if c.rsplit('_', 1)[-1].isdigit()))
     X = []
     for s in series:
         cols = sorted([c for c in df.columns if c.startswith(f"{s}_") and c.rsplit('_', 1)[-1].isdigit()],
                       key=lambda x: int(x.rsplit('_', 1)[1]))
         X.append(df[cols].replace([np.inf, -np.inf], np.nan).clip(upper=10000).ffill(axis=1).bfill(axis=1).fillna(0))
-    
     return X, df['mortality_flag'], {'metric': 'auc', 'task': 'classification', 'initial_features': initial_features}
+
+
+MITBIH_LABELS = {'N': 0, 'L': 1, 'R': 2, 'A': 3, 'V': 4}
+
+
+def preprocess_mitbih():
+    raw = ROOT / 'mitbih'
+    rows, targets = [], []
+    recs = sorted(int(p.name.replace('annotations.txt', '')) for p in raw.glob('*annotations.txt'))
+    for rec in recs:
+        sig = pd.read_csv(raw / f'{rec}.csv')
+        sig.columns = [c.strip().strip("'").strip('"') for c in sig.columns]
+        x = sig.iloc[:, 1].to_numpy(np.float32)
+        n = len(x)
+        for line in open(raw / f'{rec}annotations.txt'):
+            parts = line.split()
+            if len(parts) < 3 or not parts[1].isdigit() or parts[2] not in MITBIH_LABELS:
+                continue
+            s = int(parts[1])
+            a = s - 100
+            w = np.zeros(200, np.float32)
+            sa, sb = max(0, a), min(n, a + 200)
+            w[sa - a:sa - a + (sb - sa)] = x[sa:sb]
+            rows.append(w)
+            targets.append(MITBIH_LABELS[parts[2]])
+    df = pd.DataFrame(np.vstack(rows), columns=[f'feature_{i}' for i in range(200)])
+    df['target'] = targets
+    df.to_csv(raw / 'mitbih_processed.csv', index=False)
 
 
 def load_mitbih():
@@ -254,16 +239,14 @@ def load_pamap2():
     df = pd.read_parquet(ROOT / 'pamap2/pamap2.parquet')
     df = df[df['subject_id'] != 109]
     feat_cols = [c for c in df.columns if c not in ['activity_id', 'subject_id']]
-    
     windows, labels, sids = [], [], []
     for sid in df['subject_id'].unique():
         for aid in df[df['subject_id'] == sid]['activity_id'].unique():
             arr = df[(df['subject_id'] == sid) & (df['activity_id'] == aid)][feat_cols].values
             for i in range(0, len(arr) - 511, 100):
-                windows.append(arr[i:i+512])
+                windows.append(arr[i:i + 512])
                 labels.append(aid)
                 sids.append(sid)
-    
     windows = np.array(windows, dtype=np.float32)
     label_map = {l: i for i, l in enumerate(sorted(set(labels)))}
     X = [pd.DataFrame(windows[:, :, i]) for i in range(windows.shape[2])]
@@ -271,35 +254,20 @@ def load_pamap2():
 
 
 def load_remc(cell_line=None):
-    """Load REMC data. If cell_line is None, return list of available cell line names."""
     remc_dir = ROOT / 'remc'
     if cell_line is None:
-        if not remc_dir.exists():
-            return []
-        return sorted(
-            p.stem.replace('remc_', '') for p in remc_dir.glob('remc_*.parquet')
-        )
-    df = pd.read_parquet(ROOT / f'remc/remc_{cell_line}.parquet',
-                         engine='fastparquet')
+        return sorted(p.stem.replace('remc_', '') for p in remc_dir.glob('remc_*.parquet')) if remc_dir.exists() else []
+    df = pd.read_parquet(ROOT / f'remc/remc_{cell_line}.parquet', engine='fastparquet')
     X = [df[[c for c in df.columns if c.startswith(f"{m}_")]] for m in ['H3K4me3', 'H3K4me1', 'H3K36me3', 'H3K9me3', 'H3K27me3']]
     return X, df['target'], {'metric': 'auc', 'task': 'classification'}
 
 
 def load_azt1d(subject_id=None):
-    path = ROOT / 'azt1d/azt1d_all_patients.parquet'
-    try:
-        df = pd.read_parquet(path, engine='pyarrow')
-    except OSError as e:
-        if 'Repetition level histogram size mismatch' not in str(e):
-            raise
-        preprocess_azt1d()
-        df = pd.read_parquet(path, engine='pyarrow')
+    df = pd.read_parquet(ROOT / 'azt1d/azt1d_all_patients.parquet', engine='fastparquet')
     if subject_id is not None:
         df = df[df['subject_id'] == subject_id].reset_index(drop=True)
-    get_cols = lambda p: sorted(
-        [c for c in df.columns if c.startswith(f'{p}_') and c.split('_')[-1].isdigit()],
-        key=lambda x: int(x.split('_')[-1])
-    )
+    get_cols = lambda p: sorted([c for c in df.columns if c.startswith(f'{p}_') and c.split('_')[-1].isdigit()],
+                                key=lambda x: int(x.split('_')[-1]))
     X = [df[get_cols(s)].fillna(0) for s in ['CGM', 'Insulin', 'Carbs']]
     info = {'metric': 'rmse', 'task': 'regression'}
     if subject_id is None:
@@ -307,12 +275,7 @@ def load_azt1d(subject_id=None):
     return X, df['target'], info
 
 
-# =============================================================================
-# Dataset table for manuscript
-# =============================================================================
-
 def _format_int(n):
-    """Format integer with thousands separator for LaTeX."""
     return f'{int(n):,}'.replace(',', '{,}')
 
 
@@ -320,37 +283,20 @@ def _class_balance_str(y, task):
     y = np.asarray(y)
     if task == 'regression':
         return '---'
-    maj_pct = 100 * pd.Series(y).value_counts().max() / len(y)
-    return f'{maj_pct:.0f}\\%'
+    return f'{100 * pd.Series(y).value_counts().max() / len(y):.0f}\\%'
 
 
 def write_dataset_table():
-    """Generate dataset characteristics table from metadata and loaded data."""
-    meta_path = ROOT / 'metadata.json'
-    with open(meta_path) as f:
-        metadata = json.load(f)
-
-    def _load_remc_table():
-        cell_lines = load_remc()
-        return load_remc(cell_line=cell_lines[0])
-
+    metadata = json.loads((ROOT / 'metadata.json').read_text())
     loaders = {
-        'azt1d': load_azt1d,
-        'emotions': load_emotions,
-        'mimic': load_mimic,
-        'mitbih': load_mitbih,
-        'pamap2': load_pamap2,
-        'remc': _load_remc_table,
-        'svd': load_svd,
+        'azt1d': load_azt1d, 'emotions': load_emotions, 'mimic': load_mimic,
+        'mitbih': load_mitbih, 'pamap2': load_pamap2,
+        'remc': lambda: load_remc(cell_line=load_remc()[0]), 'svd': load_svd,
     }
-
     rows = []
     for key in TABLE_ORDER:
-        if key not in metadata or key not in loaders:
-            continue
         meta = metadata[key]
         X, y, info = loaders[key]()
-
         X_list = X if isinstance(X, list) else [X]
         n_channels = meta.get('n_channels') or len(meta.get('ts_prefixes', [])) or (
             1 if meta.get('single_channel') else len(X_list))
@@ -358,51 +304,39 @@ def write_dataset_table():
         metric = info.get('metric', meta.get('metric', 'accuracy'))
         task = info.get('task', meta.get('task', 'classification'))
         metric_str = METRIC_DISPLAY.get(metric, metric.upper())
-
         if key == 'azt1d' and 'subject_ids' in info:
             sid = info['subject_ids']
             per_subj = [np.sum(sid == s) for s in np.unique(sid)]
-            mean_n, std_n = np.mean(per_subj), np.std(per_subj)
-            samples_str = f'${_format_int(mean_n)} \\pm {_format_int(std_n)}$'
+            samples_str = f'${_format_int(np.mean(per_subj))} \\pm {_format_int(np.std(per_subj))}$'
         else:
             samples_str = _format_int(len(y))
-
-        if task == 'regression':
-            task_str = 'Regr.'
-        else:
-            n_classes = len(np.unique(y))
-            task_str = 'Binary' if n_classes == 2 else f'{n_classes}--class'
-
+        task_str = 'Regr.' if task == 'regression' else ('Binary' if len(np.unique(y)) == 2 else f'{len(np.unique(y))}--class')
         name = DISPLAY_NAMES.get(key, key.upper())
-        input_data = meta.get('input_data', '')
-        target_feature = meta.get('target_feature', '')
-        balance = _class_balance_str(y, task)
         shape = f'{samples_str}; ${n_channels} \\times {length}$'
-        io = f'{input_data} / {target_feature}'
-        rows.append((name, shape, metric_str, task_str, balance, io))
+        io = f"{meta.get('input_data', '')} / {meta.get('target_feature', '')}"
+        rows.append((name, shape, metric_str, task_str, _class_balance_str(y, task), io))
 
     lines = [
+        '\\begingroup',
+        '\\captionsetup{justification=raggedright,singlelinecheck=false}',
         '\\begin{table}[H]\\centering',
-        '\\caption{Seven preprocessed benchmarks: sample size and $C{\\times}L$ shape, metric, task, '
-        'majority-class share ($---$ for regression), and input/target. '
-        'Stratified 5-fold CV except AZT1D (80/20 per patient) and PAMAP2 (8-fold LOSO).}'
+        '\\caption{Summary of the seven evaluation benchmarks.}',
         '\\label{tab:datasets}',
         '\\tiny',
         '\\setlength{\\tabcolsep}{1pt}\\renewcommand{\\arraystretch}{0.85}',
-        '\\begin{tabular*}{\\textwidth}'
-        '{@{\\extracolsep{\\fill}}lp{2.25cm}llp{0.75cm}>{\\raggedright\\arraybackslash}p{3.35cm}@{}}',
+        '\\begin{tabular*}{\\textwidth}{@{\\extracolsep{\\fill}}lp{2.25cm}llp{0.75cm}>{\\raggedright\\arraybackslash}p{3.35cm}@{}}',
         '\\toprule',
-        '\\textbf{Dataset} & \\textbf{Samples; $C{\\times}L$} & \\textbf{Metric} & '
-        '\\textbf{Task} & \\textbf{\\% max.} & \\textbf{Input / target} \\\\',
+        '\\textbf{Dataset} & \\textbf{Samples; channels $\\times$ length} & \\textbf{Metric} & \\textbf{Task} & \\textbf{\\% max.} & \\textbf{Input / target} \\\\',
         '\\midrule',
     ]
     for name, shape, m, task_str, balance, io in rows:
         lines.append(f'{name} & {shape} & {m} & {task_str} & {balance} & {io} \\\\')
-    lines.extend(['\\bottomrule', '\\end{tabular*}', '\\end{table}'])
-    (ELARTICLE / 'dataset_characteristics.tex').write_text('\n'.join(lines), encoding='utf-8')
+    lines.extend(['\\bottomrule', '\\end{tabular*}', '\\end{table}', '\\endgroup'])
+    ELARTICLE.mkdir(parents=True, exist_ok=True)
+    (ELARTICLE / 'dataset_characteristics.tex').write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
 if __name__ == '__main__':
-    for func in (preprocess_emotions, preprocess_mimic, preprocess_svd, preprocess_pamap2, preprocess_azt1d):
+    for func in (preprocess_emotions, preprocess_mimic, preprocess_svd, preprocess_pamap2, preprocess_azt1d, preprocess_mitbih):
         func()
     write_dataset_table()

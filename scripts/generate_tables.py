@@ -1,10 +1,9 @@
-"""Generate LaTeX tables from main_eval.csv and ablation_study.csv."""
 import os, warnings
 import pandas as pd
 import numpy as np
 from scipy.stats import wilcoxon
 
-from config import RESULTS, PARAMETERS, ELARTICLE, MAIN_EVAL_CSV, ABLATION_CSV
+from config import RESULTS, PARAMETERS, ELARTICLE
 
 warnings.filterwarnings('ignore')
 RESULTS_DIR = str(RESULTS)
@@ -26,9 +25,9 @@ DATASET_INFO = {
 DIRECTION = {k: v['direction'] for k, v in DATASET_INFO.items()}
 METRIC_ABBR = {'Accuracy': 'Acc', 'AUC': 'AUC', 'RMSE': 'RMSE'}
 
-APPROACHES = ['SublimeX', 'TSFRESH', 'CATCH22', 'MiniRocket', 'RDST', 'CNN']
+APPROACHES = ['SublimeX', 'TSFRESH', 'CATCH22', 'MiniRocket', 'RDST', 'CNN', 'LSTM']
 APPROACH_NORM = {'sublimex': 'SublimeX', 'tsfresh': 'TSFRESH', 'catch22': 'CATCH22',
-                 'cnn': 'CNN', 'minirocket': 'MiniRocket', 'rdst': 'RDST'}
+                 'cnn': 'CNN', 'minirocket': 'MiniRocket', 'rdst': 'RDST', 'lstm': 'LSTM'}
 ABLATION_VARIANTS = ['resampling', 'aggregate', 'pattern', 'decision_tree',
                      'n_trials_1000', 'raw_only', 'nsga2', 'parallel']
 VARIANT_LABELS = {
@@ -63,21 +62,38 @@ def fmt_feat(n, std):
     return f'{n:.0f}'
 
 
-def fmt_time(t, std=None):
+def fmt_time(t, std=None, t_min=None, t_max=None, use_median=False):
     if t is None: return '-'
+    if use_median and t_min is not None and t_max is not None:
+        return f'{t:.0f} ({t_min:.0f}--{t_max:.0f})'
     if std and std > 0: return f'{t:.0f}±{std:.0f}'
     return f'{t:.0f}'
 
 
-def _stats(rows, subtract_initial=0, scalar_feat_time=False):
+def _bootstrap_ci(a, b, n_boot=2000, seed=42):
+    rng = np.random.default_rng(seed)
+    a, b = np.asarray(a, float), np.asarray(b, float)
+    n = min(len(a), len(b))
+    d = a[:n] - b[:n]
+    boots = rng.choice(d, size=(n_boot, n), replace=True).mean(axis=1)
+    return float(d.mean()), (float(np.percentile(boots, 2.5)), float(np.percentile(boots, 97.5)))
+
+
+def _stats(rows, subtract_initial=0, scalar_feat_time=False, cell_line_std=False):
     nf = max(0, rows['n_features'].mean() - subtract_initial)
+    t = rows['time']
+    sc_std = rows.groupby('dataset')['score'].mean().std() if cell_line_std else (rows['score'].std() if len(rows) > 1 else 0.0)
+    t_mean = float(t.mean())
+    use_mean = scalar_feat_time or len(t) <= 1
     return {
         'score': rows['score'].mean(),
-        'score_std': rows['score'].std() if len(rows) > 1 else 0.0,
+        'score_std': float(sc_std),
         'n_features': nf,
         'n_features_std': 0.0 if scalar_feat_time else (rows['n_features'].std() if len(rows) > 1 else 0.0),
-        'time': rows['time'].mean(),
-        'time_std': 0.0 if scalar_feat_time else (rows['time'].std() if len(rows) > 1 else 0.0),
+        'time': t_mean if use_mean else float(t.median()),
+        'time_min': float(t.min()),
+        'time_max': float(t.max()),
+        'use_median_time': not use_mean,
     }
 
 
@@ -97,12 +113,9 @@ def _pick_best(means, direction):
 
 def _wilcoxon(a, b):
     n = min(len(a), len(b))
-    if n < 2: return 1.0, n
-    try:
-        _, p = wilcoxon(a[:n], b[:n], alternative='two-sided')
-    except ValueError:
-        p = 1.0
-    return p, n
+    if n < 2 or np.allclose(a[:n], b[:n]): return 1.0, n
+    _, p = wilcoxon(a[:n], b[:n], alternative='two-sided', method='exact')
+    return float(p), n
 
 
 def _fold_scores_main(df, ds, method):
@@ -112,48 +125,68 @@ def _fold_scores_main(df, ds, method):
     sub = df[(df['base_dataset'] == ds) & (df['approach'] == method)]
     if sub.empty: return None
     if ds == 'remc':
-        sub = sub.groupby(['cell_line', 'fold'])['score'].mean().reset_index()
-    keys = ['cell_line', 'fold'] if 'cell_line' in sub.columns else ['fold']
-    return sub.sort_values(keys)['score'].values
+        sub = sub.copy()
+        sub['cell_line'] = sub['dataset'].astype(str).str.replace('remc_', '', regex=False)
+        sub = sub.groupby('cell_line')['score'].mean().reset_index()
+        return sub.sort_values('cell_line')['score'].values
+    return sub.sort_values('fold')['score'].values
 
 
-def _fold_scores_ablation(df, ds, variant):
+def _fold_scores_ablation(df, ds, variant, me=None):
+    if variant == 'baseline' and me is not None:
+        if ds == 'remc':
+            sub = me[(me['dataset'] == REMC_LINE) & (me['approach'] == 'SublimeX')]
+            return sub.sort_values('fold')['score'].values if len(sub) else None
+        return _fold_scores_main(me, ds, 'SublimeX')
     sub = df[(df['base_dataset'] == ds) & (df['variant'] == variant)]
     if sub.empty: return None
     key = 'dataset' if ds == 'azt1d' else 'fold'
     return sub.sort_values(key)['score'].values
 
 
+def _with_lstm(df):
+    extra = pd.read_csv(os.path.join(RESULTS_DIR, 'extra_baselines.csv'))
+    lstm = extra.loc[extra['approach'] == 'LSTM', ['dataset', 'approach', 'fold', 'score', 'time', 'n_features']].copy()
+    lstm['test_subject'] = np.nan
+    lstm['cell_line'] = ''
+    ids = sorted(df.loc[df['dataset'].eq('azt1d') & df['test_subject'].notna(), 'test_subject'].unique())
+    lstm.loc[lstm['dataset'].eq('azt1d'), 'test_subject'] = lstm.loc[lstm['dataset'].eq('azt1d'), 'fold'].map(
+        {i + 1: s for i, s in enumerate(ids)})
+    remc = lstm['dataset'].str.startswith('remc_')
+    lstm.loc[remc, 'cell_line'] = lstm.loc[remc, 'dataset'].str.replace('remc_', '', regex=False)
+    return pd.concat([df, lstm], ignore_index=True)
+
+
 def compute_significance_tests():
     rows = []
-    me = pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv'))
+    me = _with_lstm(pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv')))
     me['approach'] = me['approach'].str.lower().map(APPROACH_NORM).fillna(me['approach'])
     me['base_dataset'] = me['dataset'].apply(base_ds)
     for ds in DATASETS:
         by_m = {m: _fold_scores_main(me, ds, m) for m in APPROACHES}
         means = {m: v.mean() for m, v in by_m.items() if v is not None and len(v)}
-        if len(means) < 2: continue
         best = _pick_best(means, DIRECTION[ds])
         for other in APPROACHES:
             if other == best or by_m[other] is None: continue
             p, n = _wilcoxon(by_m[best], by_m[other])
+            md, (lo, hi) = _bootstrap_ci(by_m[best], by_m[other])
             rows.append({'study': 'main_eval', 'dataset': ds, 'best_method': best,
-                         'comparison': other, 'p_value': p, 'n_pairs': n})
+                         'comparison': other, 'p_value': p, 'n_pairs': n,
+                         'mean_diff': md, 'ci_low': lo, 'ci_high': hi})
 
-    ab_path = os.path.join(RESULTS_DIR, 'ablation_study.csv')
-    if os.path.exists(ab_path):
-        ab = _filter_ablation(pd.read_csv(ab_path))
-        variants = [v for v in ABLATION_VARIANTS if v in ab['variant'].values]
-        for ds in DATASETS:
-            by_v = {v: _fold_scores_ablation(ab, ds, v) for v in variants}
-            means = {v: vscores.mean() for v, vscores in by_v.items() if vscores is not None and len(vscores)}
-            if len(means) < 2: continue
-            best = _pick_best(means, DIRECTION[ds])
-            for other in variants:
-                if other == best or by_v[other] is None: continue
-                p, n = _wilcoxon(by_v[best], by_v[other])
-                rows.append({'study': 'ablation', 'dataset': ds, 'best_method': best,
-                             'comparison': other, 'p_value': p, 'n_pairs': n})
+    ab = _filter_ablation(pd.read_csv(os.path.join(RESULTS_DIR, 'ablation_study.csv')))
+    variants = ['baseline'] + [v for v in ABLATION_VARIANTS if v in ab['variant'].values]
+    for ds in DATASETS:
+        by_v = {v: _fold_scores_ablation(ab, ds, v, me=me) for v in variants}
+        means = {v: vscores.mean() for v, vscores in by_v.items() if vscores is not None and len(vscores)}
+        best = _pick_best(means, DIRECTION[ds])
+        for other in variants:
+            if other == best or by_v[other] is None: continue
+            p, n = _wilcoxon(by_v[best], by_v[other])
+            md, (lo, hi) = _bootstrap_ci(by_v[best], by_v[other])
+            rows.append({'study': 'ablation', 'dataset': ds, 'best_method': best,
+                         'comparison': other, 'p_value': p, 'n_pairs': n,
+                         'mean_diff': md, 'ci_low': lo, 'ci_high': hi})
 
     out = pd.DataFrame(rows)
     out.to_csv(os.path.join(RESULTS_DIR, 'significance_tests.csv'), index=False)
@@ -161,17 +194,15 @@ def compute_significance_tests():
 
 
 def _sig(study):
-    path = os.path.join(RESULTS_DIR, 'significance_tests.csv')
-    if not os.path.exists(path): return set(), {}
-    df = pd.read_csv(path)
+    df = pd.read_csv(os.path.join(RESULTS_DIR, 'significance_tests.csv'))
     df = df[df['study'] == study]
     pairs = {(r['dataset'], r['comparison']) for _, r in df.iterrows() if r['p_value'] < 0.05}
-    best = df.groupby('dataset')['best_method'].first().to_dict() if 'best_method' in df.columns else {}
+    best = df.groupby('dataset')['best_method'].first().to_dict()
     return pairs, best
 
 
 def load_main_eval_data():
-    df = pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv'))
+    df = _with_lstm(pd.read_csv(os.path.join(RESULTS_DIR, 'main_eval.csv')))
     df['approach'] = df['approach'].str.lower().map(APPROACH_NORM).fillna(df['approach'])
     df['base_dataset'] = df['dataset'].apply(base_ds)
     out = {}
@@ -181,9 +212,10 @@ def load_main_eval_data():
             rows = df[(df['base_dataset'] == ds) & (df['approach'] == app)]
             if ds == 'azt1d' and rows['test_subject'].notna().any():
                 rows = rows[rows['test_subject'].notna()]
-            if rows.empty:
-                continue
-            out[ds][app] = _stats(rows, INITIAL_FEATURES.get(ds, 0), scalar_feat_time=(ds == 'azt1d'))
+            if not rows.empty:
+                out[ds][app] = _stats(rows, INITIAL_FEATURES.get(ds, 0),
+                                      scalar_feat_time=(ds == 'azt1d'),
+                                      cell_line_std=(ds == 'remc'))
     return out
 
 
@@ -199,10 +231,8 @@ def _sublimex_baseline_rows(ds):
 
 
 def load_ablation_data(main_results=None):
-    path = os.path.join(RESULTS_DIR, 'ablation_study.csv')
-    if not os.path.exists(path): return {}
     main_results = main_results or load_main_eval_data()
-    df = _filter_ablation(pd.read_csv(path))
+    df = _filter_ablation(pd.read_csv(os.path.join(RESULTS_DIR, 'ablation_study.csv')))
     out = {ds: {} for ds in DATASETS}
     for ds in DATASETS:
         sub = df[df['base_dataset'] == ds]
@@ -219,16 +249,12 @@ def load_ablation_data(main_results=None):
 
 
 def _best_rounded(ds_results, cols, direction, dec):
-    best = None
-    for c in cols:
-        if c not in ds_results: continue
-        r = round(ds_results[c]['score'], dec)
-        best = r if best is None else (min if direction == 'minimize' else max)(best, r)
-    return best
+    vals = [round(ds_results[c]['score'], dec) for c in cols if c in ds_results]
+    return (min if direction == 'minimize' else max)(vals) if vals else None
 
 
 def _write_table(path, caption, label, results, cols, labels, study, tabcolsep='1pt',
-                 arraystretch='0.85', tight_subrows=False):
+                 arraystretch='0.85', tight_subrows=False, order=None):
     sig, best = _sig(study)
     stretch = '0.62' if tight_subrows else arraystretch
     row_end = (' \\\\[-0.85ex]\n', ' \\\\[-0.35ex]\n', ' \\\\\n') if tight_subrows else (' \\\\\n',) * 3
@@ -240,7 +266,8 @@ def _write_table(path, caption, label, results, cols, labels, study, tabcolsep='
         f.write(' &  & ' + ' & '.join(f'\\textbf{{{labels[c][0]}}}' for c in cols) + ' \\\\\n')
         f.write(' &  & ' + ' & '.join(
             f'\\textbf{{{labels[c][1]}}}' if labels[c][1] else '' for c in cols) + ' \\\\\n\\midrule\n')
-        for i, ds in enumerate(DATASETS):
+        order = order or DATASETS
+        for i, ds in enumerate(order):
             info, dr = DATASET_INFO[ds], results.get(ds, {})
             dec = 2 if info['metric'] == 'RMSE' else 3
             sign = '↑' if info['direction'] == 'maximize' else '↓'
@@ -259,33 +286,38 @@ def _write_table(path, caption, label, results, cols, labels, study, tabcolsep='
                     sc += '$^{*}$'
                 rows['s'].append(sc)
                 rows['f'].append(fmt_feat(d['n_features'], d['n_features_std']))
-                rows['t'].append(fmt_time(d['time'], d['time_std']))
+                rows['t'].append(fmt_time(
+                    d['time'], d.get('time_std'), d.get('time_min'), d.get('time_max'),
+                    use_median=d.get('use_median_time', False)))
             f.write(f'\\multirow{{3}}{{*}}{{\\textbf{{{info["name"]}}}}} & {abbr} ({sign}) & '
                     + ' & '.join(rows['s']) + row_end[2])
             f.write(' & \\# Feat. & ' + ' & '.join(rows['f']) + row_end[0])
             f.write(' & Time (s) & ' + ' & '.join(rows['t']) + row_end[1])
-            if i < len(DATASETS) - 1:
+            if i < len(order) - 1:
                 f.write('\\midrule\n')
         f.write('\\bottomrule\\end{tabular*}\\end{table}\n')
 
 
 def generate_results_table(results):
-    cap = ('Predictive score, LightGBM input size (\\# Feat.), and wall-clock time (s). '
-           'Scores: mean $\\pm$ std over folds (AZT1D RMSE: over 23 test patients). '
-           'AZT1D \\# Feat.\\ and Time are single values (no $\\pm$). '
-           'Bold: best per dataset; $^{*}$: $p{<}0.05$ vs.\\ best (Wilcoxon). '
+    cap = ('Predictive score, LightGBM input size (\\# Feat.), and wall-clock time (s; median (min--max) over folds). '
+           'Scores: mean $\\pm$ std over folds (AZT1D RMSE: over 23 test patients; REMC: 56 cell-line means). '
+           'AZT1D \\# Feat.\\ and Time are single values. '
+           'For the LSTM, \\# Feat.\\ is the number of trainable parameters. '
+           'Bold: best per dataset; $^{*}$: two-sided exact Wilcoxon $p{<}0.05$ vs.\\ best '
+           '(unreachable on 5-fold datasets: min.\\ $p{=}0.0625$). '
            'Arrows: higher ($\\uparrow$) or lower ($\\downarrow$) is better.')
     _write_table(os.path.join(OUTPUT_DIR, 'results_table.tex'), cap, 'tab:results',
                  results, APPROACHES, {a: (a, '') for a in APPROACHES}, 'main_eval',
-                 tight_subrows=True)
+                 tight_subrows=True,
+                 order=[d for d in DATASETS if d != 'azt1d'] + ['azt1d'])
 
 
 def generate_ablation_table(results):
     existing = {v for dr in results.values() for v in dr} - {'baseline'}
     cols = ['baseline'] + [v for v in ABLATION_VARIANTS if v in existing]
-    cap = ('Ablation study (mean $\\pm$ std across folds; AZT1D across patients; PAMAP2 LOSO). '
-           'Baseline matches SublimeX in Table~\\ref{tab:results} (REMC: cell line E003 only, same as ablation runs). '
-           'Bold: best per dataset; $^{*}$: $p{<}0.05$ vs.\\ best variant (Wilcoxon). '
+    cap = ('Ablation study (mean $\\pm$ std across folds; AZT1D across patients; PAMAP2 LOSO; REMC E003 AUC). '
+           'Baseline matches SublimeX on the same E003 protocol (not the pooled 56-line Table~\\ref{tab:results} score). '
+           'Time: median (min--max). Bold: best per dataset; $^{*}$: two-sided exact Wilcoxon $p{<}0.05$ vs.\\ best. '
            'Rows: metric, \\# features, runtime (s).')
     _write_table(os.path.join(OUTPUT_DIR, 'ablation_results.tex'), cap, 'tab:ablation',
                  results, cols, VARIANT_LABELS, 'ablation', tabcolsep='0.5pt')
@@ -296,5 +328,4 @@ if __name__ == '__main__':
     main_results = load_main_eval_data()
     generate_results_table(main_results)
     ablation = load_ablation_data(main_results)
-    if ablation:
-        generate_ablation_table(ablation)
+    generate_ablation_table(ablation)

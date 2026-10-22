@@ -1,0 +1,853 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\tcbset{
+  boxrule=1pt, arc=3pt,
+  left=6pt, right=6pt, top=5pt, bottom=5pt,
+  breakable,
+  colback=white,
+  fonttitle=\bfseries\normalsize,
+}
+
+\newtcolorbox{responsebox}{
+  colback=blue!4,
+  colframe=blue!70!black,
+  colbacktitle=blue!18,
+  coltitle=blue!50!black,
+  title={Our response},
+  before skip=0pt, after skip=0pt,
+}
+
+\newtcolorbox{reviewerbox}{
+  colback=gray!3,
+  colframe=gray!55,
+  colbacktitle=gray!12,
+  coltitle=gray!45!black,
+  title={Reviewer comment},
+  fontupper=\itshape,
+  after skip=0pt,
+}
+\newcommand{\rsp}{\par\vspace{0.9em}}
+\newcommand{\rc}[1]{\begin{reviewerbox}#1\end{reviewerbox}}
+\newcommand{\rcitem}[2]{\begin{reviewerbox}\textbf{#1}\par\smallskip#2\end{reviewerbox}}
+\makeatletter
+\newcommand{\response}[2]{%
+  \begin{responsebox}#1%
+  \def\@responseitems{#2}%
+  \ifx\@responseitems\empty\else\begin{itemize}[nosep,leftmargin=1.2em]#2\end{itemize}\fi
+  \end{responsebox}\rsp}
+\makeatother
+
+\title{Point-by-Point Response to Reviewers\\[0.3em]
+\large Manuscript PR-D-26-04476R1\\
+\textit{Interpretable supervised feature extraction for multivariate biomedical sequences}\\
+\normalsize (previous title: \textit{Interpretable supervised feature extraction for time series and spatial data})}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent Dear Dr.~Sun, dear Associate Editor, dear Reviewers,
+
+We thank you for the second-round assessment. The eight reviewers' reports
+were consistent in what they asked for, which made it possible to
+address them systematically. Below we first summarize the changes by theme, because most themes were
+raised by several reviewers. We then recite every review in full and answer each point. Section,
+table, and figure numbers refer to the revised manuscript; quoted passages are taken from
+it verbatim.
+
+\subsection*{Summary of changes by theme}
+
+\begin{enumerate}[leftmargin=1.4em]
+  \item \textbf{Scope and title} (Reviewers \#2, \#5, \#9, \#11, \#12). The title is now
+    \emph{Interpretable supervised feature extraction for multivariate biomedical sequences}.
+    REMC is described as a 1D profile indexed by genomic position, not as general spatial data.
+    Extension to 2D/3D and spatiotemporal data is named as future work.
+  \item \textbf{Claims} (Reviewers \#5, \#9, \#14). Abstract, objectives, Discussion, and
+    Conclusion now describe SublimeX as a compact, traceable, competitive extractor. Wording that
+    implied uniform performance superiority or clinical readiness has been removed.
+  \item \textbf{Validation and leakage} (Reviewers \#5, \#9, \#12, \#14). A subject-held-out
+    internal search for PAMAP2 is reported in the Supplementary Data as a test-only table beside
+    the default search, one row per held-out subject (101--108). Both columns use the same
+    leave-one-subject-out test subject and differ only in the fit/selection split, so that subject
+    enters neither search. The check did not improve LOSO test accuracy, so the default 50/50 split
+    remains and is not a grouped option in the method.
+    The Evaluation section separates test-leakage avoidance from subject-independent model
+    selection and describes the AZT1D pooling explicitly. Section~2.3 states that each outer fold
+    starts a fresh Optuna study, so the sampler carries no history across folds.
+  \item \textbf{Statistics} (Reviewers \#5, \#6, \#9, \#14). Paired tests are now two-sided exact
+    Wilcoxon tests. REMC is tested on the 56 cell-line means instead of 280 dependent fold pairs.
+    We state that on five matched folds the exact test cannot reach $p<0.05$ (minimum $p=0.0625$)
+    and report mean differences where a gap is discussed. Runtimes are reported as
+    median (min--max) on every dataset, including REMC (Table~3).
+  \item \textbf{Baselines} (Reviewers \#5, \#9, \#11, \#12). An LSTM, trained on the same splits, is
+    now a sixth baseline (Section~2.6 and Table~3). We do not add HIVE-COTE~2.0 or InceptionTime:
+    both require substantially more computation than the six baselines already reported, and we
+    treat that set as sufficient. The paper does not claim accuracy against the two omitted models.
+  \item \textbf{Interpretability} (Reviewers \#5, \#9, \#11, \#12, \#14). Objective~(iii) and
+    Section~3.5 now speak of \emph{traceable feature descriptions}. We state explicitly that
+    traceability is not clinical or biological interpretability and that no expert reader study
+    was performed. SHAP is shown for REMC, AZT1D, and MIT-BIH (Figure~4), not for the remaining
+    datasets.
+  \item \textbf{Numerical consistency} (Reviewers \#2, \#5, \#6, \#14, \#16). The abstract now reports
+    the AZT1D values of Table~3; the RMSE gap is $0.22$ throughout; the trial budget is described as
+    300$\to$1000 (not ``doubled''); Emotions is $2\times1269$; tsfresh uses ten features per channel;
+    Section~2.6 states the CNN early-stopping setup used in the experiments.
+  \item \textbf{Presentation} (Reviewers \#5, \#6, \#11, \#16). Datasets, baselines, and the
+    evaluation protocol stay in Methods (Sections~2.5--2.7), after the description of SublimeX.
+    Classification and regression stay in one results subsection (Section~3.1): the six
+    classification benchmarks come first, and the regression task (AZT1D, RMSE) is a separate
+    paragraph at the end. Figures~1--4 are placed and captioned in the manuscript.
+    The walkthrough is in Figure~1. The extract sketch is the same height as the other icons and shows z-score-normalized P-wave traces for group one and group two on one segment, with means of about $-0.13$ and $0.14$. The evaluate box stacks the two distributions above a decision tree that splits on feature one at $0$.
+\end{enumerate}
+
+%=====================================================================
+\section*{Area Editor}
+
+\rc{In this round of review, we invited more than three reviewers to avoid insufficient reviewers
+in due time. However, we accidentally collected 8 reviewers and most of them agree on the technical
+contribution and novelty of the manuscript and they raise many issues that should be addressed in the
+next round of review. Totally 8 reviewer comments are collected, 4 minor revision, 3 major revision
+and one reject. The main concerns of the reviewers are clearer descriptions including technical
+details, figures, evaluations, as well as the title. The authors are suggested to revise the
+manuscript according to the main concerns of the reviewers.}
+
+\response{We thank the Area Editor for the summary. The four concerns named here are addressed as
+follows.}{
+  \item \emph{Title:} revised to \emph{Interpretable supervised feature extraction for multivariate
+    biomedical sequences} (theme~1).
+  \item \emph{Technical details:} Section~2.3 states the search loop in order, including the
+    strict-improvement stopping rule; Figure~1 shows the same
+    flow. Datasets, baselines, and the evaluation protocol follow in Sections~2.5--2.7.
+  \item \emph{Figures:} all four figures are embedded and captioned in the compiled manuscript; the
+    unresolved ``Figure~??'' references in the previous system-generated PDF are resolved.
+  \item \emph{Evaluations:} a PAMAP2 subject-held-out check in the Supplementary Data, tabulated
+    as LOSO test accuracy beside the default search for subjects 101--108 (it does not
+    beat the default split), corrected paired tests, and median runtimes (themes~3 and~4).
+}
+
+%=====================================================================
+\section*{Reviewer \#2}
+
+\rc{The revised manuscript has improved substantially compared with the previous version. The authors
+have addressed most of the major concerns raised in the first review, including the need for clearer
+objectives, stronger methodological detail, improved reproducibility, more appropriate statistical
+comparisons, clearer figures and tables, and a more balanced discussion of strengths and limitations.
+The addition of explicit objectives, paired Wilcoxon tests, runtime reporting, multi-fold ablations,
+expanded comparison tables, and a more structured discussion has strengthened the manuscript
+considerably.
+
+Overall, I believe the manuscript is close to being suitable for publication. However, I recommend
+minor revision before acceptance. The remaining issues are not major methodological concerns, but
+they should be addressed to improve precision and avoid overstatement. In particular, the authors
+should clarify the scope of the ``spatial data'' claim, ensure consistency between the
+abstract/submission metadata and the revised AZT1D results, and maintain a clear statement of the
+limitations regarding additional robustness analyses and stronger time-series baselines that were not
+included. These minor revisions would improve the accuracy, balance, and clarity of the final
+manuscript.}
+
+\response{We thank the reviewer for the positive assessment. All three points are addressed.}{
+  \item \emph{Spatial scope.} The title no longer mentions spatial data. The Introduction states:
+    ``In this study we showcase that SublimeX can extract a minimal, traceable feature set while
+    achieving competitive performance on univariate and multivariate biomedical sequences including
+    glucose forecasting, arrhythmia classification, EEG emotion recognition, epigenomic gene-expression
+    prediction, ICU mortality prediction, IMU activity recognition, and voice pathology detection.''
+    Section~2.5 states: ``REMC is a spatially indexed 1D sequence, not a 2D/3D spatial field.''
+    Section~4.4 leaves extension to 2D/3D fields as future work.
+  \item \emph{Abstract and AZT1D results.} The abstract now reads ``ranks second on AZT1D (RMSE
+    $30.98\pm5.65$ vs.\ $30.76\pm5.38$)'', identical to Table~3. The obsolete values 31.11 and 31.18
+    no longer appear anywhere, and the submission metadata (title, abstract) will be updated
+    accordingly in Editorial Manager.
+  \item \emph{Limitations.} Section~4.3 is now one consolidated paragraph. It states, among other
+    points: ``We do not include HIVE-COTE~2.0 or InceptionTime. Both require substantially more
+    computation than the six baselines in Table~3, which we take to be sufficient, and we do not
+    claim accuracy against either model.'' and ``Traceability (channel/transform/segment) is not a quantitative
+    interpretability score, and we did not run an expert reader study.'' It also lists the fixed
+    internal split, local optima of greedy search, cross-subject generalization, the restriction to
+    public benchmarks, and the restriction to 1D sequences.
+}
+
+%=====================================================================
+\section*{Reviewer \#5}
+
+\rcitem{1. Title and scope}{The title and scope are not well aligned with the actual contribution.
+The manuscript is titled ``Interpretable supervised feature extraction for time series and spatial
+data,'' but six of the seven benchmarks are temporal biomedical datasets, and the only ``spatial''
+case, REMC, is essentially a one-dimensional genomic-position profile rather than a genuine 2D or
+general spatial dataset. The statement that the search is ``agnostic'' to temporal vs.\ spatial
+indexing is not sufficient evidence of a spatial-data contribution. The authors should either add a
+real spatial benchmark or revise the title and scope to accurately reflect that the method is
+primarily for multivariate 1D sequences. As written, the spatial claim overstates the paper's
+validated generality.}
+
+\response{We agree and chose the second option suggested by the reviewer. The title now refers to
+multivariate biomedical sequences, and the Introduction states the study on univariate and
+multivariate biomedical sequences.}{
+  \item New title: \emph{Interpretable supervised feature extraction for multivariate biomedical
+    sequences}.
+  \item Introduction: ``In this study we showcase that SublimeX can extract a minimal, traceable
+    feature set while achieving competitive performance on univariate and multivariate biomedical
+    sequences including glucose forecasting, arrhythmia classification, EEG emotion recognition,
+    epigenomic gene-expression prediction, ICU mortality prediction, IMU activity recognition, and
+    voice pathology detection.''
+  \item Abstract: ``SublimeX is an open-source framework that extracts a minimal, traceable feature
+    set from multivariate biomedical sequences, one that can be well interpreted with domain knowledge.''
+  \item Section~2.5 describes REMC as ``five histone marks as 200-bin profiles around each
+    transcription start site'' and adds ``REMC is a spatially indexed 1D sequence, not a 2D/3D
+    spatial field.''
+  \item Section~4.4 names the extension to 2D/3D fields and spatiotemporal tasks as future work and
+    states that it is ``outside the present scope''.
+}
+
+\rcitem{2. Novelty}{The novelty relative to existing interval-based, shapelet-based, and
+ROCKET/MiniRocket methods is still not sharply defined. SublimeX appears to combine supervised
+interval selection, mean aggregation, Bayesian optimization, and a compact feature set. These
+ingredients are individually related to TSF/CIF/DrCIF, RDST, and MiniRocket. The manuscript needs a
+more precise technical argument explaining what is fundamentally new, not just that SublimeX produces
+fewer features. Table~1 is useful, but its interpretability ratings are partly subjective and do not
+by themselves establish novelty. The authors should clarify which design choice cannot be found in
+prior interval ensembles or shapelet methods and why that choice materially changes performance or
+interpretability.}
+
+\response{We agree that the High/Medium/Low ratings were partly subjective. Table~1 now has an
+\emph{Explanation type} column, and Sections~3.5 and~4.3 limit the claim to traceable feature
+descriptions. The new design choice is supervised selection of one segment at a time (Section~1.2).
+RDST draws shapelets at random and keeps about 3{,}000 distance features (Table~3).
+SublimeX does not use shapelets: each feature is the mean of one channel, one transform, and one
+segment, and the search stops at about 6--20 features once validation no longer improves.
+Pattern Search, which does score by distance, helps on Emotions and MIMIC-IV, but not significantly
+(Section~3.4 and Table~4).}{}
+
+\rcitem{3. Objectives, method, and evaluation alignment}{The objectives, method, and evaluation are
+not fully aligned. Objective~(iii) claims to assess robustness, generalization, and interpretability,
+but interpretability is mainly demonstrated by traceability and SHAP analysis on only REMC and AZT1D.
+Traceability to a channel, transform, segment, and aggregation is a useful property, but it is not
+equivalent to clinical or biological interpretability. There is no expert user study, no formal
+fidelity metric, and no cross-dataset interpretability evaluation. The authors should either define
+a more operational interpretability metric and report it across datasets, or explicitly weaken the
+interpretability claim to ``traceable feature descriptions'' rather than broad interpretability.}
+
+\response{We followed the second option and weakened the claim to traceable feature descriptions.}{
+  \item Objective~(iii) now reads: ``we assess robustness and generalization, and document
+    \emph{traceable feature descriptions} through fold stability and SHAP analyses on selected
+    benchmarks.''
+  \item Section~3.5 opens with: ``We treat this as \emph{traceable feature description}: the ability
+    to point to a concrete signal region. Traceability is not equivalent to clinical or biological
+    interpretability, which would require expert reader studies and formal fidelity metrics that we
+    do not claim.''
+  \item The one cross-dataset quantity we do report is fold stability of the first selected feature
+    (Figure~2B: positional standard deviation and the fraction of folds selecting the same transform
+    and channel) for six datasets. We present it as stability of the descriptors, not as an
+    interpretability score.
+  \item The missing expert study is listed in Section~4.3. We added MIT-BIH as a third SHAP case
+    (Section~3.5, Figure~4) and did not extend SHAP to the remaining datasets.
+}
+
+\rcitem{4. Internal validation design}{The internal validation design remains a major concern. The
+fixed 50/50 fit/selection split may stabilize candidate scores, but it also risks overfitting to a
+single internal split. The Resampling ablation is helpful, but it does not fully resolve the issue,
+especially for cross-subject tasks such as PAMAP2. The reported ${\sim}26\%$ validation-test gap on
+PAMAP2 strongly suggests that the feature search captures subject-specific structure rather than
+subject-independent discriminative patterns. The authors acknowledge this, but they do not implement
+subject-independent validation during search. At minimum, the paper should discuss this limitation
+much more prominently, and ideally it should test a subject-held-out search protocol on PAMAP2 or
+another cross-subject benchmark.}
+
+\response{We ran the subject-held-out search as a check. It is reported in the Supplementary Data
+and is not part of the method.}{
+  \item Within each LOSO fold the selection half used training subjects absent from the fit half.
+    The Supplementary Data table lines up LOSO test accuracy for subjects 101--108. Both columns
+    share the same test subject and differ only in the fit/selection split, so that subject enters
+    neither search.
+  \item Search-time validation falls from ${\sim}98.7\%$ to $0.917\pm0.014$. LOSO test accuracy
+    after the full refit is $0.840\pm0.072$, against $0.860\pm0.081$ for the default protocol.
+    The fit-half model in Section~3.3 averages about $86\%$ LOSO test accuracy, a gap of about
+    13 points from the $98.7\%$ validation.
+  \item Test accuracy is lower than the default protocol, so the manuscript keeps the fixed 50/50
+    split. The default search does not group that split by subject.
+}
+
+\rcitem{5. Evaluation protocol and leakage}{The evaluation protocol and leakage discussion need further
+clarification. The manuscript states that test folds, LOSO subjects, and AZT1D temporal test windows
+never enter segment search. This is important, but several details remain unclear. For AZT1D, segment
+discovery is performed once on pooled training windows from all patients; the authors should clarify
+whether this creates any cross-patient information sharing and how it affects per-patient
+generalization. For PAMAP2, the internal fit/selection split uses windows from the same training
+subjects, so the search-time validation is not subject-independent. The paper should more explicitly
+distinguish between avoiding test leakage and ensuring subject-independent model selection.}
+
+\response{Section~2.7 has been rewritten to make exactly this distinction.}{
+  \item \emph{AZT1D:} ``Pooling training windows shares information across patients during search,
+    but never uses test windows; this can affect per-patient generalization relative to a fully
+    patient-independent search.''
+  \item \emph{Distinction:} ``Avoiding test leakage is distinct from ensuring subject-independent
+    model selection during search.''
+  \item \emph{PAMAP2:} the default same-subject split is described as not subject-independent.
+    The Supplementary Data table compares LOSO test accuracy for that split and the subject-held-out
+    search on the same subjects 101--108; the held-out subject enters neither search, and the check
+    does not improve test accuracy (see point~4).
+  \item \emph{Optuna state:} ``Each outer fold starts a fresh Optuna study, so the sampler carries no
+    history across folds.'' (Section~2.3).
+}
+
+\rcitem{6. Baselines and small differences}{The authors justify excluding HIVE-COTE 2.0,
+InceptionTime, and LSTM/GRU models on the grounds of interpretability and matched protocols, but this
+justification is not fully convincing. At least one strong black-box time-series baseline should be
+included to situate SublimeX's accuracy-interpretability trade-off. In addition, the statistical tests
+are welcome, but many reported differences are very small, such as AZT1D RMSE 30.98 vs.\ 30.76 and
+REMC AUC ties. The discussion should avoid implying broad performance superiority.}
+
+\response{We added an LSTM on the same splits, and we did not add HIVE-COTE~2.0 or InceptionTime.}{
+  \item The LSTM is the additional black-box baseline. Section~2.6 specifies one layer with hidden
+    size 64, Adam at $10^{-3}$, batch size 64, and 100 epochs, keeping the weights with the lowest
+    validation loss. Table~3 reports it next to the 1D CNN. On MIT-BIH it reaches $0.990\pm0.001$;
+    on Emotions, MIMIC-IV, and AZT1D it trails the feature-based methods.
+  \item HIVE-COTE~2.0 fits several constituent classifiers on every fold, and InceptionTime trains
+    an ensemble of deep networks for a long schedule. Both are far more expensive than the baselines
+    already in Table~3. With six baselines in place (tsfresh, catch22, MiniRocket, RDST, a 1D CNN,
+    and the LSTM), we treat that comparison as sufficient and do not claim accuracy against
+    HIVE-COTE~2.0 or InceptionTime (Section~2.6 and Section~4.3).
+  \item Small differences are reported as mean differences and $p$-values, not as intervals. For
+    AZT1D the gap is $0.22$ ($p=0.39$). REMC is a tie with MiniRocket on the 56
+    cell-line means ($p=0.149$).
+  \item The paper does not claim that SublimeX is superior. Section~3.1 calls it competitive where
+    compact descriptors matter, and the Discussion states: ``MiniRocket, tsfresh, or RDST lead
+    elsewhere (Table~3); we do not claim uniform superiority.'' The comparison showcases a minimal
+    set of traceable features.
+}
+
+\rcitem{7. Ablations and reproducibility}{The ablation study and reproducibility package still need
+tightening. Table~4 reports multi-fold ablations, but REMC uses only cell line E003, and the REMC
+baseline is not comparable to the pooled 56-cell-line result in Table~3. This inconsistency should be
+clearly separated or resolved. Several ablation variants, such as Optimized Aggregate and Pattern
+Search, do not consistently improve over the baseline, yet the paper sometimes draws strong
+conclusions from them. The authors should report effect sizes or confidence intervals where possible
+and avoid overinterpreting small differences.}
+
+\response{We separated the REMC ablation explicitly and toned down the ablation conclusions.}{
+  \item Section~3.4 and the Table~4 caption state that REMC ablations use cell line E003, report AUC
+    like Table~3, and that ``the E003 baseline is not comparable to the pooled 56-line score''.
+  \item The concluding sentence of Section~3.4 now reads: ``Apart from \emph{Decision Tree},
+    \emph{Raw Only}, and \emph{Parallel} on PAMAP2, most differences to the baseline lie within one
+    standard deviation across folds. We therefore keep the simplest configuration \ldots{} as the
+    default, without claiming that it is optimal on every dataset.''
+  \item We do not add confidence intervals for these differences. With this evaluation the paper
+    does not claim that SublimeX is superior to the other methods. Section~3.1 presents a
+    competitive accuracy--traceability trade-off, and the Discussion states that we do not claim
+    uniform superiority (Table~3). The aim is to showcase a minimal set of traceable features.
+}
+
+\rcitem{8. Writing, figures, and conclusions}{The writing, figures, and conclusions still require
+improvement. The manuscript has been reorganized, but several paragraphs remain dense, and some claims
+in the Abstract and Conclusion still sound stronger than the evidence supports. Dataset naming should
+be fully consistent, e.g., ``MIT-BIH'' rather than ``MITBIH'' or ``MITBIIH,'' and typographical errors
+should be corrected. The SHAP analysis is only shown for two datasets, and the reasons for selecting
+REMC and AZT1D should be stated more explicitly. Figures and tables, especially SHAP and ablation
+figures, should be checked for font size and print readability. The Conclusion should be rewritten to
+match the actual contribution: a compact, traceable, competitive feature-extraction framework, not a
+uniformly superior or clinically validated solution.}
+
+\response{We revised all items listed.}{
+  \item \emph{Conclusion} rewritten: ``On seven public benchmarks it is competitive with much larger
+    feature maps while remaining inspectable at the segment level, without claiming uniform accuracy
+    leadership or clinical validation.''
+  \item \emph{Abstract} conclusion: ``SublimeX is a feature extractor for one-dimensional biomedical
+    sequences, not a clinically validated decision-support system.''
+  \item \emph{Naming:} ``MIT-BIH'' is used throughout, including Table~2.
+  \item \emph{SHAP selection:} Section~3.5 now includes MIT-BIH with REMC and AZT1D as three
+    benchmarks with clear domain priors (histone marks near the TSS, glucose--insulin--carbohydrate
+    dynamics, and the post-R derivative on the five-class MIT-BIH task). Figure~4 has nine panels.
+    The MIT-BIH row shows Normal, LBBB, RBBB, APC, and PVC; class counts are not rebalanced.
+    Descriptor stability for the remaining datasets stays in Figure~2B. We did not add an expert
+    study, and we did not run SHAP on every dataset (Section~4.3).
+  \item \emph{Density:} datasets, baselines, and evaluation remain in Methods (Sections~2.5--2.7); the Discussion
+    summary was shortened.
+  \item \emph{Figure and table readability:} figures are set to the text width. Figure~3 was redrawn
+    with 8\,pt text (it printed at roughly 5\,pt before). Figure~4 uses 6.5\,pt axis titles,
+    5.5\,pt tick labels, and a 4.2\,pt legend, which is the smallest type that still fits nine
+    panels at text width.
+}
+
+%=====================================================================
+\section*{Reviewer \#6 (attached report)}
+
+\rc{This revised manuscript presents SublimeX, a supervised bottom-up framework for extracting compact, interpretable segment-based features from multivariate time series and spatial data using Bayesian optimization (Optuna/TPE) and LightGBM. The authors have substantially reworked the paper in response to the first round of reviews: the Related Work section has been tightened and anchored by a taxonomy table (Table~1), the two-half internal split for feature discovery and stopping is now clearly described (Section~2.2), dataset details have been consolidated into Table~2 with preprocessing moved to Supplementary Data, paired Wilcoxon signed-rank tests have been added to Tables~3 and~4, AZT1D is now evaluated per patient (23 patients) rather than on pooled folds, the ablation study has been expanded to all five classification datasets across folds with a new Resampling variant, and the clinical-applicability claims have been moderated.\par\smallskip
+While the revision is a clear improvement, a close reading of the revised text and tables reveals several internal inconsistencies, statistical issues, and compilation/production defects that should be resolved before publication.}
+
+\response{We thank the reviewer for the careful reading of the revised manuscript and tables. The statistical, numerical, and production issues in the attached report are addressed point by point below.}{}
+
+\rcitem{1. Statistical testing power on 5-fold datasets (Section 2.7, Section 3.1, Table 3, Table 4)}{In Section~2.7 (p.~14), the authors state that methods are compared using a paired Wilcoxon signed-rank test on fold-level scores at $\alpha=0.05$. For four of the seven datasets (MIMIC-IV, MIT-BIH, Emotions, SVD), the pairing unit is $N=5$ cross-validation folds. With $N=5$ paired observations, the minimum possible two-sided $p$-value of the exact Wilcoxon signed-rank test (achieved when all 5 differences have the same sign) is $p = 2/2^5 = 0.0625 > 0.05$. Consequently, under a two-sided test at $\alpha=0.05$, it is mathematically impossible for any comparison on MIMIC-IV, MIT-BIH, Emotions, or SVD to ever receive an asterisk ($^*$) in Table~3 or Table~4, regardless of how large the performance gap is.\par\smallskip
+This directly undermines the interpretation in Section~3.1 (p.~15):
+\begin{itemize}[nosep,leftmargin=1.4em]
+  \item For SVD, the authors write that SublimeX ($0.728 \pm 0.044$) is ``not significantly worse than the top method'' ($0.793 \pm 0.041$, a 6.5 percentage-point gap), and for Emotions ($0.909$ vs.\ $0.942$) and MIMIC-IV ($0.818$ vs.\ $0.840$) they similarly rely on the absence of an asterisk to claim statistical parity (``within two to three points of the best baseline and not significantly worse'').
+  \item Likewise, in Table~3, the CNN baseline on SVD ($0.659 \pm 0.058$, 13.4 points below tsfresh) and the RDST baseline on MIMIC-IV ($0.761 \pm 0.015$, 7.9 points below tsfresh) carry no asterisk solely because $N=5$ cannot cross $p < 0.05$ two-sided (unless a one-sided test or normal approximation without continuity correction was used, which is not stated).
+  \item In Table~4 (Ablation), no asterisks appear anywhere in the MIMIC-IV, MIT-BIH, Emotions, or SVD rows (even when Parallel drops to $0.766$ vs.\ $0.824$ on MIMIC-IV or Raw Only drops to $0.916$ vs.\ $0.988$ on MIT-BIH), whereas PAMAP2 ($N=8$ subjects, min $p = 0.0078$) shows asterisks.
+\end{itemize}
+Recommendation: Clarify whether the Wilcoxon test is one-sided or two-sided and whether exact or asymptotic $p$-values were used. More importantly, do not interpret the absence of $p < 0.05$ on $N=5$ folds as evidence of no difference; either report exact $p$-values / confidence intervals or use a test/design with sufficient resolution.}
+
+\response{We agree. Section~2.7 states that the comparison is a two-sided exact Wilcoxon signed-rank test, run separately on each dataset. Five folds cannot reach $p<0.05$ (minimum $p=0.0625$), so a missing asterisk on MIT-BIH, Emotions, MIMIC-IV, or SVD is not equivalence. REMC, AZT1D, and PAMAP2 are paired by cell line, patient, and subject. Tables~3 and~4 report the outcomes. The REMC row of Table~4 uses only cell line E003, so it has the same five-fold limit. We do not add confidence intervals. The paper does not claim that SublimeX is superior: Section~3.1 presents a competitive accuracy--traceability trade-off, and the Discussion states that we do not claim uniform superiority (Table~3). The comparison showcases a minimal set of traceable features.}{}
+
+\rcitem{2. Inconsistent channel count for the Emotions dataset (Table 2 vs.\ Table 3)}{In Table~2 (p.~12), the Emotions dataset is listed as having shape $5 \times 1{,}269$ (5 channels of length 1,269). However, in Table~3 (p.~16), the feature counts for Emotions are:
+\begin{itemize}[nosep,leftmargin=1.4em]
+  \item catch22: 44 features ($= 22 \text{ features/channel} \times 2 \text{ channels}$),
+  \item tsfresh: 20 features ($= 10 \text{ features/channel} \times 2 \text{ channels}$),
+  \item CNN: 2,538 features ($= 2 \times 1{,}269$, raw input flattened).
+\end{itemize}
+All three baseline feature counts correspond to 2 channels ($2 \times 1{,}269$), not 5 channels. Please reconcile Table~2 with the actual data dimensionality used in the experiments.}
+
+\response{Corrected. Table~2 now lists Emotions as $2 \times 1{,}269$, matching the feature counts in Table~3. Section~1.1.3 of the Supplementary Material documents how the two series of length 1,269 are constructed.}{}
+
+\rcitem{3. Discrepancy in tsfresh feature count description (Section 2.6 vs.\ Table 3)}{In Section~2.6 (p.~13), the text states: ``tsfresh uses the minimal feature extraction settings (\texttt{MinimalFCParameters}), which compute eight summary statistics per univariate channel.'' However, in Table~3, the number of tsfresh features is 30 for AZT1D (3 channels), 10 for MIT-BIH (1 channel), 20 for Emotions (2 channels), 50 for REMC (5 channels), 270 for PAMAP2 (27 channels), and 10 for SVD (1 channel)---i.e., 10 features per channel (plus 34 static features on MIMIC-IV: $12 \times 10 + 34 = 154$). In current versions of \texttt{tsfresh}, \texttt{MinimalFCParameters} includes 10 calculators (including \texttt{abs\_energy} and \texttt{root\_mean\_square} in addition to the original 8). Please update the text in Section~2.6 to say ten summary statistics per channel.}
+
+\response{Corrected in Section~2.6.}{
+  \item Section~2.6 now states that tsfresh uses ten features per univariate channel, extracted per channel and concatenated on multivariate inputs.
+}
+
+\rcitem{4. Leftover numbers from the first submission in the text}{Several numbers in the main text were not updated after the re-experiments:
+\begin{itemize}[nosep,leftmargin=1.4em]
+  \item \textbf{Section~3.1 (p.~15):} ``On AZT1D glucose forecasting, SublimeX achieves the lowest RMSE ($30.76 \pm 6.72$), outperforming MiniRocket ($30.98 \pm 6.45$) by $\sim 0.35$ RMSE\ldots'' The difference between $30.98$ and $30.76$ is $0.22$ RMSE, not $0.35$.
+  \item \textbf{Abstract (p.~2) and Section~3.4 (p.~20):} Both state that ``doubling the Optuna budget from 300 to 1000 trials brings no accuracy gain''. Going from 300 to 1000 trials is a $3.33\times$ increase (more than tripling), not doubling.
+\end{itemize}}
+
+\response{Both numbers have been corrected.}{
+  \item Abstract: ``raising the trial budget from 300 to 1000 adds little accuracy.''
+  \item Section~3.1 (AZT1D): ``On AZT1D, MiniRocket achieves the lowest mean test RMSE ($30.76{\pm}5.38$); SublimeX is second ($30.98{\pm}5.65$) and does not differ significantly from MiniRocket ($p{=}0.39$)\ldots{} The $0.22$ RMSE gap is small relative to cross-patient variability.''
+  \item Section~3.4 (Ablations): ``\emph{1000 Trials} raises the Optuna budget from 300 to 1000.''
+}
+
+\rcitem{5. Statistical testing on REMC with 280 pooled fold scores (Section 2.7)}{For REMC, Section~2.7 states that Wilcoxon tests are conducted across ``280 fold scores (5 folds $\times$ 56 cell lines)''. However, the 5 folds within each of the 56 cell lines are not independent observations, and the 56 cell lines share the exact same underlying set of 16,236 genes. Treating 280 fold scores as independent pairs inflates the effective sample size and can produce artificially small $p$-values. A more appropriate pairing unit is the 56 per-cell-line mean AUCs (so $N=56$ pairs).}
+
+\response{Fixed. Both the reported standard deviations and the exact two-sided Wilcoxon signed-rank tests on REMC are now computed over the $N=56$ per-cell-line mean AUCs rather than the 280 pooled fold scores.}{
+  \item Section~2.7: ``REMC pairs the 56 cell-line means, each mean taken over the five folds of that line.'' The same subsection reports the REMC score as the mean over those 56 cell-line means.
+  \item Under this $N=56$ test, SublimeX ($0.931 \pm 0.023$) and MiniRocket ($0.931 \pm 0.023$) are not significantly different (exact Wilcoxon $p = 0.149$), whereas tsfresh, catch22, RDST, the CNN, and the LSTM remain significantly worse ($p < 0.05$).
+}
+
+\rcitem{6. Unresolved LaTeX figure references (\texttt{Figure ??}) and missing figures in PDF}{In the compiled manuscript PDF, Figures~2, 3, and~4 are not embedded in the main text (their \texttt{\textbackslash includegraphics} calls or float environments appear to be missing or commented out, so only Figure~1 appears in the document), and the text contains unresolved LaTeX cross-references on pages~18, 19, and~21:
+\begin{itemize}[nosep,leftmargin=1.4em]
+  \item Section~3.2 (p.~18): ``Figure~?? summarizes the features discovered by SublimeX\ldots''
+  \item Section~3.3 (p.~19): ``Figure~?? shows how test performance evolves\ldots''
+  \item Section~3.5 (p.~21): ``Figure~?? presents SHAP beeswarm plots\ldots''
+\end{itemize}
+All figures must be properly included, captioned, and referenced in the manuscript.}
+
+\response{Resolved. Figures~1--4 are embedded with full captions. Sections~3.2, 3.3, and~3.5 now refer to Figures~2, 3, and~4.}{}
+
+\rcitem{7. Minor: Wilcoxon test specification in Table 3 and Table 4}{Please state explicitly in Section~2.7 and in the captions of Tables~3 and~4 whether the Wilcoxon signed-rank test is one-sided or two-sided, and whether exact or normal-approximation $p$-values are used.}
+
+\response{Section~2.7 and the captions of Tables~3 and~4 state that every Wilcoxon signed-rank test is two-sided and exact.}{}
+
+\rcitem{8. Minor: Runtime reporting on REMC (Table 3)}{In Table~3, the runtime for REMC is reported as $77 \pm 316$\,s for SublimeX and $75 \pm 117$\,s for RDST (standard deviation much larger than the mean for a strictly positive quantity, indicating heavy right skew or outliers across cell lines). Reporting median and interquartile range (or min--max) for runtime on REMC would be much more informative.}
+
+\response{Table~3 now reports REMC runtime in the same form as the other datasets, median (min--max) over folds. SublimeX is 64\,s (26--412) and catch22 is 52\,s (20--55).}{}
+
+\rc{Summary: The authors have done substantial work to address the first-round reviews, and the core method and experimental scope are now solid. Once the statistical interpretation of the 5-fold Wilcoxon tests, the REMC pairing unit, the numerical inconsistencies in Tables~2--3 and the text, and the broken figure references/missing figures are fixed, the manuscript will be suitable for publication.}
+
+\response{We thank Reviewer~\#6 for this constructive assessment and for catching these issues.}{}
+
+%=====================================================================
+\section*{Reviewer \#9}
+
+\rcitem{1. Explicit objectives and methodological novelty}{How does SublimeX explicitly differ from
+existing shapelet/interval approaches or deep learning models, and what are its exact theoretical and
+technical contributions?}
+
+\response{Section~1.1 states three objectives, and we do not claim a new theorem.
+The contrast with RDST is in Section~1.2 and in the reply to Reviewer~\#5, point~2:
+RDST keeps random shapelets scored by distance, and SublimeX keeps the mean of a selected
+channel, transform, and segment.}{}
+
+\rcitem{2. Title scope and dataset diversity}{Given that 6 out of 7 benchmark datasets are time series
+and only one is spatial 1D epigenomic data, can you either strengthen the spatial evaluation or adjust
+the title and paper scope accordingly?}
+
+\response{We adjusted the title and scope to multivariate biomedical sequences (see Reviewer~\#5,
+point~1).}{}
+
+\rcitem{3. Data leakage and cross-validation integrity}{Can you strictly confirm that the feature
+discovery process was confined entirely to training folds without any test information leakage?}
+
+\response{Yes. Feature discovery only receives the training partition of each outer fold; the held-out
+fold, LOSO subject, or AZT1D temporal test window is used exactly once, for the score in Table~3
+(Section~2.7). Each outer fold starts a fresh Optuna study, so no sampler history is shared across
+folds (Section~2.3). Separately from leakage, we now also address subject-independent selection on
+PAMAP2 (Reviewer~\#5, points~4 and~5).}{}
+
+\rcitem{4. Validation--test gap on PAMAP2}{What caused the ${\sim}26\%$ performance drop between
+validation and test sets on the PAMAP2 dataset under Leave-One-Subject-Out (LOSO) cross-validation,
+and was the feature search subject-independent?}
+
+\response{In the default protocol the search was not subject-independent: both halves of the internal
+split contained windows from the same training subjects. Section~3.3 now gives the fit-half gap as
+about 13 points (validation $98.7\%$, LOSO test about $86\%$). The Supplementary Data table sets
+LOSO test accuracy for that search beside the subject-held-out search, one row per subject 101--108.
+Both columns share the same test subject and differ only in the fit/selection split, so that
+subject enters neither search. The subject-held-out mean is $0.840\pm0.072$, against
+$0.860\pm0.081$ for the default split, so the default protocol is unchanged.}{}
+
+\rcitem{5. Missing SOTA baselines and statistical significance}{Why were key time series baselines like
+HIVE-COTEv2 and InceptionTime omitted, and can you provide paired statistical significance testing
+(e.g., Wilcoxon signed-rank tests) to support performance claims?}
+
+\response{We added an LSTM on the same splits (Section~2.6 and Table~3). We did not add HIVE-COTE~2.0
+or InceptionTime: both require substantially more computation than the six baselines already reported,
+which we take to be sufficient, and the paper does not claim accuracy against them (Reviewer~\#5,
+point~6). Paired Wilcoxon signed-rank tests were added in the previous
+round; they are now two-sided and exact, and REMC is tested on cell-line means (Section~2.7).
+We also state that on five folds the exact test cannot reach $p<0.05$, so the absence
+of an asterisk is not read as equivalence. The paper does not claim that SublimeX is superior
+(Section~3.1 and the Discussion); it showcases a minimal set of traceable features.}{}
+
+\rcitem{6. Overstated claims and definition of interpretability}{Since SublimeX was not the top
+performer on all datasets, can you tone down claims of ``state-of-the-art leadership,'' qualify clinical
+readiness claims, and formally define ``interpretability'' beyond segment traceability?}
+
+\response{Claims are toned down in the Abstract, Discussion, and Conclusion (Reviewer~\#5, point~8).
+Clinical readiness is explicitly not claimed (Section~4.3: ``All experiments use public benchmarks,
+not prospective clinical data, so clinical applicability is not established.''). Instead of a broader
+definition we restrict the claim to traceable feature descriptions and say explicitly what this does
+not cover (Reviewer~\#5, point~3).}{}
+
+\rcitem{7. Stopping criteria, split instability, and ablation rigor}{What were the exact stopping
+criteria for feature search, how do you justify the 50/50 internal split against overfitting, and can
+you run the ablation study across all folds rather than just a single fold?}
+
+\response{All three are covered in the revised manuscript.}{
+  \item \emph{Stopping:} ``A candidate improves validation only if its selection-half score is
+    strictly better than the best score so far (higher accuracy/AUC, lower RMSE); there is no
+    tolerance band.'' The same paragraph gives the rest of the loop.
+  \item \emph{50/50 split:} a fixed split keeps candidate scores comparable across trials; the
+    \emph{Resampling} ablation (new split per trial) does not improve results and hurts PAMAP2. The
+    overfitting risk of a single split is listed in Section~4.3. The Supplementary Data table
+    compares LOSO test accuracy for the default split and a subject-held-out search on the same
+    subjects; the check did not beat the default split.
+  \item \emph{Ablations:} Table~4 already uses all folds (5-fold CV, 8 LOSO folds for PAMAP2, all
+    23 AZT1D patients; REMC on cell line E003).
+}
+
+\rcitem{8. Reproducibility, runtimes, and hyperparameters}{Can you provide complete baseline/model
+hyperparameter configurations, a standardized hardware runtime comparison, and an end-to-end
+reproducible code repository?}
+
+\response{Yes.}{
+  \item \emph{Hyperparameters:} Section~2.6 and Supplementary Table~S1. Section~2.6 states early
+    stopping with patience~10 on a 20\% validation split for the CNN.
+  \item \emph{Runtimes:} all methods were run on the same machine (MacBook Pro M2, 12 cores, 32~GB);
+    Table~3 reports median (min--max) end-to-end time, and the Supplementary Data report SublimeX
+    inference time separately.
+  \item \emph{Code:} the implementation and the saved feature definitions for every fold are
+    released with the paper, so the tables can be regenerated without rerunning the search
+    (Section~2.4).
+}
+
+%=====================================================================
+\section*{Reviewer \#11}
+
+\rc{The author addressed all comments from the first round of reviewers point by point and made
+substantial revisions to the original manuscript. I still believe that this article has not reached
+the level of this publication. My comments:}
+
+\rcitem{1. Title versus content}{The paper focuses on biomedical time series and sequential signals,
+but the title is for time series and spatial data. Is the Interpretability the author mentioned fit
+for other time series and spatial data?}
+
+\response{We agree. The title now reads \emph{Interpretable supervised feature extraction for
+multivariate biomedical sequences}. The Introduction states the study as a showcase on univariate and
+multivariate biomedical sequences, listing glucose forecasting, arrhythmia classification, EEG emotion
+recognition, epigenomic gene-expression prediction, ICU mortality prediction, IMU activity recognition,
+and voice pathology detection (see Reviewer~\#5, point~1). Section~2.5 states that REMC is a spatially
+indexed 1D sequence, not a 2D/3D spatial field. Whether the traceability carries over to other domains
+is not tested here; we name it as future work (Section~4.4).}{}
+
+\rcitem{2. Quantitative interpretability and domain experts}{The author provides operational
+definitions for interpretability: feature traceability (channel/transform/fragment/aggregation),
+stability of cross fold feature positions, and alignment of SHAP with domain priors. However, there
+are no quantitative interpretable indicators, and there is also no evaluation by domain experts.}
+
+\response{We agree that neither a quantitative interpretability score nor an expert evaluation is
+provided, and we did not add either. The claim stays traceable feature descriptions (Section~3.5
+and Section~4.3). We did add MIT-BIH as a third SHAP case in Figure~4, alongside REMC and AZT1D,
+and we did not extend SHAP to the remaining datasets. The fold-stability measures in Figure~2B
+remain the only quantitative descriptor-level measures we report, and we present them as stability,
+not as interpretability. What the three SHAP cases do show is localization: only a few features
+are retained, each one segment of one representation, which is enough to state a hypothesis (which
+genomic interval of a histone mark tracks expression, or which part of the ECG, in which view,
+the five MIT-BIH classes separate).}{}
+
+\rcitem{3. Novelty}{The paper presents the features with explicit definition such as channel,
+transform, segment, aggregation, which is considered interpretable. The idea is not novel.}
+
+\response{We agree that naming a feature by channel, transform, and segment is not new.
+Section~1.2 claims the selection, not the vocabulary. The contrast with RDST is the one given
+to Reviewer~\#5, point~2: random shapelets scored by distance, against a segment mean stopped
+by validation.}{}
+
+\rcitem{4. Outdated references and baselines}{The reference articles are quite outdated, so the chosen
+baseline methods are outdated.}
+
+\response{We share the concern that the baselines are not the newest model in each family. The
+paper does not set out to compare SublimeX with every recent or leading method. It shows that a
+minimal set of traceable features can still reach strong performance (Section~1.2 and Table~3).
+The chosen baselines span the main method families: feature libraries (tsfresh, catch22),
+shapelets (RDST), convolution (MiniRocket and a 1D CNN), and a recurrent model (LSTM)
+(Section~2.6 and Table~3). Interval methods are set beside them in Section~1.2 and Table~1.
+The bibliography was tightened to the methods and evaluation actually discussed.}{}
+
+\rcitem{5. Writing style}{The writing does not conform to the writing style in the field of pattern
+recognition, and the paper is difficult to read.}
+
+\response{We restructured the manuscript to follow the usual organization of pattern recognition
+papers: SublimeX is described first (Section~2.3 and Figure~1), then the datasets, baselines, and
+evaluation protocol in the same Methods section (Sections~2.5--2.7). Classification and regression
+stay together in Section~3.1, with the regression task (AZT1D, RMSE) in its own paragraph at the
+end. The objectives are stated in Section~1.1, and the Discussion was shortened.}{}
+
+%=====================================================================
+\section*{Reviewer \#12}
+
+\rc{This paper proposes SublimeX, a supervised interpretable feature extraction framework that
+iteratively discovers segment-mean features via Bayesian optimization, each defined by channel,
+transform, segment, and aggregation. The revision responds well to prior comments by adding
+objectives, related work, statistics, ablations, SHAP analyses, reproducibility materials, and
+limitations. However, the scope of spatial data in the title, the consistency between internal
+validation and external evaluation, external validation of interpretability, and comparison with
+strong baselines still need strengthening. Major revision is recommended.
+
+Strengths: 1.~The authors respond relatively systematically to the previous round of comments, which
+makes the method positioning and contributions clearer. 2.~The feature design of SublimeX is
+attractive: compact, readable, and traceable to specific channels, transforms, and signal segments.
+3.~The experimental reporting is clearly strengthened: paired Wilcoxon tests, multi-fold ablations,
+per-patient AZT1D reporting, runtime, and baseline hyperparameters are added. 4.~The interpretability
+demonstration has highlights: the SHAP analyses on REMC and AZT1D are consistent with domain
+knowledge, and the open-source and reproducibility materials are relatively complete.
+
+Weaknesses: 1.~The ``spatial data'' in the title still lacks sufficient support: REMC is essentially a
+one-dimensional spatially indexed sequence along genomic positions, not true 2D/3D spatial data, and
+no spatial benchmark experiment is included. 2.~Internal validation and external evaluation are not
+fully consistent: PAMAP2 uses a same-subject 50/50 internal split, while external evaluation is LOSO,
+leading to a large validation-test gap; the Resampling ablation cannot fully replace
+subject-independent or nested validation. 3.~Interpretability validation still mainly relies on
+traceability, fold stability, and SHAP on two datasets, lacking domain expert confirmation or evidence
+of interpretive consistency on more datasets. 4.~Baseline coverage remains limited: strong time-series
+baselines such as HIVE-COTE 2.0, InceptionTime, and LSTM/GRU are not evaluated, and the exclusion
+justifications are insufficient for some methods, affecting the completeness of the ``competitive''
+conclusion.}
+
+\response{We thank the reviewer for the balanced summary. The four questions are answered below.
+On positioning, see the reply to Reviewer~\#5, point~2: SublimeX selects segment means, and RDST
+keeps random shapelets.}{}
+
+\rcitem{Question 1}{Would the authors consider limiting spatial data in the title or abstract to
+``spatially indexed 1D sequences'', or adding a true 2D/3D spatial data benchmark?}
+
+\response{Yes, we limited the scope. The title now refers to multivariate biomedical sequences, and
+REMC is described as ``a spatially indexed 1D sequence, not a 2D/3D spatial field'' (Section~2.5).}{}
+
+\rcitem{Question 2}{Can the authors adopt subject-independent internal validation for cross-subject
+tasks such as PAMAP2, or at least report the results of nested/repeated validation?}
+
+\response{Yes. The Supplementary Data table reports all eight PAMAP2 LOSO folds (subjects 101--108)
+as test accuracy only: the subject-held-out search beside the default search. The two columns share
+the same leave-one-subject-out test subject and differ only in the fit/selection split of the
+remaining training windows, so that subject enters neither search. Mean test accuracy is
+$0.840\pm0.072$, below the default protocol ($0.860\pm0.081$), so the check stays in the
+Supplementary Data and the method is unchanged.}{}
+
+\rcitem{Question 3}{Can the authors add domain expert evaluation, or increase SHAP/stability analyses
+on more datasets, to more strongly support the ``interpretable'' claim?}
+
+\response{We did not add an expert evaluation in this revision. We added MIT-BIH as a third SHAP
+case in Section~3.5 and Figure~4 (nine panels). On that recording a few features each name one
+segment of one representation; the leading one is the derivative about 47--114~ms after the R peak
+on the five-class model (Normal, LBBB, RBBB, APC, PVC; counts left as they are). The same point holds for REMC (which histone interval tracks
+expression) and AZT1D (recent glucose). We do not extend SHAP to the remaining datasets, and
+Section~4.3 still lists the missing expert study. Descriptor stability for six datasets remains in
+Figure~2B.}{}
+
+\rcitem{Question 4}{Can the authors include at least one of HIVE-COTE 2.0 or InceptionTime, or provide
+a more detailed justification for why these strong baselines are not directly comparable?}
+
+\response{We added an LSTM on the same splits (Section~2.6 and Table~3) and did not add HIVE-COTE~2.0
+or InceptionTime. HIVE-COTE~2.0 fits several constituent classifiers on every fold, and InceptionTime
+trains an ensemble of deep networks for a long schedule. Both are far more expensive than the six
+baselines already reported (tsfresh, catch22, MiniRocket, RDST, a 1D CNN, and the LSTM). We treat
+that set as sufficient and do not claim accuracy against HIVE-COTE~2.0 or InceptionTime
+(Section~2.6 and Section~4.3).}{}
+
+%=====================================================================
+\section*{Reviewer \#14}
+
+\rc{Although the authors have provided extensive responses to the review comments, they have not
+convincingly resolved several key issues.}
+
+\rcitem{1. Abstract inconsistency}{The response states that AZT1D RMSE is reported as ``mean $\pm$ SD
+over those 23 per-patient errors (e.g.\ SublimeX $30.98\pm5.65$ vs.\ MiniRocket $30.76\pm5.38$).''
+However, the abstract still reports ``31.11 vs.\ 31.18.'' Why does the abstract remain inconsistent
+with Table~3, despite the response claiming the abstract was revised?}
+
+\response{We apologize for this oversight. The abstract now reports ``RMSE $30.98\pm5.65$ vs.\
+$30.76\pm5.38$'', identical to Table~3. We also corrected a second stale value in Section~3.1: the
+RMSE gap is now given as $0.22$ instead of ${\sim}0.35$. The abstract text in Editorial Manager will be
+replaced as well.}{}
+
+\rcitem{2. REMC metric}{The response claims that ``the REMC baseline in Table~4 is not comparable to
+the pooled 56-line SublimeX score in Table~3.'' But Table~3 uses AUC for REMC, while Table~4 uses
+accuracy. How can readers assess the ablation conclusions when the metric itself differs between the
+two tables?}
+
+\response{Both tables report AUC for REMC; the previous text did not make this clear enough. The
+REMC row of Table~4 is labeled AUC, the caption now states ``REMC E003 AUC'', and Section~3.4 says
+that REMC ablations ``report AUC, matching the REMC metric in Table~3''. The remaining difference
+between the two tables is the data (one cell line versus 56), which is now stated explicitly.}{}
+
+\rcitem{3. Optuna history across folds}{The response explicitly states ``no leakage from test data
+into feature discovery.'' Yet it does not clarify whether each LOSO fold in PAMAP2 uses an independent
+Optuna study with a reset search history. If the TPE sampler retains knowledge across folds, earlier
+folds could influence later searches. How is this potential cross-fold leakage prevented?}
+
+\response{Each fold uses an independent study. Section~2.3 states: ``Each outer fold starts a fresh
+Optuna study, so the sampler carries no history across folds.''}{}
+
+\rcitem{4. SHAP on two datasets only}{The response explains the absence of SHAP analysis for five
+datasets by stating ``There was no space to add SHAP on the remaining datasets.'' Given that the paper
+claims a general ``interpretable feature extraction'' framework, how can interpretability be
+demonstrated beyond the two selected datasets (REMC and AZT1D)?}
+
+\response{We added one further case, MIT-BIH, in Section~3.5 and Figure~4, and did not extend SHAP
+to the other datasets. The claim remains traceable feature descriptions, not general
+interpretability (Section~3.5). REMC, AZT1D, and MIT-BIH are the three benchmarks with domain
+priors against which the rankings can be checked. On each, only a few features carry the
+attribution, and each feature is one segment of one representation: a histone interval near the
+TSS, recent glucose, or the derivative about 47--114~ms after the R peak on the five-class
+MIT-BIH task. Figure~4 shows all five classes there. That is the localization a hypothesis can be stated on. For the remaining datasets we
+report descriptor stability across folds (Figure~2B). Section~4.3 states that SHAP is not shown
+beyond these three and that we did not run an expert reader study.}{}
+
+\rcitem{5. Search versus inference time}{The response says ``Table~3 reports end-to-end wall-clock
+time.'' However, end-to-end time conflates offline feature search with online inference. Since
+deployment depends primarily on inference speed, could the authors report search time and inference
+time separately to allow a fair comparison?}
+
+\response{Yes. Table~3 continues to report end-to-end time (now as median and range), and the
+Supplementary Data add SublimeX inference time alone (signal transforms, feature extraction from saved
+segment definitions, and LightGBM prediction), measured on the same hardware. Median inference
+time is $0.29$~s on SVD, $0.42$~s per AZT1D patient, $0.44$~s on MIMIC-IV, $0.75$~s on REMC,
+$1.19$~s on Emotions, $3.53$~s on MIT-BIH, and $16.5$~s on PAMAP2 (min--max in the Supplementary
+Data). Feature search therefore accounts for nearly all of SublimeX's end-to-end time.}{}
+
+\rcitem{6. Real clinical data}{All validation experiments in this paper are based on public benchmark
+datasets rather than real world clinical data. Has SublimeX been validated on real medical datasets?
+If not, how can its applicability in real clinical settings be justified?}
+
+\response{It has not been validated prospectively, and we no longer claim clinical applicability.
+Several benchmarks consist of real clinical recordings (MIMIC-IV ICU data, MIT-BIH ECG, AZT1D
+continuous glucose monitoring), but they are retrospective public datasets. Section~4.3 states: ``All
+experiments use public benchmarks, not prospective clinical data, so clinical applicability is not
+established.''}{}
+
+%=====================================================================
+\section*{Reviewer \#16}
+
+\rc{The manuscript presents SublimeX, a supervised feature extraction framework that searches for
+compact and traceable interval-based features from different signal representations. The idea of
+combining iterative feature search with multiple signal transformations is interesting, and the
+experiments cover several biomedical datasets. I nevertheless have several comments that may help
+improve the presentation and positioning of the work:}
+
+\rcitem{1. Section numbering}{There are still some inconsistencies in the section numbering. For
+instance, several subsections under Related Work appear to use the same numbering ``1.2''. Please
+check the section and subsection numbering throughout the manuscript and make the hierarchy
+consistent.}
+
+\response{Corrected. Related Work is now a single Subsection~1.2, and the full hierarchy is
+Introduction (1.1--1.2), Methods (2.1--2.7), Results (3.1--3.5), Discussion (4.1--4.4), and
+Conclusion (5).}{}
+
+\rcitem{2. Unresolved figure references}{I noticed several unresolved figure references in the
+current manuscript. Expressions such as ``Figure ??'' still appear in Sections 3.2, 3.3, and 3.5.
+These cross-references should be carefully checked before publication, including references to
+figures, tables, and sections.}
+
+\response{Thank you. The figures had been uploaded separately and were missing from the compiled
+manuscript, which left the references unresolved. In this submission Figures~1--4 are embedded
+with numbers and captions, and we checked every figure, table, and section reference.}{}
+
+\rcitem{3. Data flow and pseudocode}{It is not always easy to follow how the data are processed and
+passed between the different components of SublimeX, particularly during iterative feature discovery
+and model evaluation. A concise pseudocode description or a more detailed workflow diagram would make
+the overall procedure easier to understand and reproduce.}
+
+\response{The manuscript does not include a pseudocode listing. Figure~1 shows the data
+flow. The extract box sketches z-score-normalized P-wave traces for group one and group two on the same segment, at the same icon height as the other boxes, with means of about $-0.13$ and $0.14$.
+The evaluate box stacks the two distributions of that feature above a decision tree that splits on feature one at $0$, with group one on one branch and group two on the other.
+Section~2.3 states the same steps in order: one fixed 50/50 fit/selection split of the training data, precomputed views, an Optuna round that appends a
+channel--transform--segment and keeps it only if the selection half strictly improves, stop when a
+round does not, then refit on all training samples. The held-out test partition is used only for
+that final score.}{}
+
+\rcitem{4. Dataset naming}{Some dataset names and abbreviations are formatted inconsistently. For
+example, ``MIT-BIH'' is used in Section 2.5, whereas ``MITBIH'' appears in Table~2. Similar notation
+should be checked throughout the manuscript so that dataset names and abbreviations follow a consistent
+convention.}
+
+\response{Corrected. ``MIT-BIH'' is used throughout, including Table~2. While checking Table~2 we
+also corrected the Emotions entry from $5\times1269$ to $2\times1269$, which matches the feature
+counts in Table~3.}{}
+
+\rcitem{5. Spatiotemporal scope}{The discussion of spatiotemporal information is relatively limited,
+and the potential application scope of the proposed framework could be further discussed. In
+particular, its applicability to spatiotemporal prediction tasks deserves consideration, with recent
+studies such as TIDES (JSAC 2025) providing a relevant example.}
+
+\response{We added this to Section~4.4: extending the segment search from 1D sequences to 2D/3D
+fields or spatiotemporal forecasting tasks is a natural next step, and it is outside the present
+scope. TIDES (Zhang et al., IEEE JSAC 2025) is one such traffic-forecasting example; it is not
+a fit for this biomedical sequence study.}{}
+
+\rcitem{6. Classification versus regression}{Since the experiments involve different types of
+downstream tasks, the presentation of the results could be made easier to follow by distinguishing the
+task settings more clearly. For example, classification and regression experiments could be
+introduced separately, together with their corresponding evaluation metrics and results.}
+
+\response{Classification and regression stay in one subsection (Section~3.1), with one comparison
+table, as before. Within that subsection the six classification benchmarks come first (accuracy or
+AUC). The regression task is last and set off in its own paragraph: AZT1D, scored by RMSE.
+Table~3 uses the same order, with the AZT1D row at the bottom.}{}
+
+\rcitem{7. Experimental Setup section}{The current Methods section also contains material that is more
+closely related to experimental configuration, including the datasets, baseline methods, and
+evaluation metrics. It may be clearer to move these parts into a separate Experimental Setup section,
+so that the description of SublimeX itself is more clearly separated from the evaluation protocol.}
+
+\response{We kept datasets, baselines, and the evaluation protocol inside Methods, as
+Sections~2.5--2.7, after the description of SublimeX (Sections~2.1--2.4). A separate Experimental
+Setup section would split one methods narrative across two top-level headings. The SublimeX
+procedure and the protocol that applies it stay in one place, in that order.}{}
+
+%=====================================================================
+\section*{Editor-in-Chief checklist}
+
+\rc{a) Take a careful look at your bibliography and they cover the state of the art \ldots{} Your
+bibliography in the final version after the revision still should be between 35--55 items.
+b) Please make sure the revised version is relevant to the readership of the Pattern Recognition
+field \ldots{} c) Although the revision could lead to extending your article, it still can not exceed
+the page limits or violate the format.}
+
+\response{}{
+  \item \emph{Bibliography:} the manuscript cites 45 items, within the 35--55 range. AZT1D cites the
+    IEEE BSN 2025 paper and ROCKET the \emph{Data Mining and Knowledge Discovery} article.
+  \item \emph{Format:} single column, double spaced; 35 pages, within the 35-page limit.
+}
+
+\noindent We hope that these revisions address the concerns of the Editorial Board and the reviewers,
+and we thank you again for your time and constructive feedback.
+
+\bigskip
+\noindent Sincerely,\\
+Jonas Chanrithy Wolber\\
+(on behalf of all co-authors)
+
+\end{document}

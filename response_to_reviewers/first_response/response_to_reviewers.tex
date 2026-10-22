@@ -1,0 +1,752 @@
+\documentclass[11pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[most]{tcolorbox}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+
+\tcbset{
+  boxrule=1pt, arc=3pt,
+  left=6pt, right=6pt, top=5pt, bottom=5pt,
+  breakable,
+  colback=white,
+  fonttitle=\bfseries\normalsize,
+}
+
+\newtcolorbox{responsebox}{
+  colback=blue!4,
+  colframe=blue!70!black,
+  colbacktitle=blue!18,
+  coltitle=blue!50!black,
+  title={Our response},
+  before skip=0pt, after skip=0pt,
+}
+
+\newtcolorbox{reviewerbox}{
+  colback=gray!3,
+  colframe=gray!55,
+  colbacktitle=gray!12,
+  coltitle=gray!45!black,
+  title={Reviewer comment},
+  fontupper=\itshape,
+  after skip=0pt,
+}
+\newcommand{\rsp}{\par\vspace{0.9em}}
+\newcommand{\rc}[1]{\begin{reviewerbox}#1\end{reviewerbox}}
+\newcommand{\rcitem}[2]{\begin{reviewerbox}\textbf{#1}\par\smallskip#2\end{reviewerbox}}
+\newcommand{\rcbothq}[3]{%
+  \begin{reviewerbox}\textbf{#1}\par\smallskip\textbf{Reviewer \#1:} #2\par\smallskip%
+  \textbf{Reviewer \#2:} #3\end{reviewerbox}}
+\makeatletter
+\newcommand{\response}[2]{%
+  \begin{responsebox}#1%
+  \def\@responseitems{#2}%
+  \ifx\@responseitems\empty\else\begin{itemize}[nosep,leftmargin=1.2em]#2\end{itemize}\fi
+  \end{responsebox}\rsp}
+\makeatother
+
+\title{Point-by-Point Response to Reviewers\\[0.3em]
+\large Manuscript PR-D-26-04476\\
+\textit{Interpretable supervised feature extraction for time series and spatial data}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent Dear Editor, Associate Editor, and Reviewers,
+
+We thank you for the constructive major-revision decision and for the detailed feedback, which has
+substantially improved the manuscript. Below we respond to every point. We address
+\textbf{Reviewer~\#2}'s suggestions through the editorial questionnaire (Q1--Q8) and answer
+\textbf{Reviewer~\#1}'s metareview point by point. For each item, the lead sentence summarizes what
+we changed; bullets quote key wording from the \textbf{revised} manuscript (in quotation marks).
+
+The revised manuscript complies with the journal's \textbf{35-page limit}. Headline changes include: 
+numbered Objectives and a condensed Related Work with expanded Table~1;
+Methods renamed to \emph{Iterative Feature Discovery} (fit/selection halves); baseline
+hyperparameters and dataset Table~2 in the main text; separate Supplementary Data (preprocessing
+only); paired Wilcoxon tests and per-patient AZT1D reporting; multi-fold ablations with a
+\emph{Resampling} variant; expanded REMC/AZT1D SHAP interpretation; 
+and a general reframing regarding algorithm superiority and clinical applicability. 
+Several requests could not be implemented at full depth in the main text without
+exceeding that limit (e.g.\
+step-by-step preprocessing for all datasets, multi-seed repeats of the full feature search,
+95\% confidence-interval columns, additional spatial benchmarks, SHAP on every dataset, or
+high-resolution supplementary figure files). Where we defer detail, we say so explicitly and provide
+the closest alternative---usually the separate Supplementary Data document or a condensed main-text
+summary.
+
+\rcbothq{1. Are the objectives and the rationale of the study clearly stated?}{Yes.}
+{The manuscript presents a clear overall motivation---addressing the trade-off between predictive
+performance and interpretability in time series feature extraction---and this is reasonably well
+justified in the introduction; however, the objectives are not explicitly stated and remain
+implicit throughout the text.
+To improve clarity, the authors should include a concise and explicit statement of the main
+objective at the end of the introduction, more clearly separate the problem motivation from the
+methodological contribution, and articulate specific research goals or guiding questions.
+In addition, the novelty of the approach should be more sharply defined relative to existing
+methods (e.g., interval-based or shapelet approaches), and the stated objectives should be
+better aligned with the evaluation, particularly with respect to how interpretability is assessed.}
+
+\response{We now state the study objectives explicitly. The revision adds Sec.~1.1
+(Objectives) with three aims and a condensed Sec.~1.2 (Related Work) before Methods.}{
+  \item Sec.~1.1 (new): ``The objectives of our study are as follows: (i) we present SublimeX \ldots{}
+    (ii) we benchmark SublimeX against other existing methods on seven public biomedical datasets,
+    and (iii) we assess robustness, generalization and interpretability through post-hoc analyses
+    and ablations.''
+  \item Sec.~1.2 (revised): ``SublimeX combines traceable segment means with supervised search over
+    channel, transform, and location''; Table~1 compares methods by type, approximate feature count,
+    multivariate handling (Yes = joint across channels; No = per-channel concatenation), and
+    interpretability (High/Medium/Low with brief rationale).
+}
+
+\rcbothq{2. If applicable, is the application/theory/method/study reported in sufficient detail
+to allow for its replicability and/or reproducibility?}{Yes [X].}
+{The manuscript provides a generally solid methodological description of the proposed framework
+(including the optimization procedure, transformations, and evaluation setup), which supports
+partial reproducibility; however, several details remain insufficient for full replication.
+To improve reproducibility, the authors should (1) specify all implementation details more
+precisely, including exact hyperparameters of the downstream models (beyond default mentions) and
+stopping criteria, (2) clarify how segment boundaries are sampled and constrained during
+optimization, (3) provide full details of preprocessing steps for each dataset within the main
+text rather than relying on supplementary material, (4) describe the exact data splits or make
+them publicly available to ensure consistent benchmarking, (5) report random seeds and clarify
+whether results are sensitive to initialization, (6) include computational cost details such as
+total runtime per dataset and hardware variability, and (7) provide direct access to code,
+configuration files, and scripts used to reproduce experiments, ideally with instructions for
+end-to-end replication.}
+
+\response{We expanded Methods so the study can be reproduced end to end. Because of the
+  35-page limit, we kept the per-dataset preprocessing to a \textbf{separate Supplementary Data} file.
+  However, we state all Baseline parameters clearly in the main text. 
+  }{
+  \item Methods, Iterative Feature Discovery (renamed from ``Segment-Based Feature Optimization''):
+    ``center and width on a normalized $0$--$1$ scale'';
+    a fixed 50/50 split of the training data into a ``\emph{fit half}, used to train the downstream
+    model, and a \emph{selection half}, used to score candidate features'';
+    ``terminates once no candidate yields a strict improvement''; fit/selection terminology replaces
+    the earlier search-train/search-validation wording.
+  \item Methods, Baselines: tsfresh, catch22, MiniRocket, RDST, and CNN hyperparameters in prose
+    (replacing the former supplementary ``Baseline Implementations'' appendix).
+  \item Methods, Implementation Details: ``300 trials per proposed feature''; ``maximum tree depth
+    5''; ``published as an open-source Python package on PyPI (version~0.1.2)''; ``MacBook Pro M2
+    (12 cores, 32\,GB RAM).''
+  \item Table~3: now reports performance, feature counts, and wall-clock time.
+  \item Manuscript repository: \url{https://github.com/Prgrmmrjns/SublimeX-manuscript} contains 
+  step-by-step reproduction instructions (data download, experiment
+    pipeline, tables/figures, LaTeX build)
+}
+
+\rcbothq{3. If applicable, are statistical analyses, controls, sampling mechanism, and statistical
+reporting (e.g., P-values, CIs, effect sizes) appropriate and well described?}{Yes [X].}
+{The manuscript includes standard evaluation practices (e.g., cross-validation, reporting mean
+$\pm$ standard deviation across folds) and uses appropriate performance metrics depending on the
+task (AUC, accuracy, RMSE), which supports a generally acceptable level of statistical reporting;
+however, the statistical analysis lacks depth and rigor in several aspects.
+To improve this, the authors should (1) include statistical significance testing when comparing
+methods (e.g., paired tests across folds or datasets) to support claims of competitive
+performance, (2) report confidence intervals in addition to standard deviations to better
+quantify uncertainty, (3) clarify whether hyperparameter tuning and feature selection are nested
+within cross-validation to avoid potential data leakage, (4) provide more detail on the sampling
+strategy and class balance handling for each dataset, particularly in imbalanced settings, (5)
+assess variability across runs by repeating experiments with different random seeds where
+applicable, and (6) better justify the choice of evaluation protocols (e.g., single split
+vs.\ cross-validation) and discuss their potential impact on the reported results.}
+
+\response{We strengthened statistical reporting with paired Wilcoxon tests, explicit evaluation
+protocols, and anti-leakage wording. For cross-validated benchmarks, tests pair matched folds;
+for AZT1D we fully re-ran all methods so each of 23 patients contributes one held-out test RMSE
+and significance is assessed on that patient-level distribution (not across folds). Table~3 reports
+AZT1D as mean$\pm$SD over those 23 per-patient errors (e.g.\ SublimeX $30.98 \pm 5.65$ vs.\
+MiniRocket $30.76 \pm 5.38$, $p{=}0.39$). We do not add separate 95\% confidence-interval columns
+(five folds yield wide intervals, largely redundant with mean$\pm$SD) or repeat the full feature
+search across random seeds.}{
+  \item Methods, Evaluation: ``paired two-sided Wilcoxon tests ($\alpha{=}0.05$)'' on matched
+    folds, LOSO subjects, or patients; Table~3 asterisks; anti-leakage wording; PAMAP2
+    once-assigned fit/selection split.
+  \item Methods, Evaluation (AZT1D): temporal 80/20 split per patient; pooled segment discovery
+    on training windows only; RMSE as mean$\pm$SD over $n{=}23$ per-patient test errors (full
+    re-run for all methods).
+  \item Methods, Iterative Feature Discovery: fit/selection 50/50 split during search; test scoring
+    in Evaluation.
+  \item Table~4: multi-fold ablations with mean$\pm$SD (replacing single-fold ablations).
+}
+
+\rcbothq{4. Could the manuscript benefit from additional tables or figures, or from improving or
+removing (some of the) existing ones?}{No.}
+{The manuscript includes several relevant figures and tables that support the methodology and
+results (e.g., workflow diagram, performance comparison, and feature analysis), but their
+effectiveness could be improved.
+Specifically, (1) the graphical abstract is visually appealing but somewhat generic and could be
+made more informative by explicitly illustrating the optimization process, (2) Figure~1
+(methodology) is helpful but visually dense and would benefit from simplification or clearer
+labeling of key steps, (3) Figure~2 and Figure~3 provide useful insights but are difficult to
+interpret due to small text and multiple panels, so readability should be improved (e.g., larger
+fonts, clearer legends), (4) Table~3 would benefit from including statistical significance
+indicators or highlighting meaningful differences beyond bolding best values, (5) an additional
+table summarizing the number and type of extracted features per dataset would strengthen
+interpretability claims, and (6) a more explicit visualization comparing interpretability (not
+only performance) across methods would further support the main contribution.}
+
+\response{We improved the graphical abstract and Figures~1--4 for readability and extended Tables~1 and~3 (Wilcoxon markers,
+runtimes, and new Multivariate and Interpretability columns).}{
+  \item Graphical abstract: redrawn with larger font size and SublimeX workflow from flowchart
+  \item Figure~1: redrawn flowchart; caption states the loop stops when ``evaluation no longer
+    improves.''
+  \item Figure~2: regenerated with larger fonts (transform composition and pattern stability).
+  \item Figure~3: incremental train/validation/test curves; AZT1D uses pooled training windows
+    matching the feature-discovery protocol.
+  \item Figure~4: full-width six-panel SHAP layout for REMC and AZT1D, only top 5 features instead of all features.
+  \item Table~3: ``wall-clock time'' row and significance asterisks.
+  \item Table~1: added Multivariate (Yes/No) and shortened Interpretability columns (High/Medium/Low
+    with brief rationale); method types written out (Segment, Interval, Convolution, DL, etc.).
+}
+
+\rcbothq{5. Have the authors clearly emphasized the strengths of their
+study/theory/methods/argument?}{Yes.}
+{The manuscript demonstrates several clear strengths---particularly the balance between
+interpretability and performance, the modular design of the framework, and the use of diverse
+datasets---but these strengths are not always emphasized as clearly or strategically as they
+could be.
+To improve this, the authors should (1) explicitly summarize the main strengths of the method in
+a dedicated contributions paragraph at the end of the introduction, (2) more clearly highlight the
+novelty of combining supervised feature search with interpretable, segment-based representations,
+(3) emphasize the flexibility and modularity of the framework as a practical advantage for
+different domains, (4) reinforce the importance of compact feature sets as a key contribution
+rather than a secondary outcome, and (5) more directly connect the empirical results and SHAP
+analysis to the claimed strengths in interpretability and real-world applicability.}
+
+\response{We make the key strengths---modularity and compact, traceable features---explicit in the
+Objectives and Implementation Details, while keeping the claims balanced against the limitations.
+The Discussion and Conclusion use measured, ``competitive'' wording.}{
+  \item Sec.~1.1 (Objectives): compact traceable features linked to ablations and interpretability
+    analyses.
+  \item Table~1: multivariate Yes/No and interpretability ratings (High/Medium/Low) make the
+    performance--interpretability trade-off explicit across method families.
+  \item Methods, Implementation Details: ``modular, extensible design''; customizable objective,
+    model, and transform library.
+  \item Discussion and Conclusion:rephrased ``competitive'' wording; REMC before AZT1D in Summary;
+    PAMAP2 LOSO interpretation in Discussion.
+}
+
+\rcbothq{6. Have the authors clearly stated the limitations of their
+study/theory/methods/argument?}{Yes.}
+{The manuscript acknowledges several important limitations---such as computational cost, potential
+overfitting during feature search, and challenges in cross-subject generalization---which is a
+clear strength; however, these limitations could be stated more explicitly and systematically.
+To improve this, the authors should (1) consolidate the limitations into a clearly structured
+paragraph or subsection for better visibility, (2) more explicitly discuss the impact of the
+greedy search strategy and its susceptibility to local optima, (3) elaborate on the risk of
+overfitting due to the fixed train/validation split used during optimization, (4) clarify the
+scalability limitations in terms of runtime and high-dimensional search space, (5) more
+critically address the limited comparison with additional state-of-the-art methods, and (6)
+discuss the potential limitations of interpretability, particularly whether simple segment-based
+features are sufficient for capturing complex patterns in all domains.}
+
+\response{We expanded Discussion, Limitations: greedy search/local optima (with parallel ablation
+caveat), PAMAP2 validation--test gap (${\sim}26\%$) and fixed-split risk supported by the
+\emph{Resampling} ablation, omitted subject-holdout search for compute cost, slower runtime vs.\
+lighter baselines (Table~3), and narrower TSC/UCR comparison scope. Future Directions adds nested
+internal validation.}{
+  \item Discussion, Limitations: greedy search; PAMAP2 gap; \emph{Resampling}; runtime; TSC/UCR scope.
+  \item Discussion, Future Directions: nested or repeated internal validation.
+}
+
+\rcbothq{7. Does the manuscript structure, flow or writing need improving (e.g., the addition of
+subheadings, shortening of text, reorganization of sections, or moving details from one section
+to another)?}{No.}
+{The manuscript is generally well organized and follows a standard structure, but the clarity and
+flow can be improved in several areas.
+Specifically, (1) the introduction would benefit from a clearer closing paragraph summarizing the
+main contributions in a structured way, (2) some sections---particularly the
+methodology---are dense and could be streamlined by reducing repetition and improving transitions
+between subsections, (3) key implementation details currently placed in supplementary material
+should be briefly summarized in the main text to improve readability, (4) the results section
+could be better structured by explicitly linking each subsection to a specific research objective
+or claim, and (5) the discussion could be made more concise by reducing redundancy and more
+clearly separating interpretation, limitations, and future work.}
+
+\response{We reorganized the manuscript for clearer flow within the 35-page limit: explicit
+Objectives, a condensed Related Work, a separate Supplementary Data file, and a four-part
+Discussion.}{
+  \item Sec.~1.1--1.2: explicit objectives and a streamlined related-work contrast before Methods,
+    with Table~1 summarizing method type, feature count, multivariate handling, and interpretability;
+    smoother transitions between method families.
+  \item Methods: ``Segment-Based Feature Optimization'' renamed \emph{Iterative Feature Discovery};
+    reduced repetition and improved transitions across Signal Transformation, Iterative Feature
+    Discovery, and Implementation Details.
+  \item Methods, Datasets: Table~2 in main text (short caption; ``channels $\times$ length'');
+    MIMIC-IV initial-feature block described; preprocessing in Supplementary Data.
+  \item Methods, Baselines: library and CNN hyperparameters in main text (Section~Baselines);
+    LightGBM readout in Implementation Details (depth~5).
+  \item Results: Performance Comparison, Transform Composition, Incremental Feature Analysis
+    (PAMAP2 numbers only; LOSO interpretation in Discussion), Ablation Study, Domain-Specific
+    Feature Interpretation as distinct subsections.
+  \item Discussion: Summary, Comparison to Related Work, Limitations, and Future Directions as
+    separate subsections.
+}
+
+\rcbothq{8. Could the manuscript benefit from language editing?}{Yes.}{Yes.}
+
+\response{We carried out a manuscript-wide language and flow edit: softened overstated wording,
+standardized dataset names, and improved readability while staying within the 35-page limit (the
+Abstract was condensed to $\leq$250 words).}{
+  \item Introduction: tighter motivation and a clearer contribution lead-in (``To this end we
+    present \textbf{SublimeX}\ldots''); Related Work now reads as a single contrast that ends with
+    ``SublimeX bridges these strands by pairing traceable segment means with supervised search.''
+  \item Methods: smoother Signal Transformation and Iterative Feature Discovery paragraphs and a
+    crisper Implementation Details (modularity) passage, with no change to reported settings.
+  \item Discussion: shorter paragraphs; opens with a SublimeX recap and measured performance
+    language; separate Limitations / Future Directions subsections.
+  \item Conclusion (revised): three generalized sentences on competitive traceable features,
+    interpretability vs.\ performance, and open-source availability.
+  \item Throughout: consistent dataset naming (MIMIC-IV, MIT-BIH, etc.) in Tables~2--4 and text.
+}
+
+\rcitem{Associate Editor (Reviewer \#1) --- full metareview}{The manuscript ``Interpretable
+supervised feature extraction for time series and spatial data'', I would recommend major
+revision. The topic is relevant and the proposed SublimeX framework has potential, but several
+methodological, validation, and presentation issues need to be addressed before publication.
+
+The manuscript presents an interesting interpretable feature extraction framework, but the novelty
+of SublimeX should be stated more clearly. The authors should explain how it differs
+substantially from existing interval-based, shapelet-based, ROCKET/MiniROCKET, and supervised
+feature extraction methods.
+The title mentions both ``time series and spatial data,'' but most of the paper focuses on
+time-series biomedical datasets. The spatial data contribution is not sufficiently demonstrated.
+The authors should either strengthen the spatial-data evaluation or revise the title and scope.
+The abstract is informative, but it overstates competitiveness. SublimeX is not the best-performing
+method on several datasets, including MITBIH, Emotions, MIMIC-IV, PAMAP2, and SVD. The abstract
+should more cautiously describe the results.
+The methodology needs more detail on the stopping criterion. The paper states that the loop stops
+when no candidate improves performance, but the exact definition of improvement, tolerance
+threshold, and validation metric direction should be clearly specified.
+The use of a single deterministic 50/50 train/validation split during feature optimization may
+introduce instability and overfitting. The authors should justify this choice and discuss whether
+nested cross-validation or repeated validation would provide more reliable feature selection.
+The internal feature-search validation split does not match the external evaluation design for
+some datasets, especially PAMAP2 with leave-one-subject-out validation. This likely explains the
+large validation-test gap. The authors should consider using subject-independent validation
+during feature search.
+The manuscript should clarify whether feature extraction is performed independently within each
+training fold only. If any information from validation or test folds influences feature discovery,
+this would create data leakage.
+The comparison with baselines is incomplete. Important state-of-the-art time series methods such
+as HIVE-COTEv2, InceptionTime, and LSTM/GRU-based models are only mentioned as limitations but
+not evaluated. At minimum, the authors should justify why these were excluded.
+The authors should provide statistical significance testing across methods. Many reported
+differences are very small, such as AZT1D RMSE 31.11 vs.\ 31.18 and REMC AUC 0.931 vs.\ 0.931, so
+claims of superior performance require statistical support.
+The results show that SublimeX is competitive but not consistently superior. The discussion should
+better balance performance and interpretability rather than implying broad performance advantage.
+The ablation study is based on a single fold only, which limits the reliability of the
+conclusions. The authors should either repeat ablations across multiple folds or clearly tone down
+the strength of the claims.
+Runtime comparisons need clearer reporting. The manuscript reports runtimes for ablation variants,
+but does not compare computational cost against all baseline methods under the same hardware and
+settings.
+The graphical abstract and Figure~1 contain small text and may be difficult to read. The authors
+should improve figure resolution, font size, and visual clarity.
+Some figures, especially SHAP visualizations, are too small to interpret in the manuscript.
+Larger panels or supplementary high-resolution versions should be provided.
+The paper should provide the exact hyperparameters used for LightGBM, CNN, MiniRocket, RDST,
+tsfresh, and catch22 to ensure reproducibility.
+The authors state that SublimeX is open source, but the manuscript should include a permanent
+repository link, version number, and ideally a reproducibility package for all experiments.
+The manuscript should better define what ``interpretable'' means in this context. Traceability to
+a signal segment is useful, but interpretability also depends on clinical or biological validity,
+stability, and expert confirmation.
+The SHAP analysis is helpful, but it is only shown for two datasets. The authors should clarify
+why REMC and AZT1D were selected and whether similar interpretability patterns hold across other
+datasets.
+The discussion should include a stronger limitations section. Important limitations include greedy
+search, local optima, risk of overfitting, high computational cost, limited baseline comparison,
+and reduced generalization in cross-subject settings.
+Several writing and formatting issues need correction, including typographical errors such as
+``anaylsis,'' inconsistent capitalization of dataset names, and overly long paragraphs in the
+Discussion.
+The manuscript would benefit from a clearer contribution statement at the end of the
+Introduction, listing the main methodological and empirical contributions.
+The authors should avoid overstating clinical applicability. The datasets are benchmark datasets,
+and no prospective clinical validation or expert user study is presented.
+The manuscript should clarify whether SublimeX is intended mainly for prediction, hypothesis
+generation, or clinical decision support, because the validation requirements differ for each use
+case.
+The manuscript is promising and relevant to Pattern Recognition, but it requires major revision
+to improve methodological rigor, reproducibility, baseline comparison, and clarity of claims.}
+
+\medskip\noindent\textbf{Our point-by-point responses}
+
+\rcitem{1. Novelty vs.\ interval / shapelet / ROCKET / supervised extractors.}{The manuscript
+presents an interesting interpretable feature extraction framework, but the novelty of SublimeX
+should be stated more clearly. The authors should explain how it differs substantially from
+existing interval-based, shapelet-based, ROCKET/MiniROCKET, and supervised feature extraction
+methods.}
+
+\response{We now state the novelty in the Introduction and the new Sec.~1.2 (Related Work),
+contrasting SublimeX with fixed libraries, shapelet methods, and deep models (Table~1).}{
+  \item Introduction: ``Unlike tsfresh-style fixed libraries, SublimeX searches which regions
+    matter for each task.''
+  \item Sec.~1.2: shapelet vs.\ segment-mean contrast; ``combines traceable segment means with
+    supervised search''; Table~1 compares type, \# features, multivariate handling (joint vs.\
+    per-channel), and interpretability (High/Medium/Low) across fixed libraries, interval/shapelet
+    methods, ROCKET/MiniRocket, and deep learning baselines.
+  \item Methods, Baselines: tsfresh, catch22, MiniRocket, RDST, and 1D CNN under matched protocols.
+}
+
+\rcitem{2. Title ``time series and spatial data''.}{The title mentions both ``time series and
+spatial data,'' but most of the paper focuses on time-series biomedical datasets. The spatial data
+contribution is not sufficiently demonstrated. The authors should either strengthen the spatial-data
+evaluation or revise the title and scope.}
+
+\response{We agree that six of seven benchmarks are temporal and that REMC is our sole spatially
+indexed evaluation (1D epigenomic profiles along genomic position, not 2D imaging). We kept the
+title and state in Methods, Overview that segment search is agnostic to temporal vs.\ spatial
+indexing; REMC is evaluated per cell line (56 models, pooled reporting) with full SHAP
+interpretation on E003.}{
+  \item Methods, Overview: ``The search is agnostic to whether the index axis is temporal or
+    spatial: it operates on multivariate 1D sequences, and only the domain interpretation of
+    channels and segments differs.''
+  \item Methods, Datasets: REMC as ``spatial epigenomic gene-expression prediction \ldots{}
+    (56 cell lines)''; 5-fold CV per cell line, scores pooled across cell lines$\times$folds.
+  \item Results, Domain-Specific Feature Interpretation: REMC labeled ``spatial epigenomic
+    profiles''; SHAP on cell line E003.
+  \item Discussion, Limitations: scope limited to 1D genomic locus profiles; no 2D spatial benchmark.
+}
+
+\rcitem{3. Abstract competitiveness.}{The abstract is informative, but it overstates
+competitiveness. SublimeX is not the best-performing method on several datasets, including MITBIH,
+Emotions, MIMIC-IV, PAMAP2, and SVD. The abstract should more cautiously describe the results.}
+
+\response{We toned down competitiveness claims throughout. Overstated wording on AZT1D RMSE,
+dataset leadership, and state-of-the-art performance was replaced with cautious language.}{
+  \item Abstract, Results (revised): ``ties the best REMC AUC ($0.931 \pm 0.023$)\ldots ranks
+    second on AZT1D (RMSE $30.98 \pm 5.65$) and MIMIC-IV (AUC $0.818 \pm 0.024$)''; ``uses
+    ${\sim}6$--$20$ descriptors versus thousands for library and kernel methods.''
+  \item Results, Performance Comparison (revised): ``MiniRocket achieves the lowest mean test RMSE
+    ($30.76{\pm}5.38$); SublimeX is second ($30.98{\pm}5.65$)'' with ``$p{=}0.39$''.
+  \item Conclusion (revised): ``Interpretability need not come at the cost of performance when
+    feature search is supervised, validation-driven, and constrained to a compact representation''
+    (generalized; no per-dataset score recap).
+}
+
+\rcitem{4. Stopping criterion and metric direction.}{The methodology needs more detail on the
+stopping criterion. The paper states that the loop stops when no candidate improves performance,
+but the exact definition of improvement, tolerance threshold, and validation metric direction
+should be clearly specified.}
+
+\response{We now define the stopping rule precisely, including strict improvement and metric
+direction.}{
+  \item Methods, Overview (revised): ``stops once no new segment yields a strict improvement.''
+  \item Methods, Iterative Feature Discovery (revised): ``only if it improves the running-best
+    validation score''; ``When no candidate yields a strict improvement, the loop terminates.''
+  \item Methods, Implementation Details: ``300 trials per proposed feature''; maximizes accuracy or
+    AUC, minimizes RMSE on AZT1D.
+}
+
+\rcitem{5. Fixed 50/50 inner split.}{The use of a single deterministic 50/50 train/validation
+split during feature optimization may introduce instability and overfitting. The authors should
+justify this choice and discuss whether nested cross-validation or repeated validation would
+provide more reliable feature selection.}
+
+\response{We added a \emph{Resampling} ablation (Table~4) that redraws the fit/selection partition on
+every Optuna trial. Resampling was generally slightly worse than the fixed-split baseline across
+benchmarks; for example, AZT1D RMSE rose from $30.98 \pm 5.65$ to $31.17 \pm 5.85$ ($p{<}0.05$), and
+PAMAP2 LOSO accuracy fell from $0.860 \pm 0.081$ to $0.843 \pm 0.094$. We keep the fixed 50/50
+split because it stabilizes candidate scores across trials; Limitations discusses overfitting risk,
+and nested validation is future work.}{
+  \item Methods, Evaluation: PAMAP2 LOSO; once-assigned 50/50 fit/selection split on training
+    subjects; anti-leakage and AZT1D per-patient protocol.
+  \item Methods, Iterative Feature Discovery: inner 50/50 split only; refit before test scoring.
+  \item Ablation Study (Table~4), \emph{Resampling}: generally slightly below baseline; e.g.\ PAMAP2
+    $0.860{\pm}0.081$ vs.\ $0.843{\pm}0.094$; AZT1D RMSE $30.98{\pm}5.65$ vs.\ $31.17{\pm}5.85$.
+  \item Discussion, Limitations: fixed split preferred over Resampling; overfitting to optimization
+    split, especially PAMAP2.
+  \item Discussion, Future Directions: ``nested or repeated internal validation.''
+}
+
+\rcitem{6. PAMAP2 internal vs.\ LOSO validation.}{The internal feature-search validation split
+does not match the external evaluation design for some datasets, especially PAMAP2 with
+leave-one-subject-out validation. This likely explains the large validation-test gap. The authors
+should consider using subject-independent validation during feature search.}
+
+\response{We explain the large PAMAP2 validation--test gap (${\sim}26\%$): the fit and selection
+halves share the same training subjects, whereas LOSO tests an entirely unseen subject; the
+held-out subject never enters the search. \textbf{We did not implement} subject-independent
+validation during every search trial, owing to compute and the 35-page scope; the \emph{Resampling}
+ablation confirms that redrawn inner splits do not help and hurt PAMAP2 under LOSO.}{
+  \item Methods, Evaluation: PAMAP2 LOSO; once-assigned fit/selection split on training subjects;
+    held-out subject never enters search.
+  \item Methods, Evaluation / Results: inner split not subject-independent; validation--test gap
+    reported in Results; interpretation in Discussion.
+  \item Results, Incremental Feature Analysis: PAMAP2 gap ${\sim}26\%$ (numbers only).
+  \item Discussion, Summary of Main Findings: PAMAP2 fit/selection vs.\ LOSO interpretation.
+  \item Table~4: eight-fold PAMAP2 LOSO ablations with mean$\pm$SD; \emph{Resampling} underperforms
+    baseline.
+  \item Discussion, Limitations: fixed inner split preferred over \emph{Resampling}; subject-holdout
+    validation during every search trial omitted for compute cost.
+}
+
+\rcitem{7. Leakage / outer-fold-only search.}{The manuscript should clarify whether feature
+extraction is performed independently within each training fold only. If any information from
+validation or test folds influences feature discovery, this would create data leakage.}
+
+\response{Methods now state explicitly that feature discovery uses the training partition only.
+Test folds, LOSO subjects, and AZT1D temporal test windows never enter segment search.}{
+  \item Methods, Evaluation (new): ``never enters segment search''; ``no leakage from test data into
+    feature discovery''; 5-fold CV, PAMAP2 LOSO, AZT1D temporal split.
+  \item Methods, Iterative Feature Discovery: fit/selection split only (cross-reference to Evaluation).
+}
+
+\rcitem{8. HIVE-COTE 2.0, InceptionTime, LSTM/GRU.}{The comparison with baselines is incomplete.
+Important state-of-the-art time series methods such as HIVE-COTEv2, InceptionTime, and
+LSTM/GRU-based models are only mentioned as limitations but not evaluated. At minimum, the authors
+should justify why these were excluded.}
+
+\response{We justify the baseline scope in Methods and Limitations: our focus is interpretable,
+segment-traceable features under matched biomedical splits, so we compare against five complementary
+baselines (including a 1D CNN on the same folds) and explain why HIVE-COTE, InceptionTime, LSTM, and
+the UCR archive were excluded.}{
+  \item Methods, Baselines: ``interpretable, segment-traceable features''; hybrid/deep/recurrent
+    methods cited as not directly comparable; 1D CNN on same folds.
+  \item Discussion, Limitations: HIVE-COTEv2, InceptionTime, LSTM ``not included''; UCR archive
+    ``do not evaluate on.''
+}
+
+\rcitem{9. Statistical significance.}{The authors should provide statistical significance testing
+across methods. Many reported differences are very small, such as AZT1D RMSE 31.11 vs.\ 31.18 and
+REMC AUC 0.931 vs.\ 0.931, so claims of superior performance require statistical support.}
+
+\response{We added paired Wilcoxon tests and re-ran AZT1D reporting. Table~3 now gives
+mean$\pm$SD of per-patient \emph{test} RMSE rather than a single pooled summary.
+MiniRocket is best ($30.76 \pm 5.38$); SublimeX is second ($30.98 \pm 5.65$, $p{=}0.39$ vs.\
+MiniRocket).}{
+  \item Methods, Evaluation: ``paired two-sided Wilcoxon tests ($\alpha{=}0.05$)''; ``AZT1D
+    per-patient test RMSE.''
+  \item Table~3 (revised): asterisks vs.\ dataset-best method; AZT1D reported as mean$\pm$SD across
+    23 patients.
+  \item Results, Performance Comparison (revised): ``does not differ significantly from MiniRocket
+    ($p{=}0.39$).''
+}
+
+\rcitem{10. Balance performance vs.\ interpretability.}{The results show that SublimeX is
+competitive but not consistently superior. The discussion should better balance performance and
+interpretability rather than implying broad performance advantage.}
+
+\response{The Discussion now balances performance against interpretability, using measured language
+(MiniRocket best on AZT1D, SublimeX second without a significant gap) and framing interpretability
+as segment traceability on public benchmarks rather than a performance advantage.}{
+  \item Discussion, Summary of Main Findings: opens ``In this study we presented \ldots{}
+    SublimeX''; ``competitive'' / ``stays competitive'' wording; MiniRocket best on AZT1D,
+    SublimeX second; baselines lead on several other tasks; PAMAP2 LOSO gap interpreted here
+    (not in Incremental Feature Analysis).
+  \item Abstract, Conclusions: ``Interpretability need not sacrifice performance'' with traceable
+    channel/transform/segment descriptors.
+  \item Discussion, Comparison to Related Work: predictions related to measurable signal structure;
+    segment descriptors for inspection/SHAP (no deployment or intended-use claim).
+  \item Discussion, Limitations: performance--interpretability trade-offs, baseline scope,
+    cross-subject generalization (PAMAP2).
+}
+
+\rcitem{11. Multi-fold ablations.}{The ablation study is based on a single fold only, which limits
+the reliability of the conclusions. The authors should either repeat ablations across multiple
+folds or clearly tone down the strength of the claims.}
+
+\response{We extended ablations from a single fold to all folds, as reviewers requested.
+The revision reports mean$\pm$SD with Wilcoxon markers in Table~4. REMC ablations use cell line
+E003 only and are not comparable to the pooled 56-line SublimeX score in Table~3. }{
+  \item Ablation Study (revised): ``report mean$\pm$standard deviation across folds''; REMC E003
+    only; Wilcoxon asterisks in Table~4; \emph{Resampling} variant added.
+  \item Table~4: multi-fold scores, feature counts, and runtimes for eight variants (including
+    \emph{Resampling}).
+}
+
+\rcitem{12. Runtime vs.\ all baselines.}{Runtime comparisons need clearer reporting. The
+manuscript reports runtimes for ablation variants, but does not compare computational cost against
+all baseline methods under the same hardware and settings.}
+
+\response{Table~3 now reports end-to-end wall-clock time (feature extraction plus training) for
+SublimeX and all five baselines, measured on the single workstation stated in Implementation
+Details.}{
+  \item Table~3: wall-clock time row for SublimeX and all five baselines.
+  \item Methods, Implementation Details: ``Experiments were run on a MacBook Pro M2 (12 cores,
+    32\,GB RAM).''
+  \item Results, Performance Comparison: ``SublimeX is the slowest method'' on large datasets;
+    modest runtime on shorter series.
+  \item Discussion, Limitations: slower than several baselines despite fewer features.
+}
+
+\rcitem{13--14. Graphical abstract and Figure~1.}{The graphical abstract and Figure~1 contain
+small text and may be difficult to read. The authors should improve figure resolution, font size,
+and visual clarity.}
+
+\response{We redrew Figure~1 with larger type and a simplified loop.}{
+  \item Figure~1: full-width methodology flowchart with enlarged lettering.
+  \item Methods, Overview: ``stops once no new segment yields a strict improvement.''
+}
+
+\rcitem{15. SHAP figure size.}{Some figures, especially SHAP visualizations, are too small to
+interpret in the manuscript. Larger panels or supplementary high-resolution versions should be
+provided.}
+
+\response{We enlarged Figure~4 to a full-width, six-panel SHAP layout for REMC and AZT1D so panels
+are legible at print scale. }{
+  \item Results, Domain-Specific Feature Interpretation: ``full six-panel SHAP layouts for REMC
+    (spatial epigenomic profiles) and AZT1D (glucose forecasting) 
+    with larger font sizes and only top five features for SHAP beeswarm plot''
+}
+
+\rcitem{16. Hyperparameters.}{The paper should provide the exact hyperparameters used for
+LightGBM, CNN, MiniRocket, RDST, tsfresh, and catch22 to ensure reproducibility.}
+
+\response{We now list all hyperparameters explicitly: LightGBM (depth~5, shared readout) in
+Implementation Details; tsfresh, catch22, MiniRocket, RDST, and CNN settings in Methods,
+Baselines.}{
+  \item Methods, Baselines: tsfresh, catch22, MiniRocket, RDST, and CNN settings in prose
+    (replacing ``default hyperparameters'' and the former supplementary hyperparameter table).
+}
+
+\rcitem{17. Open source and reproducibility.}{The authors state that SublimeX is open source, but
+the manuscript should include a permanent repository link, version number, and ideally a
+reproducibility package for all experiments.}
+
+\response{We now state version, installation, and repository URLs explicitly in Methods. The
+linked manuscript repository documents end-to-end reproduction of benchmarks, ablations, tables,
+and figures. Dataset preprocessing is in Supplementary Data.}{
+  \item Methods, Implementation Details (revised): ``published as an open-source Python package on
+    PyPI (version~0.1.2)''; installable via pip; manuscript GitHub URL for reproduction. 
+    We ensure the permannence of the link and maintain the Python package as an actively developed package.
+  \item Manuscript repository \url{https://github.com/Prgrmmrjns/SublimeX-manuscript}: 
+  instructions to regenerate tables/figures from saved features or rerun the full experiment pipeline.
+  Note the repo does not contain any datasets, these have to be downloaded beforehand. 
+  We provide instructions in the repo and in the Supplementary Data for downloading and reproducing the data
+  as well as the corresponding preprocessed files.
+}
+
+\rcitem{18. Definition of ``interpretable''.}{The manuscript should better define what
+``interpretable'' means in this context. Traceability to a signal segment is useful, but
+interpretability also depends on clinical or biological validity, stability, and expert
+confirmation.}
+
+\response{We now define interpretability operationally in the manuscript: a feature is
+interpretable when it is \emph{traceable}---each descriptor names its channel, transform, segment,
+and aggregation---and when that choice is \emph{stable across folds} and \emph{plausible relative to
+known biology} where benchmarks allow. We do not claim formal expert confirmation or clinical
+readiness; SHAP on REMC and AZT1D is our check that ranked segments align with established domain
+mechanisms.}{
+  \item Introduction: compact features with ``explicit descriptions that experts can inspect
+    directly''; objective~(iii) assesses interpretability via post-hoc analyses.
+  \item Results, Transform Composition: fold-stable transform mix and first-feature segment
+    positions (Figure~2).
+  \item Results, Domain-Specific Feature Interpretation: ``Each SublimeX feature is readable as a
+    named channel, transform, segment, and aggregation, and we check interpretability by asking
+    whether those choices stay stable across folds and line up with SHAP rankings and known
+    biology where benchmarks allow''; REMC epigenomic hierarchy; AZT1D mean reversion then
+    insulin/carbohydrate inputs (Figure~4).
+  \item Discussion: ``traceable, and thereby interpretable''; SHAP recovers meaningful hierarchies
+    ``without any domain guidance.''
+}
+
+\rcitem{19. SHAP on two datasets only.}{The SHAP analysis is helpful, but it is only shown for
+two datasets. The authors should clarify why REMC and AZT1D were selected and whether similar
+interpretability patterns hold across other datasets.}
+
+\response{We chose REMC and AZT1D for full SHAP figures because they have the clearest domain
+ground truth and represent the two modalities in the title. For the remaining benchmarks we provide
+transform-stability (Figure~2) and incremental-feature analyses (Figure~3). 
+There was no space to add SHAP on the remaining datasets. 
+We hope that with our in-depth walkthrough for these two datasets the reader can appreciate the advantages of segment-based traceable features
+in combination with SHAP analysis for domain interpretation.}{
+  \item Results, Domain-Specific Feature Interpretation: expanded REMC and AZT1D subsections
+    (biology/clinical context, panel-by-panel SHAP walkthrough); AZT1D mean reversion narrative.
+}
+
+\rcitem{20. Stronger limitations section.}{The discussion should include a stronger limitations
+section. Important limitations include greedy search, local optima, risk of overfitting, high
+computational cost, limited baseline comparison, and reduced generalization in cross-subject
+settings.}
+
+\response{The Limitations are now a dedicated, multi-paragraph subsection, with Future Directions
+kept separate.}{
+  \item Discussion, Limitations: greedy search; runtime; PAMAP2 gap and \emph{Resampling}
+    ablation; HIVE-COTE/InceptionTime/LSTM; UCR; slower than lighter baselines; benchmark scope
+    (no UCR).
+  \item Discussion, Future Directions: nested validation; learned transforms; efficient search.
+}
+
+\rcitem{21. Writing and formatting.}{Several writing and formatting issues need correction,
+including typographical errors such as ``anaylsis,'' inconsistent capitalization of dataset names,
+and overly long paragraphs in the Discussion.}
+
+\response{We corrected the typographical errors, standardized dataset names, moderated performance
+claims, and tightened the wording and flow throughout.}{
+  \item Introduction and Methods: Sec.~1.1 Objectives + Sec.~1.2 Related Work; smoother
+    transitions and reduced repetition.
+  \item Discussion: shorter paragraphs; PAMAP2 interpretation in Summary; Limitations and Future
+    Directions separated.
+  \item Conclusion: three generalized sentences (no dataset-specific score recap).
+  \item Abstract and body: ``MIT-BIH'' (not ``MITBIH'').
+}
+
+\rcitem{22. Contribution statement.}{The manuscript would benefit from a clearer contribution
+statement at the end of the Introduction, listing the main methodological and empirical
+contributions.}
+
+\response{We added an explicit contribution statement: Sec.~1.1 (Objectives) lists three numbered
+aims, followed by Sec.~1.2 (Related Work), both before Methods.}{
+  \item Sec.~1.1: ``The objectives of our study are as follows: (i) \ldots{} (ii) \ldots{}
+    (iii) \ldots{}''
+  \item Sec.~1.2: Related Work and Table~1 (method taxonomy, multivariate handling, interpretability)
+    before Methods.
+}
+
+\rcitem{23. Clinical applicability.}{The authors should avoid overstating clinical applicability.
+The datasets are benchmark datasets, and no prospective clinical validation or expert user study
+is presented. The manuscript should clarify whether SublimeX is intended mainly for prediction,
+hypothesis generation, or clinical decision support, because the validation requirements differ
+for each use case.}
+
+\response{We do not assign SublimeX to prediction, hypothesis generation, or clinical decision
+support, and we do not claim clinical readiness. We state the need for inspectable predictions
+indirectly: many biomedical tasks require outputs tied to measurable signal structure, and SublimeX
+yields segment-traceable descriptors (channel, transform, location) that support such inspection on
+our public benchmarks---illustrated with SHAP and fold stability, not prospective validation.}{
+  \item Abstract, Introduction (revised): ``inform clinical and scientific analysis'' (motivation
+    only; not a claim about intended use).
+  \item Discussion, Comparison to Related Work (revised): removed ``Biomedical deployment places
+    constraints'' and ``attractive for biomedical use''; now ``Many biomedical modeling tasks require
+    predictions that can be related to measurable signal structure \ldots{} SublimeX represents each
+    sample through segment-based features with explicit, human-readable descriptions.''
+  \item Discussion, Comparison to Related Work: MIMIC sentence now ``segment-traceable features tied
+    to identifiable ICU signal regions'' (replacing ``support clinical validation'').
+}
+
+\rcitem{Reviewer \#2 --- metareview}{The manuscript presents an interesting and relevant approach
+to interpretable feature extraction for time series and spatial data, addressing an important gap
+between predictive performance and model transparency. The proposed framework is well motivated and
+demonstrates competitive results across multiple datasets, with a clear emphasis on
+interpretability. However, several aspects require improvement to strengthen the contribution. In
+particular, the objectives and novelty of the method should be more explicitly stated, and the
+distinction from existing approaches clarified. The experimental section would benefit from more
+rigorous statistical analysis, clearer reporting of reproducibility details, and stronger
+justification of evaluation protocols. Additionally, some claims regarding performance and
+interpretability should be moderated or better supported by quantitative evidence. The manuscript
+is generally well structured, but certain sections could be streamlined for clarity, and minor
+language editing is recommended. Overall, the work has merit, but revisions are needed to improve
+clarity, rigor, and positioning.}
+
+\response{We thank Reviewer~2 for this constructive summary. Every theme is addressed in Q1--Q8 and
+in the point-by-point responses below, with quoted wording from the revised manuscript. Where a
+request could not be fully met, we explain the constraint (chiefly the 35-page limit) and what we
+provided instead.}{
+  \item See Q1--Q8 and Reviewer~1 items 1--23.
+}
+
+\vspace{1em}
+\noindent We hope this letter and the revised manuscript address the reviewers' concerns.
+
+\vspace{0.8em}
+\noindent Sincerely,\\
+The Authors
+
+\end{document}

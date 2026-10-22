@@ -7,7 +7,7 @@ DATASETS = REPO / 'datasets'
 RESULTS = REPO / 'results'
 PARAMETERS = REPO / 'parameters'
 ABLATION_PARAMS = PARAMETERS / 'ablation'
-ELARTICLE = REPO / 'elsarticle'
+ELARTICLE = REPO / 'elsarticle' / 'clean'
 
 K_FOLDS = 5
 LOAD_FEATURES = True

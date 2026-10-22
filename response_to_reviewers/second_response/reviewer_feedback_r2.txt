@@ -1,0 +1,177 @@
+CC: "Niels Benjamin Paul" nielsbenjamin.paul@med.uni-goettingen.de, "Moein E. Samadi" msamadieinol@ukaachen.de, "Julia Sellin" jsellin@ukaachen.de, "Martin Gert Mücke" mamuecke@ukaachen.de, "Andreas Schuppert" aschuppert@ukaachen.de
+
+Manuscript Number: PR-D-26-04476R1
+Manuscript Title: Interpretable supervised feature extraction for time series and spatial data
+Pattern Recognition
+
+Dear Mr Jonas Chanrithy Wolber,
+
+We have had your manuscript 'Interpretable supervised feature extraction for time series and spatial data' reviewed for possible publication in Pattern Recognition.
+
+The reviewers and editors handling your paper have recommended that your paper undergo major revision. If you care to revise it, we will reconsider it for publication.
+
+Your revised manuscript is due by Oct 24, 2026 Kindly advise if you decide not to resubmit your paper.
+
+When submitting your revised manuscript, please ensure that you upload the source files (e.g. Word, Latex). Uploading a PDF file at this stage will create delays should your manuscript be finally accepted for publication. If your revised submission does not include source files, we will contact you to request them.
+
+Thank you for your interest in the journal.
+
+Forgotten your password?
+
+Please find detailed instructions on how to reset it here:
+
+https://service.elsevier.com/app/answers/detail/a_id/5968/
+
+Please note that this journal offers a new, free service called AudioSlides: brief, webcast-style presentations that are shown next to published articles on ScienceDirect (see also http://www.elsevier.com/audioslides). If your paper is accepted for publication, you will automatically receive an invitation to create an AudioSlides presentation.
+
+Research Elements (optional)
+This journal encourages you to share research objects - including your raw data, methods, protocols, software, hardware and more – which support your original research article in a Research Elements journal. Research Elements are open access, multidisciplinary, peer-reviewed journals which make the objects associated with your research more discoverable, trustworthy and promote replicability and reproducibility. As open access journals, there may be an Article Publishing Charge if your paper is accepted for publication. Find out more about the Research Elements journals at https://www.elsevier.com/authors/tools-and-resources/research-elements-journals?dgcid=ec_em_research_elements_email.
+
+
+Sincerely yours,
+
+Shiliang Sun, PhD
+Area Editor
+Pattern Recognition
+
+
+Reviewers' comments:
+ 
+
+
+
+AE's meta review:
+
+In this round of review, we invited more than three reviewers to avoid insufficient reviewers in due time. However, we accidentally collected 8 reviewers and most of them agree on the technical contribution and novelty of the manuscript and they raise many issues that should be addressed in the next round of review. Totally 8 reviewer comments are collected, 4 minor revision, 3 major revision and one reject. The main concerns from the reviewers are The main concerns of the reviewers are clearer descriptions including technical details, figures, evaluations, as well as the title. The authors are suggested to revised the manuscript according the the main concerns of the reviewers.
+
+Reviewer #2: The revised manuscript has improved substantially compared with the previous version. The authors have addressed most of the major concerns raised in the first review, including the need for clearer objectives, stronger methodological detail, improved reproducibility, more appropriate statistical comparisons, clearer figures and tables, and a more balanced discussion of strengths and limitations. The addition of explicit objectives, paired Wilcoxon tests, runtime reporting, multi-fold ablations, expanded comparison tables, and a more structured discussion has strengthened the manuscript considerably.
+
+Overall, I believe the manuscript is close to being suitable for publication. However, I recommend minor revision before acceptance. The remaining issues are not major methodological concerns, but they should be addressed to improve precision and avoid overstatement. In particular, the authors should clarify the scope of the "spatial data" claim, ensure consistency between the abstract/submission metadata and the revised AZT1D results, and maintain a clear statement of the limitations regarding additional robustness analyses and stronger time-series baselines that were not included. These minor revisions would improve the accuracy, balance, and clarity of the final manuscript.
+
+
+Reviewer #5: (To be filled in by the Associate editor) - Metareview from the Associate Editor (minimum 60 words):
+Notes to the Reviewer : This field is mandatory. Please put here your comments explaining your ratings of the paper and suggesting improvements
+
+-The title and scope are not well aligned with the actual contribution. The manuscript is titled "Interpretable supervised feature extraction for time series and spatial data," but six of the seven benchmarks are temporal biomedical datasets, and the only "spatial" case, REMC, is essentially a one-dimensional genomic-position profile rather than a genuine 2D or general spatial dataset. The statement that the search is "agnostic" to temporal vs. spatial indexing is not sufficient evidence of a spatial-data contribution. The authors should either add a real spatial benchmark or revise the title and scope to accurately reflect that the method is primarily for multivariate 1D sequences. As written, the spatial claim overstates the paper's validated generality.
+
+-The novelty relative to existing interval-based, shapelet-based, and ROCKET/MiniRocket methods is still not sharply defined. SublimeX appears to combine supervised interval selection, mean aggregation, Bayesian optimization, and a compact feature set. These ingredients are individually related to TSF/CIF/DrCIF, RDST, and MiniRocket. The manuscript needs a more precise technical argument explaining what is fundamentally new, not just that SublimeX produces fewer features. Table 1 is useful, but its interpretability ratings are partly subjective and do not by themselves establish novelty. The authors should clarify which design choice cannot be found in prior interval ensembles or shapelet methods and why that choice materially changes performance or interpretability.
+
+-The objectives, method, and evaluation are not fully aligned. Objective (iii) claims to assess robustness, generalization, and interpretability, but interpretability is mainly demonstrated by traceability and SHAP analysis on only REMC and AZT1D. Traceability to a channel, transform, segment, and aggregation is a useful property, but it is not equivalent to clinical or biological interpretability. There is no expert user study, no formal fidelity metric, and no cross-dataset interpretability evaluation. The authors should either define a more operational interpretability metric and report it across datasets, or explicitly weaken the interpretability claim to "traceable feature descriptions" rather than broad interpretability.
+
+-The internal validation design remains a major concern. The fixed 50/50 fit/selection split may stabilize candidate scores, but it also risks overfitting to a single internal split. The Resampling ablation is helpful, but it does not fully resolve the issue, especially for cross-subject tasks such as PAMAP2. The reported ~26% validation-test gap on PAMAP2 strongly suggests that the feature search captures subject-specific structure rather than subject-independent discriminative patterns. The authors acknowledge this, but they do not implement subject-independent validation during search. At minimum, the paper should discuss this limitation much more prominently, and ideally it should test a subject-held-out search protocol on PAMAP2 or another cross-subject benchmark.
+
+-The evaluation protocol and leakage discussion need further clarification. The manuscript states that test folds, LOSO subjects, and AZT1D temporal test windows never enter segment search. This is important, but several details remain unclear. For AZT1D, segment discovery is performed once on pooled training windows from all patients; the authors should clarify whether this creates any cross-patient information sharing and how it affects per-patient generalization. For PAMAP2, the internal fit/selection split uses windows from the same training subjects, so the search-time validation is not subject-independent. The paper should more explicitly distinguish between avoiding test leakage and ensuring subject-independent model selection.
+
+-The authors justify excluding HIVE-COTE 2.0, InceptionTime, and LSTM/GRU models on the grounds of interpretability and matched protocols, but this justification is not fully convincing. At least one strong black-box time-series baseline should be included to situate SublimeX's accuracy-interpretability trade-off. In addition, the statistical tests are welcome, but many reported differences are very small, such as AZT1D RMSE 30.98 vs. 30.76 and REMC AUC ties. The discussion should avoid implying broad performance superiority.
+
+-The ablation study and reproducibility package still need tightening. Table 4 reports multi-fold ablations, but REMC uses only cell line E003, and the REMC baseline is not comparable to the pooled 56-cell-line result in Table 3. This inconsistency should be clearly separated or resolved. Several ablation variants, such as Optimized Aggregate and Pattern Search, do not consistently improve over the baseline, yet the paper sometimes draws strong conclusions from them. The authors should report effect sizes or confidence intervals where possible and avoid overinterpreting small differences.
+
+-The writing, figures, and conclusions still require improvement. The manuscript has been reorganized, but several paragraphs remain dense, and some claims in the Abstract and Conclusion still sound stronger than the evidence supports. Dataset naming should be fully consistent, e.g., "MIT-BIH" rather than "MITBIH" or "MITBIIH," and typographical errors should be corrected. The SHAP analysis is only shown for two datasets, and the reasons for selecting REMC and AZT1D should be stated more explicitly. Figures and tables, especially SHAP and ablation figures, should be checked for font size and print readability. The Conclusion should be rewritten to match the actual contribution: a compact, traceable, competitive feature-extraction framework, not a uniformly superior or clinically validated solution.
+
+
+Reviewer #6: (To be filled in by the Associate editor) - Metareview from the Associate Editor (minimum 60 words):
+Notes to the Reviewer : This field is mandatory. Please put here your comments explaining your ratings of the paper and suggesting improvements
+
+In Table 3, the authors mark significance with paired Wilcoxon tests and the test has no resolution on four of the seven datasets. Section 2.7 sets stratified 5-fold cross-validation on MIMIC-IV, MIT-BIH, Emotions and SVD, and the exact two-sided signed-rank test on five matched pairs attains a smallest p of 2/32, that is 0.0625, so no asterisk is reachable there whatever the data. Both tables bear that out, asterisks appearing only on AZT1D, PAMAP2 and REMC and on no five-fold row: Emotions carries none although the CNN scores 0.608±0.033 against MiniRocket’s 0.988±0.007, and Table 4’s Decision Tree scores 0.913±0.013 against 0.953±0.013. Section 3.1 nevertheless reads the absence as equivalence, placing SublimeX within 0.3 percentage points of MiniRocket and not significantly worse. 
+
+In Table 2, the authors record Emotions as five channels of length 1,269 and three columns of Table 3 require two. Section 2.6 fixes the per-channel rule for catch22, which yields 22 canonical features per channel, and Section 2.5 adds that Only MIMIC-IV adds 34 non-series inputs. Under that rule the catch22 counts reproduce Table 2 exactly on six datasets, 66, 22, 110, 298, 594 and 22 against 3, 1, 5, 12, 27 and 1 channels. Emotions breaks it: catch22 prints 44, which is 22 times 2; tsfresh prints 20 where the other six give ten per channel; and the CNN prints 2538, which is 2 times 1,269. All three point to two channels. 
+
+In Section 2.6, the authors document tsfresh as the library’s minimal feature-extraction setting (eight features per univariate channel) and Table 3 requires ten. Dividing the tsfresh counts by the channel counts of Table 2 gives 30/3, 10/1, 50/5, 270/27 and 10/1, and 120/12 on MIMIC-IV once the 34 static inputs of Section 2.5 are removed: ten in every case, never eight. Eight per channel would print 24, 8, 40, 216, 8 and 130, and none of those appears. The same division on catch22 returns 22 throughout, so the arithmetic is not an artefact of the method. tsfresh leads MIMIC-IV at 0.819 and PAMAP2 at 0.898, so its configuration carries weight. 
+
+In Section 3.1, the authors carry a figure from the superseded version into the revised text. The sentence reads The ∼0.35 RMSE gap is small relative to cross-patient variability, while Table 3 gives SublimeX 30.98±5.65 against MiniRocket 30.76±5.38, a difference of 0.22; 0.35 is the distance from the 31.11 this revision replaced. The trial budget goes the same way: Section 2.4 sets 300 trials per proposed feature and Section 3.4 now reports doubling the Optuna budget to 1000 Trials, a factor of 3.3, in place of a sentence that gave the change correctly. The abstract carries the same wording, that doubled budgets add little accuracy. Please restate both against the printed values.
+
+In Section 2.7, the authors pool REMC scores across cell lines and folds, and the resulting pairs are not independent. The same section runs the same protocol in each of 56 cell lines under five-fold cross-validation, so the paired test sees 280 pairs drawn from 56 units and any two folds within one cell line share three fifths of that line’s data. Table 3’s REMC row then flags a gap of 0.002, RDST at 0.929±0.024 and CNN at 0.929±0.024 carrying asterisks against 0.931±0.023, while on MIMIC-IV a gap of 0.034 between RDST’s 0.785 and tsfresh’s 0.819 carries none. 
+
+In Section 3.5, the authors cite a figure by an unresolved label, Figure ?? gives full six-panel SHAP views for REMC (spatial epigenomic profiles) and AZT1D, in text added for this revision; Section 3.3 and Section 3.2 carry the same broken reference. The compiled manuscript holds one placed, captioned figure, the methodology overview, while the other three arrive as separate uploads with no number, no caption and no position in the text. A reader cannot tell which is Figure 2, 3 or 4, nor match Panel A and Panel B of Section 3.2 or the six panels of Section 3.5 to any of them. 
+
+Section 2.7: paired Wilcoxon tests (α=0.05) → state the sidedness and whether the exact or the normal-approximation variant is used; the manuscript gives neither.
+
+Table 3, Time row: REMC gives catch22 77±316 and SublimeX 75±117 → a standard deviation above the mean on a non-negative quantity; report the median and range instead.
+
+Reviewer #9: Explicit Objectives and Methodological Novelty: How does SublimeX explicitly differ from existing shapelet/interval approaches or deep learning models, and what are its exact theoretical and technical contributions? Title Scope & Dataset Diversity: Given that 6 out of 7 benchmark datasets are time series and only one is spatial 1D epigenomic data, can you either strengthen the spatial evaluation or adjust the title and paper scope accordingly? Data Leakage & Cross-Validation Integrity: Can you strictly confirm that the feature discovery process was confined entirely to training folds without any test information leakage? Validation-Test Gap on PAMAP2: What caused the ~26% performance drop between validation and test sets on the PAMAP2 dataset under Leave-One-Subject-Out (LOSO) cross-validation, and was the feature search subject-independent? Missing SOTA Baselines & Statistical Significance: Why were key time series baselines like HIVE-COTEv2 and InceptionTime omitted, and can you provide paired statistical significance testing (e.g., Wilcoxon signed-rank tests) to support performance claims? Overstated Claims & Definition of Interpretability: Since SublimeX was not the top performer on all datasets, can you tone down claims of "state-of-the-art leadership," qualify clinical readiness claims, and formally define "interpretability" beyond segment traceability? Stopping Criteria, Split Instability & Ablation Rigor: What were the exact stopping criteria for feature search, how do you justify the 50/50 internal split against overfitting, and can you run the ablation study across all folds rather than just a single fold? Reproducibility, Runtimes & Hyperparameters: Can you provide complete baseline/model hyperparameter configurations, a standardized hardware runtime comparison, and an end-to-end reproducible code repository?
+
+
+Reviewer #11: (To be filled in by the Associate editor) - Metareview from the Associate Editor (minimum 60 words):
+Notes to the Reviewe
+
+The author addressed all comments from the first round of reviewers point by point and made substantial revisions to the original manuscript. I still believe that this article has not reached the level of this publication. My comments:
+1. The paper focuses on biomedical time series and sequential signals, but the title is for time series and spatial data. Is the Interpretability the author mentioned fit for other time series and spatial data?
+2. The author provides operational definitions for interpretability: feature traceability (channel/transform/fragment/aggregation), stability of cross fold feature positions, and alignment of SHAP with domain priors. However, there are no quantitative interpretable indicators, and there is also no evaluation by domain experts.
+3. The paper presents the features with explicit definition such as channel, transform, segment, aggregation, which is considered interpretable. The idea is not novel.
+4. The reference articles are quite outdated, so the chosen baseline methods are outdated.
+5. The writing does not conform to the writing style in the field of pattern recognition, and the paper is difficult to read.
+r : This field is mandatory. Please put here your comments explaining your ratings of the paper and suggesting improvements
+
+
+Reviewer #12: This paper proposes SublimeX, a supervised interpretable feature extraction framework that iteratively discovers segment-mean features via Bayesian optimization, each defined by channel, transform, segment, and aggregation. The revision responds well to prior comments by adding objectives, related work, statistics, ablations, SHAP analyses, reproducibility materials, and limitations. However, the scope of spatial data in the title, the consistency between internal validation and external evaluation, external validation of interpretability, and comparison with strong baselines still need strengthening. Major revision is recommended.
+
+
+Strengths:
+
+1. The authors respond relatively systematically to the previous round of comments, which makes the method positioning and contributions clearer.
+2. The feature design of SublimeX is attractive: compact, readable, and traceable to specific channels, transforms, and signal segments.
+3. The experimental reporting is clearly strengthened: paired Wilcoxon tests, multi-fold ablations, per-patient AZT1D reporting, runtime, and baseline hyperparameters are added.
+4. The interpretability demonstration has highlights: the SHAP analyses on REMC and AZT1D are consistent with domain knowledge, and the open-source and reproducibility materials are relatively complete.
+
+
+Weaknesses:
+
+1: The "spatial data" in the title still lacks sufficient support: REMC is essentially a one-dimensional spatially indexed sequence along genomic positions, not true 2D/3D spatial data, and no spatial benchmark experiment is included.
+2. Internal validation and external evaluation are not fully consistent: PAMAP2 uses a same-subject 50/50 internal split, while external evaluation is LOSO, leading to a large validation-test gap; the Resampling ablation cannot fully replace subject-independent or nested validation.
+3. Interpretability validation still mainly relies on traceability, fold stability, and SHAP on two datasets, lacking domain expert confirmation or evidence of interpretive consistency on more datasets.
+4. Baseline coverage remains limited: strong time-series baselines such as HIVE-COTE 2.0, InceptionTime, and LSTM/GRU are not evaluated, and the exclusion justifications are insufficient for some methods, affecting the completeness of the "competitive" conclusion.
+
+
+Questions:
+
+1. Would the authors consider limiting spatial data in the title or abstract to "spatially indexed 1D sequences", or adding a true 2D/3D spatial data benchmark?
+2. Can the authors adopt subject-independent internal validation for cross-subject tasks such as PAMAP2, or at least report the results of nested/repeated validation?
+3. Can the authors add domain expert evaluation, or increase SHAP/stability analyses on more datasets, to more strongly support the "interpretable" claim?
+4. Can the authors include at least one of HIVE-COTE 2.0 or InceptionTime, or provide a more detailed justification for why these strong baselines are not directly comparable?
+
+
+Reviewer #14: Although the authors have provided extensive responses to the review comments, they have not convincingly resolved several key issues.
+1. The response states that AZT1D RMSE is reported as "mean ± SD over those 23 per-patient errors (e.g. SublimeX 30.98 ± 5.65 vs. MiniRocket 30.76 ± 5.38)." However, the abstract still reports "31.11 vs. 31.18." Why does the abstract remain inconsistent with Table 3, despite the response claiming the abstract was revised?
+2. The response claims that "the REMC baseline in Table 4 is not comparable to the pooled 56-line SublimeX score in Table 3." But Table 3 uses AUC for REMC, while Table 4 uses accuracy. How can readers assess the ablation conclusions when the metric itself differs between the two tables?
+3. The response explicitly states "no leakage from test data into feature discovery." Yet it does not clarify whether each LOSO fold in PAMAP2 uses an independent Optuna study with a reset search history. If the TPE sampler retains knowledge across folds, earlier folds could influence later searches. How is this potential cross-fold leakage prevented?
+4. The response explains the absence of SHAP analysis for five datasets by stating "There was no space to add SHAP on the remaining datasets." Given that the paper claims a general "interpretable feature extraction" framework, how can interpretability be demonstrated beyond the two selected datasets (REMC and AZT1D)?
+5.The response says "Table 3 reports end-to-end wall-clock time." However, end-to-end time conflates offline feature search with online inference. Since deployment depends primarily on inference speed, could the authors report search time and inference time separately to allow a fair comparison?
+6.All validation experiments in this paper are based on public benchmark datasets rather than real world clinical data. Has SublimeX been validated on real medical datasets? If not, how can its applicability in real clinical settings be justified?
+
+
+Reviewer #16: The manuscript presents SublimeX, a supervised feature extraction framework that searches for compact and traceable interval-based features from different signal representations. The idea of combining iterative feature search with multiple signal transformations is interesting, and the experiments cover several biomedical datasets. I nevertheless have several comments that may help improve the presentation and positioning of the work:
+
+1. There are still some inconsistencies in the section numbering. For instance, several subsections under Related Work appear to use the same numbering "1.2". Please check the section and subsection numbering throughout the manuscript and make the hierarchy consistent.
+
+2. I noticed several unresolved figure references in the current manuscript. Expressions such as "Figure ??" still appear in Sections 3.2, 3.3, and 3.5. These cross-references should be carefully checked before publication, including references to figures, tables, and sections.
+
+3. It is not always easy to follow how the data are processed and passed between the different components of SublimeX, particularly during iterative feature discovery and model evaluation. A concise pseudocode description or a more detailed workflow diagram would make the overall procedure easier to understand and reproduce.
+
+4. Some dataset names and abbreviations are formatted inconsistently. For example, "MIT-BIH" is used in Section 2.5, whereas "MITBIH" appears in Table 2. Similar notation should be checked throughout the manuscript so that dataset names and abbreviations follow a consistent convention.
+
+5. The discussion of spatiotemporal information is relatively limited, and the potential application scope of the proposed framework could be further discussed. In particular, its applicability to spatiotemporal prediction tasks deserves consideration, with recent studies such as TIDES (JSAC 2025) providing a relevant example.
+
+6. Since the experiments involve different types of downstream tasks, the presentation of the results could be made easier to follow by distinguishing the task settings more clearly. For example, classification and regression experiments could be introduced separately, together with their corresponding evaluation metrics and results.
+
+7. The current Methods section also contains material that is more closely related to experimental configuration, including the datasets, baseline methods, and evaluation metrics. It may be clearer to move these parts into a separate Experimental Setup section, so that the description of SublimeX itself is more clearly separated from the evaluation protocol.
+
+
+
+%ATTACH_FOR_REVIEWER_DEEP_LINK INSTRUCTIONS%
+
+%REVIEW_QUESTIONS_AND_RESPONSES%
+
+EiC: While you are revising your paper, here is a list of points worth checking, which we find author's overlook. I will check that these are adhered to before your paper is approved for publication, assuming the revision satisfies the Associate Editor and Reviewers.
+
+a) Take a careful look at your bibliography and they cover the state of the art. Missing references from last and current year most probably would mean you are missing the state of the art and the revision process can be delayed being asked to update it. Please do not make excessive citation to arXiv papers, but substitute them with their peer-reviewed versions, or papers from a single conference series. Do not cite large groups of papers without individually commenting on them. So we discourage " In prior work [1,2,3,4,5,6] …". Your bibliography in the final version after the revision still should be between 35-55 items.
+
+b)  Please make sure the revised version is relevant to the readership of the Pattern Recognition field. To this end, please make sure you cite RECENT  work from the field of pattern recognition not only the Pattern Recognition journal. 
+
+c) Although the revision could lead to extending your article, it still can not exceed the page limits or violate the format, i.e. double spaced SINGLE column with a maximum of 35 pages for a regular paper and 40 pages for a review.
+
+
+At Elsevier, we want to help all our authors to stay safe when publishing. Please be aware of fraudulent messages requesting money in return for the publication of your paper. If you are publishing open access with Elsevier, bear in mind that we will never request payment before the paper has been accepted. We have prepared some guidelines (https://www.elsevier.com/connect/authors-update/seven-top-tips-on-stopping-apc-scams ) that you may find helpful, including a short video on Identifying fake acceptance letters (https://www.youtube.com/watch?v=o5l8thD9XtE ). Please remember that you can contact Elsevier s Researcher Support team (https://service.elsevier.com/app/home/supporthub/publishing/) at any time if you have questions about your manuscript, and you can log into Editorial Manager to check the status of your manuscript (https://service.elsevier.com/app/answers/detail/a_id/29155/c/10530/supporthub/publishing/kw/status/).
+
+#AU_PR#
+
+To ensure this email reaches the intended recipient, please do not delete the above code

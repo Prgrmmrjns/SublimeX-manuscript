@@ -1,0 +1,179 @@
+Manuscript Number: PR-D-26-04476
+Manuscript Title: Interpretable supervised feature extraction for time series and spatial data
+Pattern Recognition
+
+Dear Mr Jonas Chanrithy Wolber,
+
+We have had your manuscript 'Interpretable supervised feature extraction for time series and spatial data' reviewed for possible publication in Pattern Recognition.
+
+The reviewers and editors handling your paper have recommended that your paper undergo major revision. If you care to revise it, we will reconsider it for publication.
+
+Your revised manuscript is due by Jun 09, 2026 Kindly advise if you decide not to resubmit your paper.
+
+When submitting your revised manuscript, please ensure that you upload the source files (e.g. Word, Latex). Uploading a PDF file at this stage will create delays should your manuscript be finally accepted for publication. If your revised submission does not include source files, we will contact you to request them.
+
+For any queries, please contact only the Journal mailbox via patcog@elsevier.com and the respective support team would check the query and respond.
+
+Thank you for your interest in the journal.
+
+Forgotten your password?
+
+Please find detailed instructions on how to reset it here:
+
+https://service.elsevier.com/app/answers/detail/a_id/5968/
+
+
+PLEASE NOTE: Pattern Recognition would like to enrich online articles by displaying interactive figures that help the reader to visualize and explore your research results. For this purpose, we would like to invite you to upload figures in the MATLAB .FIG file format as supplementary material to our online submission system. Elsevier will generate interactive figures from these files and include them with the online article on SciVerseScienceDirect. If you wish, you can submit .FIG files along with your revised submission.
+
+Please note that this journal offers a new, free service called AudioSlides: brief, webcast-style presentations that are shown next to published articles on ScienceDirect (see also http://www.elsevier.com/audioslides). If your paper is accepted for publication, you will automatically receive an invitation to create an AudioSlides presentation.
+
+Research Elements (optional)
+This journal encourages you to share research objects - including your raw data, methods, protocols, software, hardware and more – which support your original research article in a Research Elements journal. Research Elements are open access, multidisciplinary, peer-reviewed journals which make the objects associated with your research more discoverable, trustworthy and promote replicability and reproducibility. As open access journals, there may be an Article Publishing Charge if your paper is accepted for publication. Find out more about the Research Elements journals at https://www.elsevier.com/authors/tools-and-resources/research-elements-journals?dgcid=ec_em_research_elements_email.
+
+
+Sincerely yours,
+
+Petia I. Radeva, Dr.
+Editor in Chief
+Pattern Recognition
+
+
+Reviewers' comments:
+
+EiC: While you are revising your paper, here is a list of points worth checking, which we find author's overlook. I will check that these are adhered to before your paper is approved for publication, assuming the revision satisfies the Associate Editor and Reviewers.
+
+a) Make sure your title is succinct and grammatical. It should ideally not exceed 10-15 words.
+
+b) Make sure your conclusions reflect on the strengths and weaknesses of your work, how others in the field can benefit from it and thoroughly discus future work. The conclusions should be different in content from the abstract and be rather longer too.
+
+c) Take a careful look at your bibliography and how you cite papers listed in it. Make sure it is current and cites recent work. Please cite a variety of different sources of literature. Please do not make excessive citation to arXiv papers, or papers from a single conference series. Do not cite large groups of papers without individually commenting on them. So we discourage " In prior work [1,2,3,4,5,6] …". Your bibliography should be between 35-55 items.
+
+d) You may have originally written your paper with a different audience in mind. Please make sure the revised version is relevant to the readership of Pattern Recognition. To this end, please make sure you cite RECENT  work from the field of pattern recognition that will be relevant to our readership.
+
+e) Do not exceed the page limits or violate the format, i.e. double spaced SINGLE column with a maximum of 35 pages for a regular paper and 40 pages for a review.
+
+
+
+
+Reviewer's Responses to Questions
+
+Note: In order to effectively convey your recommendations for improvement to the author(s), and help editors make well-informed and efficient decisions, we ask you to answer the following specific questions about the manuscript and provide additional suggestions where appropriate.
+
+1. Are the objectives and the rationale of the study clearly stated?
+
+Please provide suggestions to the author(s) on how to improve the clarity of the objectives and rationale of the study. Please number each suggestion so that author(s) can more easily respond.
+
+Reviewer #1: Yes
+
+Reviewer #2: The manuscript presents a clear overall motivation—addressing the trade-off between predictive performance and interpretability in time series feature extraction—and this is reasonably well justified in the introduction ; however, the objectives are not explicitly stated and remain implicit throughout the text. To improve clarity, the authors should include a concise and explicit statement of the main objective at the end of the introduction, more clearly separate the problem motivation from the methodological contribution, and articulate specific research goals or guiding questions. In addition, the novelty of the approach should be more sharply defined relative to existing methods (e.g., interval-based or shapelet approaches), and the stated objectives should be better aligned with the evaluation, particularly with respect to how interpretability is assessed.
+
+2. If applicable, is the application/theory/method/study reported in sufficient detail to allow for its replicability and/or reproducibility?
+
+Please provide suggestions to the author(s) on how to improve the replicability/reproducibility of their study. Please number each suggestion so that the author(s) can more easily respond.
+
+Reviewer #1: Mark as appropriate with an X:
+Yes [X] No [] N/A []
+Provide further comments here:
+
+Reviewer #2: The manuscript provides a generally solid methodological description of the proposed framework (including the optimization procedure, transformations, and evaluation setup), which supports partial reproducibility ; however, several details remain insufficient for full replication. To improve reproducibility, the authors should (1) specify all implementation details more precisely, including exact hyperparameters of the downstream models (beyond default mentions) and stopping criteria, (2) clarify how segment boundaries are sampled and constrained during optimization, (3) provide full details of preprocessing steps for each dataset within the main text rather than relying on supplementary material, (4) describe the exact data splits or make them publicly available to ensure consistent benchmarking, (5) report random seeds and clarify whether results are sensitive to initialization, (6) include computational cost details such as total runtime per dataset and hardware variability, and (7) provide direct access to code, configuration files, and scripts used to reproduce experiments, ideally with instructions for end-to-end replication.
+
+3. If applicable, are statistical analyses, controls, sampling mechanism, and statistical reporting (e.g., P-values, CIs, effect sizes) appropriate and well described?
+
+Please clearly indicate if the manuscript requires additional peer review by a statistician. Kindly provide suggestions to the author(s) on how to improve the statistical analyses, controls, sampling mechanism, or statistical reporting. Please number each suggestion so that the author(s) can more easily respond.
+
+Reviewer #1: Mark as appropriate with an X:
+Yes [X] No [] N/A []
+Provide further comments here:
+
+Reviewer #2: The manuscript includes standard evaluation practices (e.g., cross-validation, reporting mean ± standard deviation across folds) and uses appropriate performance metrics depending on the task (AUC, accuracy, RMSE), which supports a generally acceptable level of statistical reporting ; however, the statistical analysis lacks depth and rigor in several aspects. To improve this, the authors should (1) include statistical significance testing when comparing methods (e.g., paired tests across folds or datasets) to support claims of competitive performance, (2) report confidence intervals in addition to standard deviations to better quantify uncertainty, (3) clarify whether hyperparameter tuning and feature selection are nested within cross-validation to avoid potential data leakage, (4) provide more detail on the sampling strategy and class balance handling for each dataset, particularly in imbalanced settings, (5) assess variability across runs by repeating experiments with different random seeds where applicable, and (6) better justify the choice of evaluation protocols (e.g., single split vs. cross-validation) and discuss their potential impact on the reported results.
+
+4. Could the manuscript benefit from additional tables or figures, or from improving or removing (some of the) existing ones?
+
+Please provide specific suggestions for improvements, removals, or additions of figures or tables. Please number each suggestion so that author(s) can more easily respond.
+
+Reviewer #1: No
+
+Reviewer #2: The manuscript includes several relevant figures and tables that support the methodology and results (e.g., workflow diagram, performance comparison, and feature analysis), 
+but their effectiveness could be improved. 
+Specifically, (1) the graphical abstract is visually appealing but somewhat generic and could be made more informative by explicitly illustrating the optimization process, 
+(2) Figure 1 (methodology) is helpful but visually dense and would benefit from simplification or clearer labeling of key steps, 
+(3) Figure 2 and Figure 3 provide useful insights but are difficult to interpret due to small text and multiple panels, 
+so readability should be improved (e.g., larger fonts, clearer legends), (4) 
+Table 2 would benefit from including statistical significance indicators or highlighting meaningful differences beyond bolding best values, 
+(5) an additional table summarizing the number and type of extracted features per dataset would strengthen interpretability claims, and 
+(6) a more explicit visualization comparing interpretability (not only performance) across methods would further support the main contribution.
+
+6. Have the authors clearly emphasized the strengths of their study/theory/methods/argument?
+
+Please provide suggestions to the author(s) on how to better emphasize the strengths of their study. Please number each suggestion so that the author(s) can more easily respond.
+
+Reviewer #1: Yes
+
+Reviewer #2: The manuscript demonstrates several clear strengths—particularly the balance between interpretability and performance, the modular design of the framework, and the use of diverse datasets—but these strengths are not always emphasized as clearly or strategically as they could be. To improve this, the authors should (1) explicitly summarize the main strengths of the method in a dedicated contributions paragraph at the end of the introduction, (2) more clearly highlight the novelty of combining supervised feature search with interpretable, segment-based representations, (3) emphasize the flexibility and modularity of the framework as a practical advantage for different domains, (4) reinforce the importance of compact feature sets as a key contribution rather than a secondary outcome, and (5) more directly connect the empirical results and SHAP analysis to the claimed strengths in interpretability and real-world applicability.
+
+7. Have the authors clearly stated the limitations of their study/theory/methods/argument?
+
+Please list the limitations that the author(s) need to add or emphasize. Please number each limitation so that author(s) can more easily respond.
+
+Reviewer #1: Yes
+
+Reviewer #2: The manuscript acknowledges several important limitations—such as computational cost, potential overfitting during feature search, and challenges in cross-subject generalization—which is a clear strength ; however, these limitations could be stated more explicitly and systematically. To improve this, the authors should (1) consolidate the limitations into a clearly structured paragraph or subsection for better visibility, (2) more explicitly discuss the impact of the greedy search strategy and its susceptibility to local optima, (3) elaborate on the risk of overfitting due to the fixed train/validation split used during optimization, (4) clarify the scalability limitations in terms of runtime and high-dimensional search space, (5) more critically address the limited comparison with additional state-of-the-art methods, and (6) discuss the potential limitations of interpretability, particularly whether simple segment-based features are sufficient for capturing complex patterns in all domains.
+
+8. Does the manuscript structure, flow or writing need improving (e.g., the addition of subheadings, shortening of text, reorganization of sections, or moving details from one section to another)?
+
+Please provide suggestions to the author(s) on how to improve the manuscript structure and flow. Please number each suggestion so that author(s) can more easily respond.
+
+Reviewer #1: No
+
+Reviewer #2: The manuscript is generally well organized and follows a standard structure, but the clarity and flow can be improved in several areas. Specifically, (1) the introduction would benefit from a clearer closing paragraph summarizing the main contributions in a structured way, (2) some sections—particularly the methodology—are dense and could be streamlined by reducing repetition and improving transitions between subsections, (3) key implementation details currently placed in supplementary material should be briefly summarized in the main text to improve readability, (4) the results section could be better structured by explicitly linking each subsection to a specific research objective or claim, and (5) the discussion could be made more concise by reducing redundancy and more clearly separating interpretation, limitations, and future work.
+
+9. Could the manuscript benefit from language editing?
+
+Reviewer #1: Yes
+
+Reviewer #2: Yes
+
+ 
+
+
+AE's metareview:
+
+This round of review collected two review comments, both are major revision. The main concerns are more explanation of novelty, spatial data contribution, stopping criterion of the method, experimental evaluation and writing issues.
+
+Reviewer #1: (To be filled in by the Associate editor) - Metareview from the Associate Editor (minimum 60 words):
+Notes to the Reviewer : This field is mandatory. Please put here your comments explaining your ratings of the paper and suggesting improvements
+
+The manuscript "Interpretable supervised feature extraction for time series and spatial data", I would recommend major revision. The topic is relevant and the proposed SublimeX framework has potential, but several methodological, validation, and presentation issues need to be addressed before publication.
+
+The manuscript presents an interesting interpretable feature extraction framework, but the novelty of SublimeX should be stated more clearly. The authors should explain how it differs substantially from existing interval-based, shapelet-based, ROCKET/MiniROCKET, and supervised feature extraction methods.
+The title mentions both "time series and spatial data," but most of the paper focuses on time-series biomedical datasets. The spatial data contribution is not sufficiently demonstrated. The authors should either strengthen the spatial-data evaluation or revise the title and scope.
+The abstract is informative, but it overstates competitiveness. SublimeX is not the best-performing method on several datasets, including MITBIH, Emotions, MIMIC-IV, PAMAP2, and SVD. The abstract should more cautiously describe the results.
+The methodology needs more detail on the stopping criterion. The paper states that the loop stops when no candidate improves performance, but the exact definition of improvement, tolerance threshold, and validation metric direction should be clearly specified.
+The use of a single deterministic 50/50 train/validation split during feature optimization may introduce instability and overfitting. The authors should justify this choice and discuss whether nested cross-validation or repeated validation would provide more reliable feature selection.
+The internal feature-search validation split does not match the external evaluation design for some datasets, especially PAMAP2 with leave-one-subject-out validation. This likely explains the large validation-test gap. The authors should consider using subject-independent validation during feature search.
+The manuscript should clarify whether feature extraction is performed independently within each training fold only. If any information from validation or test folds influences feature discovery, this would create data leakage.
+The comparison with baselines is incomplete. Important state-of-the-art time-series methods such as HIVE-COTEv2, InceptionTime, and LSTM/GRU-based models are only mentioned as limitations but not evaluated. At minimum, the authors should justify why these were excluded.
+The authors should provide statistical significance testing across methods. Many reported differences are very small, such as AZT1D RMSE 31.11 vs. 31.18 and REMC AUC 0.931 vs. 0.931, so claims of superior performance require statistical support.
+The results show that SublimeX is competitive but not consistently superior. The discussion should better balance performance and interpretability rather than implying broad performance advantage.
+The ablation study is based on a single fold only, which limits the reliability of the conclusions. The authors should either repeat ablations across multiple folds or clearly tone down the strength of the claims.
+Runtime comparisons need clearer reporting. The manuscript reports runtimes for ablation variants, but does not compare computational cost against all baseline methods under the same hardware and settings.
+The graphical abstract and Figure 1 contain small text and may be difficult to read. The authors should improve figure resolution, font size, and visual clarity.
+Some figures, especially SHAP visualizations, are too small to interpret in the manuscript. Larger panels or supplementary high-resolution versions should be provided.
+The paper should provide the exact hyperparameters used for LightGBM, CNN, MiniRocket, RDST, tsfresh, and catch22 to ensure reproducibility.
+The authors state that SublimeX is open source, but the manuscript should include a permanent repository link, version number, and ideally a reproducibility package for all experiments.
+The manuscript should better define what "interpretable" means in this context. Traceability to a signal segment is useful, but interpretability also depends on clinical or biological validity, stability, and expert confirmation.
+The SHAP analysis is helpful, but it is only shown for two datasets. The authors should clarify why REMC and AZT1D were selected and whether similar interpretability patterns hold across other datasets.
+The discussion should include a stronger limitations section. Important limitations include greedy search, local optima, risk of overfitting, high computational cost, limited baseline comparison, and reduced generalization in cross-subject settings.
+Several writing and formatting issues need correction, including typographical errors such as "anaylsis," inconsistent capitalization of dataset names, and overly long paragraphs in the Discussion.
+The manuscript would benefit from a clearer contribution statement at the end of the Introduction, listing the main methodological and empirical contributions.
+The authors should avoid overstating clinical applicability. The datasets are benchmark datasets, and no prospective clinical validation or expert user study is presented.
+The manuscript should clarify whether SublimeX is intended mainly for prediction, hypothesis generation, or clinical decision support, because the validation requirements differ for each use case.
+The manuscript is promising and relevant to Pattern Recognition, but it requires major revision to improve methodological rigor, reproducibility, baseline comparison, and clarity of claims.
+
+
+Reviewer #2: The manuscript presents an interesting and relevant approach to interpretable feature extraction for time series and spatial data, 
+addressing an important gap between predictive performance and model transparency. 
+The proposed framework is well motivated and demonstrates competitive results across multiple datasets, with a clear emphasis on interpretability. 
+However, several aspects require improvement to strengthen the contribution. 
+In particular, the objectives and novelty of the method should be more explicitly stated, and the distinction from existing approaches clarified. 
+The experimental section would benefit from more rigorous statistical analysis, clearer reporting of reproducibility details, and stronger justification of evaluation protocols. Additionally, some claims regarding performance and interpretability should be moderated or better supported by quantitative evidence. The manuscript is generally well structured, but certain sections could be streamlined for clarity, and minor language editing is recommended. Overall, the work has merit, but revisions are needed to improve clarity, rigor, and positioning.
