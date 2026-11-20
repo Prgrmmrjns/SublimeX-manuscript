@@ -5,11 +5,12 @@ from matplotlib import path as mpl_path
 import matplotlib.image as mpimg
 import numpy as np
 from pathlib import Path
-from plot_style import save_png_eps
+from plot_style import save_png
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 ICON_DIR = REPO_ROOT / "scripts" / "_flowchart_tmp_icons"
 OUT = REPO_ROOT / "elsarticle/clean/flowchart"
+OUT.parent.mkdir(parents=True, exist_ok=True)
 FIGSIZE = (5, 3)
 DERIV_C, FEAT_C = "#FF9800", "#E91E63"
 SEG_START, SEG_END = 32, 68
@@ -130,7 +131,7 @@ def _pair_traces(name):
         ax.set_ylim(-0.28, 1.15)
         ax.axis("off")
     fig.subplots_adjust(left=0.02, right=0.98, top=0.83, bottom=0.04, wspace=0.08)
-    _save_icon(fig, name, dpi=200, tight=False)
+    _save_icon(fig, name, dpi=600, tight=False)
 
 
 def create_aggregation_icon():
@@ -166,7 +167,7 @@ def create_eval_dist_icon():
                                     facecolor=fc, edgecolor="#333", lw=1.6))
         ax.text(bx, by, text, ha="center", va="center", fontsize=15, fontweight="bold", color=tc)
     fig.subplots_adjust(left=0.01, right=0.99, top=0.97, bottom=0.02, hspace=0.03)
-    _save_icon(fig, "eval_dist_icon.png", dpi=200, tight=False)
+    _save_icon(fig, "eval_dist_icon.png", dpi=600, tight=False)
 
 
 def create_optimization_icon():
@@ -186,7 +187,7 @@ def create_optimization_icon():
     ax.set_ylim(0.1, 1.0)
     ax.axis('off')
     plt.tight_layout()
-    plt.savefig(ICON_DIR / "optimization_icon.png", dpi=150, bbox_inches='tight', facecolor='white')
+    plt.savefig(ICON_DIR / "optimization_icon.png", dpi=600, bbox_inches='tight', facecolor='white')
     plt.close()
 
 
@@ -234,7 +235,7 @@ def workflow_feature_panels():
 APPEND_FEATURES_FIGSIZE = (8, 6)
 
 
-def _save_features_stack_icon(panels, name, dpi=170, figsize=None):
+def _save_features_stack_icon(panels, name, dpi=600, figsize=None):
     n = len(panels)
     fig, axes = plt.subplots(n, 1, figsize=figsize or (5, 2 * n))
     axes = np.atleast_1d(axes)
@@ -247,6 +248,94 @@ def _save_features_stack_icon(panels, name, dpi=170, figsize=None):
 def create_append_features_icon():
     _save_features_stack_icon(workflow_feature_panels(), "append_features_icon.png",
                               figsize=APPEND_FEATURES_FIGSIZE)
+
+
+def create_poster_icons():
+    dpi = 400
+    fig, ax = plt.subplots(figsize=(4.96, 3.48))
+    pts = np.array([0.08, 0.18, 0.32, 0.5, 0.66, 0.78, 0.9])
+    y = 0.55 + 0.25 * np.sin(6 * np.pi * pts) + 0.1 * np.cos(2 * np.pi * pts)
+    xg = np.sort(np.unique(np.concatenate([np.linspace(0, 1, 400), pts])))
+    K = np.exp(-0.5 * ((pts[:, None] - pts[None, :]) / 0.12) ** 2) + 1e-6 * np.eye(len(pts))
+    Ks = np.exp(-0.5 * ((pts[:, None] - xg[None, :]) / 0.12) ** 2)
+    Kinv = np.linalg.inv(K)
+    mu, s = Ks.T @ Kinv @ y, np.sqrt(np.maximum(1 - np.sum(Ks * (Kinv @ Ks), axis=0), 0))
+    ax.fill_between(xg, mu - s, mu + s, color='#90CAF9', alpha=0.55, linewidth=0)
+    ax.plot(xg, mu, color='#1E88E5', lw=4.5)
+    ax.scatter(pts, y, s=160, color='#222', zorder=4)
+    ax.set_xlim(0.04, 0.94)
+    ax.set_ylim(float(y.min()) - 0.22, float(y.max()) + 0.18)
+    ax.axis('off')
+    fig.subplots_adjust(0.06, 0.08, 0.94, 0.94)
+    fig.savefig(ICON_DIR / "poster_search.png", dpi=dpi, facecolor='white')
+    plt.close()
+
+    fig, axes = plt.subplots(1, 2, figsize=(5.02, 3.48))
+    for ax, (title, mu, amp) in zip(axes, GROUP_MEANS):
+        t, yy = _schematic_view(amp)
+        m = (t >= SEG[0]) & (t <= SEG[1])
+        seg_mean = float(yy[m].mean())
+        ax.fill_between(t, yy, 0, color=RAW_C, alpha=0.35, lw=0)
+        ax.plot(t, yy, color=RAW_C, lw=3.6, solid_capstyle="round")
+        for xi in SEG:
+            ax.axvline(xi, color=FEAT_C, lw=3.2, ls=(0, (4, 3)))
+        ax.hlines(seg_mean, *SEG, color=FEAT_C, lw=4.2)
+        ax.set_title(title, fontsize=22, fontweight="bold", pad=2)
+        ax.text(0.5, 0.02, f"Mean {mu:.2f}", transform=ax.transAxes, ha="center", va="bottom",
+                fontsize=20, color=FEAT_C, fontweight="bold")
+        ax.set_xlim(-0.02, 1.02)
+        ax.set_ylim(-0.02, 1.12)
+        ax.axis("off")
+    fig.subplots_adjust(0.02, 0.08, 0.98, 0.84, wspace=0.06)
+    fig.savefig(ICON_DIR / "poster_mean.png", dpi=dpi, facecolor='white')
+    plt.close()
+
+    panels = workflow_feature_panels()
+    fig, axes = plt.subplots(3, 1, figsize=(5.20, 3.50))
+    for ax, panel in zip(axes, panels):
+        x, data, start, end, line_c = panel
+        ax.plot(x, data, color=line_c, lw=3.2)
+        ax.fill_between(x, data, alpha=0.28, color=line_c)
+        mean_v = float(np.asarray(data[start:end + 1]).mean())
+        for xi in (start, end):
+            ax.axvline(xi, color=FEAT_C, lw=2.8, ls=(0, (3, 2)))
+        ax.hlines(mean_v, start, end, color=FEAT_C, lw=3.6)
+        pad = 0.22 * (data.max() - data.min())
+        ax.set_xlim(x[0], x[-1])
+        ax.set_ylim(data.min() - pad, data.max() + pad)
+        ax.axis("off")
+    fig.subplots_adjust(0.02, 0.02, 0.98, 0.98, hspace=0.12)
+    fig.savefig(ICON_DIR / "poster_append.png", dpi=dpi, facecolor='white')
+    plt.close()
+
+    fig, axes = plt.subplots(2, 1, figsize=(5.32, 3.50), gridspec_kw=dict(height_ratios=[1.05, 1.35]))
+    ax = axes[0]
+    x = np.linspace(-3.0, 3.2, 400)
+    for mu, s, c, lab, xpos in ((-0.60, 0.80, "#1976D2", "Group one", -1.35),
+                                (0.38, 1.05, "#E65100", "Group two", 1.45)):
+        yy = np.exp(-0.5 * ((x - mu) / s) ** 2)
+        ax.fill_between(x, yy, color=c, alpha=0.35, lw=0)
+        ax.plot(x, yy, color=c, lw=3.4)
+        ax.text(xpos, 0.92, lab, ha="center", va="bottom", fontsize=18, color=c, fontweight="bold")
+    ax.axvline(0, color="#111111", ls=(0, (4, 3)), lw=2.4)
+    ax.set_xlim(x[0], x[-1])
+    ax.set_ylim(0, 1.35)
+    ax.axis("off")
+    ax = axes[1]
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    ax.axis("off")
+    ax.plot([0.5, 0.24], [0.62, 0.40], color="#333", lw=2.6)
+    ax.plot([0.5, 0.76], [0.62, 0.40], color="#333", lw=2.6)
+    for bx, by, bw, bh, text, fc in ((0.5, 0.78, 0.86, 0.34, "Feature one < 0", "#2196F3"),
+                                     (0.24, 0.20, 0.46, 0.36, "Group one", "#1976D2"),
+                                     (0.76, 0.20, 0.46, 0.36, "Group two", "#E65100")):
+        ax.add_patch(FancyBboxPatch((bx - bw / 2, by - bh / 2), bw, bh, boxstyle="round,pad=0.012",
+                                    facecolor=fc, edgecolor="#333", lw=1.8))
+        ax.text(bx, by, text, ha="center", va="center", fontsize=16, fontweight="bold", color="white")
+    fig.subplots_adjust(0.02, 0.01, 0.98, 0.99, hspace=0.02)
+    fig.savefig(ICON_DIR / "poster_eval.png", dpi=dpi, facecolor='white')
+    plt.close()
 
 
 def create_output_icon():
@@ -382,7 +471,7 @@ def draw_flowchart():
                                 facecolor='#F8FAFC', edgecolor='#455A64', linewidth=2.5,
                                 zorder=-2))
 
-    save_png_eps(fig, OUT, dpi=300, facecolor='white')
+    save_png(fig, OUT, dpi=300, facecolor='white')
     plt.close(fig)
 
 

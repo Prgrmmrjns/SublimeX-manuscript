@@ -8,12 +8,14 @@ from aeon.classification.hybrid import HIVECOTEV2
 from sklearn.metrics import accuracy_score, mean_squared_error, roc_auc_score
 from sklearn.model_selection import StratifiedKFold, KFold, LeaveOneGroupOut, train_test_split
 
-from config import K_FOLDS, RESULTS
+from config import K_FOLDS, RESULTS, setup_sublimex_path
+setup_sublimex_path()
+from sublimex import LightGBMModel
 from preprocess import load_emotions, load_svd, load_mimic, load_mitbih, load_pamap2, load_azt1d, load_remc
 
 OUT = RESULTS / 'extra_baselines.csv'
 OLD = RESULTS / 'emotions_extra_baselines.csv'
-ORDER = ['LSTM', 'InceptionTime', 'HIVECOTEV2']
+ORDER = ['LSTM']
 
 
 def _ch(x, n_ch):
@@ -25,18 +27,21 @@ def _xy(X_list, idx, y):
     return pd.concat([x.iloc[idx] for x in X_list], axis=1).values, yv[idx]
 
 
-def _one(ds, fi, metric, X_list, y, tr, te):
+def _one(ds, fi, metric, X_list, y, tr, te, init=None):
     Xtr, ytr = _xy(X_list, tr, y)
     Xte, yte = _xy(X_list, te, y)
-    return ds, fi, metric, len(X_list), Xtr, Xte, ytr, yte
+    itr = init[tr] if init is not None else None
+    ite = init[te] if init is not None else None
+    return ds, fi, metric, len(X_list), Xtr, Xte, ytr, yte, itr, ite
 
 
 def _standard(name, fn):
     X, y, info = fn()
     X_list = X if isinstance(X, list) else [X]
+    init = info.get('initial_features')
     cv = StratifiedKFold if info['task'] == 'classification' else KFold
     splits = cv(K_FOLDS, shuffle=True, random_state=42).split(pd.concat(X_list, axis=1), y)
-    return [_one(name, fi, info['metric'], X_list, y, tr, te) for fi, (tr, te) in enumerate(splits, 1)]
+    return [_one(name, fi, info['metric'], X_list, y, tr, te, init) for fi, (tr, te) in enumerate(splits, 1)]
 
 
 def _pamap():
@@ -96,43 +101,69 @@ def _metric_score(metric, y, pred):
     return float(accuracy_score(y, pred))
 
 
-def eval_lstm(X_tr, X_te, y_tr, y_te, n_ch, metric):
+def eval_lstm(X_tr, X_te, y_tr, y_te, n_ch, metric, itr=None, ite=None):
     t0 = time.time()
     device = torch.device('mps' if torch.backends.mps.is_available() else 'cpu')
     reg = metric == 'rmse'
     ytr_i, yte_i, n_cls = (y_tr, y_te, 1) if reg else _idx(y_tr, y_te)
-    tr_x, va_x, ytr, yva = train_test_split(X_tr, ytr_i, test_size=0.2, random_state=42, stratify=None if reg else ytr_i)
-    tr, va, te = [t.to(device) for t in (_pool(tr_x, n_ch, 60), _pool(va_x, n_ch, 60), _pool(X_te, n_ch, 60))]
-    tr, va = tr.transpose(1, 2), va.transpose(1, 2)
-    te = te.transpose(1, 2)
-    ytr = torch.tensor(ytr, dtype=torch.float32 if reg else torch.long, device=device)
-    yva = torch.tensor(yva, dtype=torch.float32 if reg else torch.long, device=device)
+    idx = np.arange(len(X_tr))
+    tr_i, va_i = train_test_split(idx, test_size=0.2, random_state=42, stratify=None if reg else ytr_i)
+    bs = 64 if len(X_tr) < 2500 else 256
+    print(f'  lstm batch={bs} n_train={len(X_tr)}', flush=True)
+    fit = _ch(X_tr[tr_i], n_ch)
+    mean, std = fit.mean((0, 2), keepdims=True), fit.std((0, 2), keepdims=True) + 1e-8
+    torch.manual_seed(42)
+
+    def _seq(x):
+        return torch.tensor((_ch(x, n_ch) - mean) / std, dtype=torch.float32).transpose(1, 2).to(device)
+    tr, va, te = _seq(X_tr[tr_i]), _seq(X_tr[va_i]), _seq(X_te)
+    ytr = torch.tensor(ytr_i[tr_i], dtype=torch.float32 if reg else torch.long, device=device)
+    yva = torch.tensor(ytr_i[va_i], dtype=torch.float32 if reg else torch.long, device=device)
     lstm = nn.LSTM(n_ch, 64, batch_first=True).to(device)
     head = nn.Linear(64, 1 if reg else n_cls).to(device)
     opt = torch.optim.Adam(list(lstm.parameters()) + list(head.parameters()), lr=1e-3)
     loss_fn = nn.MSELoss() if reg else nn.CrossEntropyLoss()
 
+    def hidden(seq):
+        parts = []
+        for i in range(0, len(seq), bs):
+            out, _ = lstm(seq[i:i + bs])
+            parts.append(out.mean(1))
+        return torch.cat(parts, 0)
+
     def logits(seq):
-        out, _ = lstm(seq)
-        z = head(out[:, -1])
+        z = head(hidden(seq))
         return z.squeeze(-1) if reg else z
 
-    best, best_lstm, best_head = float('inf'), None, None
+    best, best_lstm, best_head, patience = float('inf'), None, None, 0
     for _ in range(100):
         lstm.train(); head.train()
-        for i in range(0, len(tr), 64):
+        for i in range(0, len(tr), bs):
             opt.zero_grad()
-            loss_fn(logits(tr[i:i + 64]), ytr[i:i + 64]).backward()
+            loss_fn(logits(tr[i:i + bs]), ytr[i:i + bs]).backward()
+            nn.utils.clip_grad_norm_(list(lstm.parameters()) + list(head.parameters()), 1.0)
             opt.step()
         lstm.eval(); head.eval()
         with torch.no_grad():
             vloss = loss_fn(logits(va), yva).item()
         if vloss < best:
-            best = vloss
+            best, patience = vloss, 0
             best_lstm = {k: v.detach().cpu().clone() for k, v in lstm.state_dict().items()}
             best_head = {k: v.detach().cpu().clone() for k, v in head.state_dict().items()}
+        elif (patience := patience + 1) >= 10:
+            break
     lstm.load_state_dict(best_lstm); head.load_state_dict(best_head)
     lstm.eval(); head.eval()
+    if device.type == 'mps':
+        torch.mps.empty_cache()
+    n_param = sum(p.numel() for p in list(lstm.parameters()) + list(head.parameters()))
+    if itr is not None:
+        with torch.no_grad():
+            ftr = hidden(_seq(X_tr)).cpu().numpy()
+            fte = hidden(te).cpu().numpy()
+        sc = LightGBMModel('regression' if reg else 'classification').test(
+            np.hstack([itr, ftr]), y_tr, np.hstack([ite, fte]), y_te, metric, deterministic=True)
+        return sc, time.time() - t0, n_param + itr.shape[1]
     with torch.no_grad():
         z = logits(te).cpu().numpy()
     if metric == 'auc':
@@ -141,7 +172,6 @@ def eval_lstm(X_tr, X_te, y_tr, y_te, n_ch, metric):
         pred = z.argmax(1)
     else:
         pred = z
-    n_param = sum(p.numel() for p in list(lstm.parameters()) + list(head.parameters()))
     return _metric_score(metric, y_te if reg else yte_i, pred), time.time() - t0, n_param
 
 
@@ -261,13 +291,16 @@ def main():
     print(f'resume={len(done)} → {OUT}', flush=True)
     for name in ORDER:
         for folds in datasets():
-            for ds, fi, metric, n_ch, X_tr, X_te, y_tr, y_te in folds:
+            for ds, fi, metric, n_ch, X_tr, X_te, y_tr, y_te, itr, ite in folds:
                 if name == 'HIVECOTEV2' and metric == 'rmse':
                     continue
                 if (ds, name, fi) in done:
                     continue
                 print(f'start {ds} fold {fi} | {name}', flush=True)
-                sc, elapsed, n_feat = FNS[name](X_tr, X_te, y_tr, y_te, n_ch, metric)
+                if name == 'LSTM':
+                    sc, elapsed, n_feat = eval_lstm(X_tr, X_te, y_tr, y_te, n_ch, metric, itr, ite)
+                else:
+                    sc, elapsed, n_feat = FNS[name](X_tr, X_te, y_tr, y_te, n_ch, metric)
                 rows.append({'dataset': ds, 'approach': name, 'fold': fi, 'score': sc, 'time': elapsed, 'n_features': n_feat})
                 done.add((ds, name, fi))
                 pd.DataFrame(rows).to_csv(OUT, index=False)

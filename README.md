@@ -27,10 +27,20 @@ This re-runs LightGBM/CNN/MiniRocket scoring and plotting using stored SublimeX 
 | 1. Setup | `pip install -r requirements.txt` | Python env |
 | 2. Data | Download raw data (see below), then `python scripts/preprocess.py` | `datasets/*` processed files; `elsarticle/clean/dataset_characteristics.tex` |
 | 3. Benchmarks | `python scripts/main_eval.py` | `results/main_eval.csv`, `parameters/<dataset>/fold*.json` |
+| 3b. LSTM baseline | `python scripts/extra_baselines.py` | LSTM rows in `results/extra_baselines.csv` (resumes from saved rows) |
 | 4. Ablations | `python scripts/ablation_study.py` | `results/ablation_study.csv`, `parameters/ablation/` |
 | 5. Tables | `python scripts/generate_tables.py` | `elsarticle/clean/results_table.tex`, `elsarticle/clean/ablation_results.tex` |
 | 6. Figures | see below | `elsarticle/clean/*.eps`, `*.png`, … |
-| 7. PDF | `cd elsarticle/clean && latexmk -pdf main.tex` | `elsarticle/clean/main.pdf` |
+
+Tables and figures are written to `elsarticle/clean/`, which the scripts create if it is missing. The manuscript sources themselves are not part of this repository.
+
+**Additional analyses** (reported in the review correspondence, not in the paper):
+
+| Script | Outputs |
+|--------|---------|
+| `scripts/repeated_cv.py` | 5 x 5 repeated CV on Emotions, SVD, MIMIC-IV: `results/repeated_cv.csv`, `results/repeated_cv_tests.csv` |
+| `scripts/azt1d_per_patient.py` | Per-patient SublimeX search on AZT1D: `results/azt1d_per_patient.csv` |
+| `scripts/lstm_batch_probe.py` | Batch-size probe behind the LSTM batch rule: `results/lstm_batch*_probe.csv` |
 
 **Figure scripts** (run from repo root; order does not matter):
 
@@ -60,7 +70,7 @@ pip install -r requirements.txt
 
 ## Datasets
 
-Git tracks `scripts/`, `results/`, `parameters/`, `requirements.txt`, and `datasets/metadata.json`. Large raw files, `elsarticle/`, and a local `sublimex/` checkout are gitignored. Processing notes are in `elsarticle/clean/supplementary/supplementary.tex` (local manuscript; not on GitHub).
+Git tracks `scripts/`, `results/`, `parameters/`, `requirements.txt`, and `datasets/metadata.json`. The datasets themselves are not included: together they take about 32 GB, and several are distributed under their own terms (MIMIC-IV requires credentialed PhysioNet access and may not be redistributed). Download each one from the source below and place it under `datasets/`.
 
 | Dataset | Approx. | Source | Place under |
 |---------|---------|--------|-------------|
@@ -86,12 +96,12 @@ Metadata and channel definitions: `datasets/metadata.json`.
 
 ## Evaluation settings (main text)
 
-Aligned with `elsarticle/clean/main.tex` Methods:
+Aligned with the Methods section of the paper:
 
 - **SublimeX**: 300 Optuna trials per feature (TPE); mean over segment; four views (raw, z-score, derivative, FFT power); LightGBM depth 5; inner 50/50 search split (seed 42); stop when no strict validation improvement.
 - **Baselines**: tsfresh (`MinimalFCParameters`), catch22, MiniRocket (`random_state=42`), RDST (`max_shapelets=1000`), 1D CNN — all on the same outer splits; feature-based methods use the same LightGBM readout.
+- **LSTM**: one shared configuration on all datasets (`scripts/extra_baselines.py`): one layer, hidden size 64, mean hidden state over the native series length (no pooling), per-channel z-score on the training split, Adam 1e-3 with gradient-norm clipping at 1, batch 64 below 2,500 training series and 256 otherwise, up to 100 epochs with early stopping (patience 10) on a 20% validation split. On MIMIC-IV the mean hidden state is combined with the static features and scored with LightGBM.
 - **Splits**: 5-fold CV (most sets); PAMAP2 8-fold LOSO; REMC 5-fold × 56 cell lines; AZT1D temporal 80/20 per patient (pooled SublimeX discovery on training windows only).
-- **Hyperparameters**: Supplementary Table S1 (`elsarticle/clean/supplementary/supplementary.tex`).
 - **Package**: `pip install -r requirements.txt` installs `sublimex==0.1.2`. If a checkout exists at `sublimex/`, scripts put that directory on `sys.path` first. The manuscript imports `SublimeX`, `mean_objective`, `LightGBMModel`, `TRANSFORMS`, and `extract_feature`.
 
 ---

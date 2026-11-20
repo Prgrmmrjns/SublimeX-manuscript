@@ -1,4 +1,4 @@
-"""Graphical abstract: Iterative Feature Optimization panel → elsarticle/clean/graphical_abstract.png."""
+"""Inner optimization panel. Does not write the submission graphical abstract."""
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -18,7 +18,7 @@ from flowchart import (
 from plot_style import save_png
 
 REPO = Path(__file__).resolve().parents[1]
-OUT = REPO / "elsarticle" / "clean" / "graphical_abstract"
+OUT = REPO / "scripts" / "_flowchart_tmp_icons" / "inner_loop"
 C_PROCESS, C_FEATURE = "#81C784", "#C8E6C9"
 CX, Y_IN, V_GAP = 66, 120, 3.5
 FE_V_GAP, FE_H_GAP, FE_ROW_GAP = 1, 10, 5
@@ -95,7 +95,7 @@ def draw_inner_box(ax, x, y, title, img):
     add_img(ax, str(ICON_DIR / img), x - w / 2 + FlowchartBox.IMG_W / 2 + 2, y,
             FlowchartBox.IMG_W, FlowchartBox.IMG_H)
     ax.text(x + w * 0.26, y + h * 0.30, title, ha="center", va="center",
-            fontsize=FlowchartBox.INNER_TITLE_FS, fontweight="bold", color="#222",
+            fontsize=30, fontweight="bold", color="#222",
             zorder=4, linespacing=1.05)
 
 

@@ -8,6 +8,7 @@ RESULTS = REPO / 'results'
 PARAMETERS = REPO / 'parameters'
 ABLATION_PARAMS = PARAMETERS / 'ablation'
 ELARTICLE = REPO / 'elsarticle' / 'clean'
+ELARTICLE.mkdir(parents=True, exist_ok=True)  # output folder for tables and figures (not tracked)
 
 K_FOLDS = 5
 LOAD_FEATURES = True

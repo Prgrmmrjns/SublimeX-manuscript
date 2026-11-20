@@ -3,7 +3,7 @@ from collections import defaultdict, Counter
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from plot_style import apply_manuscript_figure_style, mm_size, save_png_pdf_eps
+from plot_style import apply_manuscript_figure_style, mm_size
 from config import RESULTS, PARAMETERS, ELARTICLE
 
 RESULTS.mkdir(parents=True, exist_ok=True)
@@ -177,7 +177,7 @@ def generate_figure(transform_results, stability_results):
     ax2.text(-0.08, 1.02, 'B', transform=ax2.transAxes, fontsize=16, fontweight='bold', va='bottom', ha='left')
     for ax in axes:
         ax.spines[['top', 'right']].set_visible(False)
-    save_png_pdf_eps(fig, ELARTICLE / 'feature_analysis', dpi=300)
+    fig.savefig(ELARTICLE / 'feature_analysis.eps', dpi=300, bbox_inches='tight')
     return fig
 
 

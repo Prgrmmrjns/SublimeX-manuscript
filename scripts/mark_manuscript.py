@@ -4,13 +4,13 @@ Usage, from the repo root:
 
     python scripts/mark_manuscript.py OLD.tex NEW.tex OUT.tex
 
-This round, the old file is the first submission and the new file is the
-current clean manuscript:
+This round (R3), the old file is the frozen R2 manuscript and the new file is
+the current clean manuscript:
 
     python scripts/mark_manuscript.py \\
-        elsarticle/first_submission/main.tex \\
+        elsarticle/r2_freeze/main.tex \\
         elsarticle/clean/main.tex \\
-        elsarticle/marked/main.tex
+        elsarticle/marked/main_marked.tex
 
 Requires latexdiff. \\input files are expanded before the diff.
 Added text is \\DIFadd (blue underline); removed text is \\DIFdel (red strikeout).

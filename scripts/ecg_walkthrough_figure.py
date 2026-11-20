@@ -8,6 +8,7 @@ sys.path.insert(0, str(REPO / "scripts"))
 from plot_style import apply_manuscript_figure_style, mm_size
 
 OUT = REPO / "elsarticle" / "clean" / "ecg_walkthrough.pdf"
+OUT.parent.mkdir(parents=True, exist_ok=True)
 FS = 400
 SEG = (0.22, 0.34)
 WIN = 0.80

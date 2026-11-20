@@ -1,3 +1,4 @@
+# Environment and editor files
 .DS_Store
 __pycache__/
 *.pyc
@@ -7,8 +8,28 @@ __pycache__/
 ~$*
 scripts/_flowchart_tmp_icons/
 
-elsarticle
+# Manuscript, review correspondence, and submission files (kept local)
+elsarticle/
+response_to_reviewers/
+R3_deliverables/
+PR-D-*.pdf
+logs.md
+
+# Local checkout of the sublimex package (installed from PyPI via requirements.txt)
+sublimex/
+
+# Raw and processed data: too large for git, and partly under data use agreements.
+# Download instructions are in README.md.
 datasets/*
 !datasets/metadata.json
 
-sublimex
+# Run logs and LaTeX build files
+results/*.log
+*.aux
+*.log
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.blg
+*.spl

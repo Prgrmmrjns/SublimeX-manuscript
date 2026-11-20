@@ -323,9 +323,58 @@ def generate_ablation_table(results):
                  results, cols, VARIANT_LABELS, 'ablation', tabcolsep='0.5pt')
 
 
+SUPP_TEX = os.path.join(OUTPUT_DIR, 'supplementary', 'supplementary.tex')
+FIVEFOLD = ['mitbih', 'emotions', 'mimic', 'svd']
+LABEL = {'TSFRESH': 'tsfresh', 'CATCH22': 'catch22'}
+
+
+def _splice(label, block):
+    """Replace the table environment carrying \\label{label} in the supplementary file.
+
+    Without a local supplement (e.g. a fresh clone), the table is written to its own .tex file.
+    """
+    if not os.path.exists(SUPP_TEX):
+        open(os.path.join(OUTPUT_DIR, label.split(':')[-1] + '.tex'), 'w').write(block)
+        return
+    tex = open(SUPP_TEX).read()
+    i = tex.index(f'\\label{{{label}}}')
+    a, b = tex.rindex('\\begin{table}', 0, i), tex.index('\\end{table}', i) + len('\\end{table}')
+    open(SUPP_TEX, 'w').write(tex[:a] + block + tex[b:])
+
+
+def generate_fivefold_table():
+    sig = pd.read_csv(os.path.join(RESULTS_DIR, 'significance_tests.csv'))
+    sig = sig[(sig['study'] == 'main_eval') & sig['dataset'].isin(FIVEFOLD)]
+    stats = load_main_eval_data()
+    name = lambda m: LABEL.get(m, m)
+    cell = lambda m, st: f"\\makecell{{{name(m)}\\\\{st['score']:.3f}$\\pm${st['score_std']:.3f}}}"
+    lines = ['\\begin{table}[htbp]', '\\centering',
+             '\\caption{Dataset leader, second-best method, and SublimeX on the four 5-fold benchmarks '
+             '(mean $\\pm$ SD over the five folds). $p$: exact two-sided Wilcoxon signed-rank test of the leader '
+             'against the second-best method on the five folds; with five folds the smallest attainable value is $0.0625$.}',
+             '\\label{tab:wilcoxon_fivefold}', '\\small',
+             '\\begin{tabular}{lcccc}', '\\toprule',
+             'Dataset & Leader & Second best & SublimeX & $p$ \\\\', '\\midrule']
+    for ds in FIVEFOLD:
+        ranked = sorted(stats[ds].items(), key=lambda kv: kv[1]['score'], reverse=(DIRECTION[ds] != 'minimize'))
+        leader = ranked[0][0]
+        second = next(m for m, _ in ranked[1:] if m != 'SublimeX')
+        d = sig[sig['dataset'] == ds]
+        p_of = lambda m: float(d.loc[d['comparison'] == m, 'p_value'].iloc[0])
+        lines.append(f"{DATASET_INFO[ds]['name']} & {cell(leader, stats[ds][leader])} & "
+                     f"{cell(second, stats[ds][second])} & "
+                     f"{stats[ds]['SublimeX']['score']:.3f}$\\pm${stats[ds]['SublimeX']['score_std']:.3f} & "
+                     f"{p_of(second):.4f} \\\\")
+        if ds != FIVEFOLD[-1]:
+            lines.append('\\addlinespace[6pt]')
+    lines += ['\\bottomrule', '\\end{tabular}', '\\end{table}']
+    _splice('tab:wilcoxon_fivefold', '\n'.join(lines))
+
+
 if __name__ == '__main__':
     compute_significance_tests()
     main_results = load_main_eval_data()
     generate_results_table(main_results)
     ablation = load_ablation_data(main_results)
     generate_ablation_table(ablation)
+    generate_fivefold_table()
